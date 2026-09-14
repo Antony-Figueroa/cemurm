@@ -87,7 +87,7 @@ Keeping them together in one hito would overload it; the split honors the depend
 
 ## Hito 1 — Core Viewer + Auth (Months 1–2)
 
-**Implementation status: complete** — email/password auth (GoTrue), ChordPro parsing/rendering, song/setlist CRUD + search (localStorage mocks), practice view, schema + owner-scoped RLS deployed (`supabase/migrations/`). Caveats: Google/GitHub OAuth pending; hosted Supabase not wired (local-only).
+**Implementation status: complete** — email/password auth (GoTrue), ChordPro parsing/rendering, song/setlist CRUD + search against hosted Supabase (data layer + read-through offline cache, PR #87), practice view, schema + owner-scoped RLS deployed (`supabase/migrations/`). Caveats: Google/GitHub OAuth pending; PWA runtime and full BDD scenario coverage tracked per feature on follow-up hitos.
 
 ### Objectives
 - Build the foundational app shell with routing and authentication
@@ -99,8 +99,8 @@ Keeping them together in one hito would overload it; the split honors the depend
 - [x] React app with Vite, Tailwind, and React Router
 - [x] Supabase Auth integration (email/password live; Google + GitHub OAuth pending — all external providers are disabled in `supabase/config.toml`)
 - [x] ChordPro parser (text → structured data) and renderer (structured data → styled React components)
-- [x] Song CRUD: create, read, update, delete songs (localStorage mock — `src/lib/songs.js`)
-- [x] Setlist CRUD: create setlists, add/remove/reorder songs (localStorage mock — `src/lib/setlists.js`)
+- [x] Song CRUD: create, read, update, delete songs (hosted Supabase — `src/lib/songs.js`)
+- [x] Setlist CRUD: create setlists, add/remove/reorder songs (hosted Supabase — `src/lib/setlists.js`)
 - [x] Basic search: filter songs by title, artist, genre (local filters — `src/lib/search.js`)
 - [x] Basic practice view: render a song at the performer's chosen practice key and tempo (a thin slice of the practice-mode surface; the full metronome, auto-scroll, and session-tracking analytics are deferred to a later hito)
 - [x] Responsive layout: works on desktop, tablet, and mobile
@@ -283,3 +283,18 @@ A beta tester installs the PWA on their phone, goes through the onboarding tutor
 | 4 | 2 months | Community | Public library exists, users can contribute and discover |
 | 5 | 2 months | Integrations | MIDI control, external display, OBS overlay work |
 | 6 | 2 months | Beta Ready | App is polished, documented, and ready for public beta |
+
+---
+
+## Progress Log
+
+| Date | PR | Change | Status |
+|------|----|--------|--------|
+| 2026-09-14 | #82 | Hito 1 core: Supabase GoTrue auth behind unchanged auth surface | Merged |
+| 2026-09-14 | #87 | Hito 2: Stage Mode (fullscreen, transpose, touch/keyboard/foot-pedal navigation) + offline-first (service worker, IndexedDB read-through cache + write queue) + data layer on hosted Supabase with RLS | Merged |
+
+### Planned vs. implemented (as of 2026-09-14)
+
+- **Hito 1 — Core Viewer + Auth: complete.** Song/setlist CRUD and search run against hosted Supabase (no longer localStorage mocks); owner-scoped RLS covers auth, songs, setlists, and chart content. Remaining caveats: Google/GitHub OAuth providers disabled in `supabase/config.toml`.
+- **Hito 2 — Stage Mode: core complete.** 8/8 deliverables shipped in #87. Remaining caveats: real-device HID testing requires a physical foot pedal + `chrome://flags` HID; browser-level offline QA (DevTools network toggle) and PWA background-update UX are follow-up work under `pwa-updates-and-storage`.
+- **Hito 3–6: not started.** Next milestone is Hito 3 — Collaboration (shared setlists, Realtime sync, annotations, MusicXML/ABC notation, collections).
