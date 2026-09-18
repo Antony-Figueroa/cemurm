@@ -672,6 +672,83 @@ export function broadcastActivity(setlistId, action, actorName) {
   return payload
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// 2.4 — realtime (setlists R2, design D6 data flow): subscribe to
+// postgres_changes on the three tables published in 0006 (0.6) so any
+// collaborator's write reaches members within 2 seconds. setlist_items
+// carries the item edits (filter setlist_id=eq), setlist_collaborators the
+// invite/accept/permission/removal and ownership-transfer roster changes,
+// setlists the visibility/name/owner updates. The parent updated_at bump
+// trigger makes an item edit ALSO fire a setlists event, so consumers
+// coalesce bursts (useSharedSetlist debounces its refetch). Returns an
+// unsubscribe fn that removes the channel — teardown on unmount.
+
+/**
+ * Subscribe to live changes of one setlist across the published tables.
+ * `onChange` receives the raw postgres_changes payload ({table, eventType,
+ * new, old}). RLS caps delivery: a non-member subscriber receives nothing.
+ */
+export function subscribeSetlistRealtime(setlistId, onChange) {
+  const channel = supabase
+    .channel(`setlist:${setlistId}`)
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'setlist_items', filter: `setlist_id=eq.${setlistId}` },
+      onChange,
+    )
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'setlist_collaborators', filter: `setlist_id=eq.${setlistId}` },
+      onChange,
+    )
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'setlists', filter: `id=eq.${setlistId}` },
+      onChange,
+    )
+    .subscribe()
+  return () => supabase.removeChannel(channel)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 2.5 — client advisory lock (R3, D4): broadcast {userId, songId} pairs over
+// the setlist's lock channel. Realtime does not reliably echo a broadcast
+// back to its sender (2.3 experience), so the holder also applies its own
+// lock locally; receivers merge via applyLock (setlistCollab.js). ONE
+// persistent channel per setlist preserves acquire→release ordering —
+// per-event one-shot channels could reorder two sends and strand a lock.
+
+const LOCK_EVENT = 'edit-lock'
+const lockTopic = (setlistId) => `setlist-lock:${setlistId}`
+
+/**
+ * Open a setlist's lock channel for receive + send. Returns { send, close }:
+ * send() queues until the channel joins, then pushes in order; close()
+ * removes the channel (teardown on unmount).
+ */
+export function openLockChannel(setlistId, onLock) {
+  const channel = supabase.channel(lockTopic(setlistId))
+  let sendQueue = []
+  channel
+    .on('broadcast', { event: LOCK_EVENT }, ({ payload }) => onLock?.(payload))
+    .subscribe((status) => {
+      if (status !== 'SUBSCRIBED') return
+      for (const queued of sendQueue) {
+        channel.send({ type: 'broadcast', event: LOCK_EVENT, payload: queued }).catch(() => {})
+      }
+      sendQueue = null
+    })
+  return {
+    send(payload) {
+      if (sendQueue) sendQueue.push(payload)
+      else channel.send({ type: 'broadcast', event: LOCK_EVENT, payload }).catch(() => {})
+    },
+    close() {
+      supabase.removeChannel(channel)
+    },
+  }
+}
+
 /**
  * Resolve setlist durations by joining with the songs store.
  * Returns { totalSeconds, formatted } (mm:ss, unknown durations omitted).
