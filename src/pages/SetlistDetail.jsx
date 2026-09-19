@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.jsx'
 import { useSetlists } from '../hooks/useSetlists.js'
 import { useSongs } from '../hooks/useSongs.js'
@@ -90,6 +90,32 @@ export default function SetlistDetail() {
 
   // Derived: the hook already enriches each setlist with resolved songs + duration.
   const setlist = setlists.find((s) => s.id === id)
+
+  // 4.7 deep-link target (Feed6): song-added / reorder rows land here as
+  // `/setlists/:id?song=<songId>` — once the setlist + items are loaded,
+  // scroll the row into view (centered) and flash a temporary highlight that
+  // the timeout clears. The Activity panel is deliberately untouched
+  // (two-surface decision). Guarded before the loading gates so this stays an
+  // unconditional hook.
+  const [searchParams] = useSearchParams()
+  const deepLinkedSong = searchParams.get('song')
+  const [highlightedSong, setHighlightedSong] = useState(null)
+  const lastScrolledSong = useRef(null)
+
+  useEffect(() => {
+    // Wait for BOTH gates to clear: until then the <ol> with the item rows is
+    // not rendered, so the data-song-id selector would find nothing.
+    if (loading || songsLoading || !setlist || !deepLinkedSong) return undefined
+    if (!setlist.itemIds.includes(deepLinkedSong)) return undefined
+    if (lastScrolledSong.current === deepLinkedSong) return undefined
+    const el = document.querySelector(`[data-song-id="${deepLinkedSong}"]`)
+    if (!el) return undefined
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    setHighlightedSong(deepLinkedSong)
+    lastScrolledSong.current = deepLinkedSong
+    const timer = setTimeout(() => setHighlightedSong(null), 2200)
+    return () => clearTimeout(timer)
+  }, [loading, songsLoading, setlist, deepLinkedSong])
 
   if (loading || songsLoading) return <p className="text-sm text-cem-secondary">Loading setlist…</p>
 
@@ -549,7 +575,13 @@ export default function SetlistDetail() {
             const lock = collab.locks[songId]
             const lockedByOther = lock && lock.userId !== user.id
             return (
-              <li key={songId} className="flex items-center justify-between px-4 py-3">
+              <li
+                key={songId}
+                data-song-id={songId}
+                className={`flex items-center justify-between px-4 py-3 ${
+                  highlightedSong === songId ? 'bg-cem-amber/20' : ''
+                }`}
+              >
                 <div className="flex items-center gap-3">
                   <span className="w-5 text-right text-xs text-cem-secondary">{index + 1}.</span>
                   <div>
