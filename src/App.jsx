@@ -14,6 +14,7 @@ import Notifications from './pages/Notifications.jsx'
 import StageMode from './pages/StageMode.jsx'
 import Auth from './pages/Auth.jsx'
 import Practice from './pages/Practice.jsx'
+import PublicLibrary from './pages/PublicLibrary.jsx'
 import Storage from './pages/Storage.jsx'
 import Settings from './pages/Settings.jsx'
 import NotFound from './pages/NotFound.jsx'
@@ -29,6 +30,7 @@ const router = createBrowserRouter([
           { path: '/songs', element: <Songs /> },
           { path: '/songs/:id', element: <SongDetail /> },
           { path: '/songs/:id/practice', element: <Practice /> },
+          { path: '/library', element: <PublicLibrary /> },
           { path: '/setlists', element: <Setlists /> },
           { path: '/setlists/:id', element: <SetlistDetail /> },
           { path: '/setlists/:id/stage', element: <StageMode /> },
