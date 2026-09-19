@@ -98,6 +98,25 @@ Hito 4 (Basic Community) starts here: no community surface exists yet. This slic
 
 T1 + T2 (backend batch) → T3+T4 (data+state) → T5 (UI) → T6 (verification). Then slice close: review PR on `feat/hito4-s41-public-library`.
 
+## Delivery — feature-branch-chain (2026-09-19, user decisions)
+
+- Actual PR diff vs origin/main measured **976 changed lines** (953+/23-) → over the 400 budget (previous "<400" estimate was wrong, corrected in-session).
+- User chose **split into chained PRs** (declined single-PR size:exception), then **feature-branch-chain**.
+- One honest corrective pass: first split left slice 1 (migrations+seed) at 510 → refined to **5 children**, all ≤400. S0 (seed catalog) must precede S1 (idempotency): `4eca999`'s diff references the catalog rows (conflict when cherry-picked standalone onto origin/main — proved in-session).
+- Chain (base = main → tracker #125; each child targets its immediate parent):
+
+| # | PR | Branch | Diff | Content |
+|---|----|--------|------|---------|
+| T | #125 (draft) | `feat/hito4-s41-public-library` | 976 | tracker — do not merge until chain complete |
+| 1 | #126 | `…-00-seed-catalog` | 205 | catalog corpus (d503f5f) |
+| 2 | #127 | `…-01-seed-idempotent` | 78 | idempotency (4eca999) |
+| 3 | #128 | `…-02-backend` | 237 | migrations 0010+0011 (06f7fc2, 050f1a0) |
+| 4 | #129 | `…-03-data` | 190 | data layer + hook (61c78a1, e1a687d) |
+| 5 | #130 | `…-04-ui-docs` | 276 | UI + this doc (b84de79 + docs commits) |
+
+- **Merge order**: #126 → #127 → #128 → #129 → #130 (each into its parent branch), then #125 → main. CI on each branch: `pnpm install --frozen-lockfile` + `pnpm lint` + `pnpm build` (all pass locally).
+- Issue: #50 `[Hito 4] Public Library & Community` labeled `status:approved`; PRs reference it ("Part of") without `Closes` since #50 spans S4.2/S4.3 too.
+
 ## Slice findings (smoke)
 
 - **Fix-forward 0011**: 0010's `private.copy_public_song_to_repertoire` was unreachable from `supabase.rpc` (PostgREST exposes only `public`; config.toml). Thin public SECURITY DEFINER wrapper + authenticated-only grant (`050f1a0`). Verified end-to-end: copy creates an editable `songs`+`chart_files`+`song_versions` triplet owned by the caller, original public entry untouched, no `linked_copies`.
