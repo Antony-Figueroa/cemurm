@@ -40,7 +40,7 @@ async function withReadThrough(key, fn) {
   }
 }
 
-function invalidateSongs(userId, ids) {
+export function invalidateSongs(userId, ids) {
   offlineRemove(`songs:${userId}`)
   for (const id of ids) offlineRemove(`song:${userId}:${id}`)
 }
