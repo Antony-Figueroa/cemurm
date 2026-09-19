@@ -204,4 +204,46 @@ revoke all on function public.notify_removed_collaborator() from public, anon, a
 create constraint trigger setlist_collaborators_delete_notify
   after delete on public.setlist_collaborators
   deferrable initially deferred
-  for each row execute function public.notify_removed_collaborator();
+  for each row execute function public.notify_removed_collaborator();-- ══════════════════════ 4. TRANSFER — WRITE RPC (task 0.5) ══════════════════════
+-- RPC #1 (0008 core): the three ops in ONE transaction is what makes the
+-- deferred removal trigger correct — by COMMIT, owner_id has flipped, so the
+-- deleted user IS the new owner → no false "removed" row (Decision 3). Only
+-- the CURRENT owner may call; guardTransfer semantics are re-asserted with the
+-- EXACT existing USER_ERRORS messages (setlists.js lines 21-22, read-only) so
+-- client error mapping passes through unchanged.
+create function public.transfer_setlist_ownership(p_setlist_id uuid, p_new_owner_id uuid)
+  returns void
+  language plpgsql security definer set search_path = '' as $$
+declare
+  v_actor uuid := (select auth.uid());
+begin
+  if v_actor is null or not private.session_owns_setlist(p_setlist_id) then
+    raise exception 'No access.'; -- only the current owner may transfer
+  end if;
+  if not exists (select 1 from public.setlist_collaborators c
+                 where c.setlist_id = p_setlist_id and c.user_id = p_new_owner_id) then
+    raise exception 'Only an accepted collaborator can take ownership.';
+  end if;
+  if not exists (select 1 from public.setlist_collaborators c
+                 where c.setlist_id = p_setlist_id and c.user_id = p_new_owner_id
+                   and c.accepted_at is not null) then
+    raise exception 'The new owner must accept the invitation first.';
+  end if;
+  -- Three ops in ONE transaction; order matters (Decisions 3/4):
+  -- (1) drop the new owner's collaborator row — the deferred constraint
+  --     trigger evaluates at COMMIT, by when owner_id has flipped (op 3) →
+  --     the deleted user IS the new owner → no 'removed' row.
+  delete from public.setlist_collaborators
+  where setlist_id = p_setlist_id and user_id = p_new_owner_id;
+  -- (2) re-insert the former owner as an accepted can_edit collaborator —
+  --     the INSERT trigger's immediate check still sees owner_id = former
+  --     owner at statement time → skip (transfer re-insert, Decision 4).
+  insert into public.setlist_collaborators (setlist_id, user_id, can_edit, accepted_at)
+  values (p_setlist_id, v_actor, true, now());
+  -- (3) flip ownership last.
+  update public.setlists set owner_id = p_new_owner_id
+  where id = p_setlist_id and owner_id = v_actor;
+end $$;
+
+revoke all on function public.transfer_setlist_ownership(uuid, uuid) from public, anon;
+grant execute on function public.transfer_setlist_ownership(uuid, uuid) to authenticated, service_role;
