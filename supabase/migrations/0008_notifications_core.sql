@@ -76,4 +76,50 @@ create function public.notifier_actor_name() returns text
     (select p.username    from public.profiles p where p.id = (select auth.uid())),
     'Someone') $$;
 
-revoke all on function public.notifier_actor_name() from public, anon, authenticated;
+revoke all on function public.notifier_actor_name() from public, anon, authenticated;-- ══════════════════════ 2. BANDMATE LINKS — INVITE / ACCEPT / DECLINE (task 0.2) ══════════════════════
+-- AFTER triggers: the INSERT carries the invitation (recipient = new.bandmate_id,
+-- the invitee); the UPDATE carries the inviter-side accept/decline rows
+-- (recipient = new.user_id, the inviter). Status transitions are pinned to
+-- pending → active/declined; actor via notifier_actor_name; category
+-- 'invitation' per the category contract (rows 1-2).
+create function public.notify_bandmate_invited() returns trigger
+  language plpgsql security definer set search_path = '' as $$
+begin
+  perform public.notify_user(
+    new.bandmate_id, 'invitation',
+    public.notifier_actor_name() || ' invited you to be a bandmate',
+    null,
+    jsonb_build_object('action', 'invite', 'bandmate_id', new.bandmate_id));
+  return null;
+end $$;
+
+revoke all on function public.notify_bandmate_invited() from public, anon, authenticated;
+
+create trigger bandmate_links_insert_notify
+  after insert on public.bandmate_links
+  for each row execute function public.notify_bandmate_invited();
+
+create function public.notify_bandmate_responded() returns trigger
+  language plpgsql security definer set search_path = '' as $$
+begin
+  if old.status = 'pending' and new.status = 'active' then
+    perform public.notify_user(
+      new.user_id, 'invitation',
+      public.notifier_actor_name() || ' accepted your invitation',
+      null,
+      jsonb_build_object('action', 'bandmate-accepted'));
+  elsif old.status = 'pending' and new.status = 'declined' then
+    perform public.notify_user(
+      new.user_id, 'invitation',
+      public.notifier_actor_name() || ' declined your invitation',
+      null,
+      jsonb_build_object('action', 'bandmate-declined'));
+  end if;
+  return null;
+end $$;
+
+revoke all on function public.notify_bandmate_responded() from public, anon, authenticated;
+
+create trigger bandmate_links_update_notify
+  after update on public.bandmate_links
+  for each row execute function public.notify_bandmate_responded();
