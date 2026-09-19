@@ -3,7 +3,8 @@
 // Supabase query surface so chunk C8 can swap the implementation without
 // touching the hook or UI.
 //
-// Scenario coverage: features/search-and-discovery.feature (BASIC SEARCH).
+// Scenario coverage: features/search-and-discovery.feature (BASIC SEARCH),
+// features/public-library-community.feature (catalog search + license filter).
 
 import { parseChordPro } from './chordpro/parser.js'
 
@@ -111,6 +112,21 @@ export function filterSongs(songs, { query = '', key = '', tempo } = {}) {
   )
 }
 
+/**
+ * Public library catalog filter (AND): free-text over title/artist/genre +
+ * exact license match. S4.1 — mirrors the client-side "ponytail" used in
+ * Songs.jsx: bounded catalog, no server-side composition yet.
+ */
+export function filterPublicEntries(entries, { query = '', license = '' } = {}) {
+  const q = String(query ?? '').trim().toLowerCase()
+  return (entries || []).filter((entry) => {
+    if (license && entry.license !== license) return false
+    if (!q) return true
+    return [entry.title, entry.artist, entry.genre]
+      .some((v) => String(v || '').toLowerCase().includes(q))
+  })
+}
+
 // Self-check: node -e "import('./src/lib/search.js').then(m => m.demo())"
 export function demo() {
   const assert = (cond, msg) => {
@@ -160,6 +176,23 @@ export function demo() {
     'single value → exact bpm')
   assert(parseTempoRange('') === null && parseTempoRange('abc') === null,
     'empty/invalid input → null (no filter)')
+
+  // 5. Public library catalog filter (S4.1): free-text + license (AND)
+  const catalog = [
+    { id: 'c1', title: 'Amazing Grace', artist: 'John Newton', genre: 'hymn', license: 'public-domain' },
+    { id: 'c2', title: 'Scarborough Fair', artist: 'Traditional', genre: 'folk', license: 'public-domain' },
+    { id: 'c3', title: 'Down to the River', artist: 'Traditional', genre: 'gospel', license: 'CC-BY-4.0' },
+  ]
+  assert(filterPublicEntries(catalog, { query: 'amazing' }).map((e) => e.id).join(',') === 'c1',
+    'catalog query is case-insensitive on title')
+  assert(filterPublicEntries(catalog, { query: 'traditional' }).map((e) => e.id).join(',') === 'c2,c3',
+    'catalog query matches artist')
+  assert(filterPublicEntries(catalog, { license: 'public-domain' }).map((e) => e.id).join(',') === 'c1,c2',
+    'license filter hides licensed entries')
+  assert(filterPublicEntries(catalog, { query: 'gospel', license: 'CC-BY-4.0' }).map((e) => e.id).join(',') === 'c3',
+    'query + license compose with AND')
+  assert(filterPublicEntries(catalog).length === 3 && filterPublicEntries(null).length === 0,
+    'empty filter returns all; null list returns empty')
 
   console.log('search demo OK')
 }
