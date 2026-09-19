@@ -191,3 +191,101 @@ create trigger setlist_items_insert_notify
   after insert on public.setlist_items
   for each row execute function public.notify_setlist_item_added();
 
+-- ══════════════════════ 3. SHARED_COMMENTS — COMMENT + @MENTION, ONE FUNCTION (task 1.3) ══════════════════════
+-- ONE trigger function covering BOTH paths (Resolved Decision 2 — the design
+-- line 115 wording "INSERT + @mention" is one function, not two; the
+-- pg_trigger breakdown stays 2+3+2+1 = 8).
+-- (b) @mention rows: parse @username with the @[A-Za-z0-9._-]+ regex (the
+--     profiles.username charset — auth.js never writes usernames, open
+--     question (a) resolved by evidence; partial unique index 0006 line 37),
+--     resolve against unique profiles.username, emit ONLY when the named user
+--     passes the 0006 EXISTS scope chain (setlist_items → setlists owner OR
+--     accepted collaborator; nested single-relation EXISTS, no joins — design
+--     lines 317-341). Out-of-scope mention → NO row (no un-openable row);
+--     self-mention → skipped.
+-- (a) comment rows: owner + accepted collaborators of ANY setlist containing
+--     the song (deduped) minus author minus mention recipients (the mention
+--     row supersedes). category 'setlist' (frozen enum).
+create function public.notify_comment_activity() returns trigger
+  language plpgsql security definer set search_path = '' as $$
+declare
+  v_song_title          text := (select g.title from public.songs g where g.id = new.song_id);
+  v_section             text := new.anchor->>'section';
+  v_setlist_id          uuid;
+  v_username            text;
+  v_candidate           uuid;
+  v_mention_recipients  uuid[] := '{}'::uuid[];
+  v_mention             text[];
+begin
+  for v_mention in
+    select distinct regexp_matches(new.body, '@([A-Za-z0-9._-]+)', 'g')
+  loop
+    v_username := v_mention[1];
+    select p.id into v_candidate
+    from public.profiles p
+    where p.username = v_username
+    limit 1;
+    if v_candidate is null then
+      continue; -- unknown username → no row
+    end if;
+    if v_candidate = new.author_id then
+      continue; -- self-mention → skipped
+    end if;
+    -- 0006 scope chain (candidate must be owner or ACCEPTED collaborator on
+    -- some setlist containing the song); also carries the payload setlist_id.
+    select i.setlist_id into v_setlist_id
+    from public.setlist_items i
+    where i.song_id = new.song_id
+      and exists (
+        select 1 from public.setlists s
+        where s.id = i.setlist_id
+          and (s.owner_id = v_candidate
+               or exists (
+                 select 1 from public.setlist_collaborators c
+                 where c.setlist_id = s.id and c.user_id = v_candidate
+                   and c.accepted_at is not null)))
+    limit 1;
+    if v_setlist_id is null then
+      continue; -- out-of-scope mention → NO row
+    end if;
+    perform public.notify_user(
+      v_candidate, 'setlist',
+      '@' || v_username || ' mentioned you in ' || coalesce(v_song_title, 'a song'),
+      null,
+      jsonb_build_object('action', 'mention', 'song_id', new.song_id,
+                         'setlist_id', v_setlist_id, 'section', v_section,
+                         'comment_id', new.id));
+    v_mention_recipients := v_mention_recipients || v_candidate;
+  end loop;
+
+  perform public.notify_user(
+    r.user_id, 'setlist',
+    public.notifier_actor_name() || ' commented on ' || coalesce(v_song_title, 'a song'),
+    null,
+    jsonb_build_object('action', 'comment', 'song_id', new.song_id,
+                       'setlist_id',
+                       (select i.setlist_id from public.setlist_items i
+                        where i.song_id = new.song_id limit 1),
+                       'section', v_section, 'comment_id', new.id))
+  from (
+    select s.owner_id as user_id
+    from public.setlist_items i
+    join public.setlists s on s.id = i.setlist_id
+    where i.song_id = new.song_id
+    union
+    select c.user_id
+    from public.setlist_items i
+    join public.setlist_collaborators c on c.setlist_id = i.setlist_id
+    where i.song_id = new.song_id and c.accepted_at is not null
+  ) r
+  where r.user_id <> new.author_id
+    and r.user_id <> all(v_mention_recipients);
+  return null;
+end $$;
+
+revoke all on function public.notify_comment_activity() from public, anon, authenticated;
+
+create trigger shared_comments_insert_notify
+  after insert on public.shared_comments
+  for each row execute function public.notify_comment_activity();
+
