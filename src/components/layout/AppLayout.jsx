@@ -5,6 +5,7 @@ import { useNotifications } from '../../hooks/useNotifications.js'
 const navLinks = [
   { to: '/', label: 'Home' },
   { to: '/songs', label: 'Repertoire' },
+  { to: '/library', label: 'Library' },
   { to: '/setlists', label: 'Setlists' },
   { to: '/gigs', label: 'Gigs' },
   { to: '/bandmates', label: 'Bandmates' },
