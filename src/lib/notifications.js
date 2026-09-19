@@ -248,5 +248,5 @@ export function demo() {
   assertEq(grouped.length, 2, 'no rows → no group')
   assertEq(groupByCategory([]).length, 0, 'empty feed → no groups')
 
-  console.log('notifications demo OK: 19 asserts (deep-link map, normalization, grouping)')
+  console.log('notifications demo OK: 24 asserts (deep-link map, normalization, grouping)')
 }
