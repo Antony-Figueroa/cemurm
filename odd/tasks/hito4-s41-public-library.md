@@ -76,8 +76,8 @@ Hito 4 (Basic Community) starts here: no community surface exists yet. This slic
 
 - [x] T1 — migration 0010 (RLS + view/RPC)
 - [x] T2 — seed public-domain entries
-- [ ] T3 — `publicLibrary.js` data layer
-- [ ] T4 — `usePublicLibrary.js` hook
+- [x] T3 — `publicLibrary.js` data layer
+- [x] T4 — `usePublicLibrary.js` hook
 - [ ] T5 — `/library` page + card + nav
 - [ ] T6 — verification (lint, build, local smoke)
 
@@ -87,8 +87,8 @@ Hito 4 (Basic Community) starts here: no community surface exists yet. This slic
 |------|---------|-------|--------|
 | T1 | success | `supabase db reset` — migration 0010 applied clean (0001→0010) | 06f7fc2 |
 | T2 | success | `supabase db reset` — seed.sql loaded (5 public-domain + 1 CC-BY-4.0, no UUID collisions) | d503f5f |
-| T3 | — | — | — |
-| T4 | — | — | — |
+| T3 | success | `node search.js demo` OK, `pnpm lint` 0 warnings, `pnpm build` passed | 61c78a1 |
+| T4 | success | `pnpm lint` 0 warnings, `pnpm build` passed | e1a687d |
 | T5 | — | — | — |
 | T6 | — | — | — |
 
