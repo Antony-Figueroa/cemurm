@@ -1,4 +1,7 @@
 -- CEMURM demo seed (dev-only; runs via `supabase db reset` as postgres, never via db push).
+-- Idempotent: every insert ends with ON CONFLICT DO NOTHING, so re-running the seed
+-- against an existing DB is safe (no duplicates, no errors). Random values (now(),
+-- crypt salts) are left untouched on a second run because the conflicting rows are skipped.
 -- Deterministic UUIDs per design D8: users …0001/…0002, orgs …00a1/…00a2, branch …00b1;
 -- every other row reuses the same 10000000-… pattern with a per-table suffix family so
 -- reset → verify stays repeatable. Columns match supabase/migrations/0001_init.sql exactly
@@ -30,7 +33,8 @@ values
    crypt('password1234', gen_salt('bf')), now(),
    '', '', '', '', '', '+34910000003', '', '', '',
    '{"provider":"email","providers":["email"]}',
-   '{"firstName":"Outsider","lastName":"User","displayName":"Outsider User"}', now(), now());
+   '{"firstName":"Outsider","lastName":"User","displayName":"Outsider User"}', now(), now())
+  on conflict do nothing;
 
 -- ── profiles (0006 trigger auto-creates a row on every auth.users insert above;
 --    usernames give the PR#0 RLS walk deterministic search/identity targets) ──
@@ -44,17 +48,20 @@ update profiles set username = 'outsider', display_name = 'Outsider User'
 -- ── tenancy: orgs, branch, memberships ──
 insert into organizations (id, name, org_type, status) values
   ('10000000-0000-0000-0000-0000000000a1', 'Demo Academy', 'Academy', 'active'),
-  ('10000000-0000-0000-0000-0000000000a2', 'Isolation Org', 'Academy', 'active');
+  ('10000000-0000-0000-0000-0000000000a2', 'Isolation Org', 'Academy', 'active')
+  on conflict do nothing;
 
 insert into branches (id, org_id, name, city, status) values
-  ('10000000-0000-0000-0000-0000000000b1', '10000000-0000-0000-0000-0000000000a1', 'Sede Centro', 'Madrid', 'active');
+  ('10000000-0000-0000-0000-0000000000b1', '10000000-0000-0000-0000-0000000000a1', 'Sede Centro', 'Madrid', 'active')
+  on conflict do nothing;
 
 -- demo = org_owner in Demo Academy; isolation = org_member in Isolation Org (cross-org isolation proof)
 insert into org_memberships (user_id, org_id, branch_id, role, status) values
   ('10000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-0000000000a1',
    '10000000-0000-0000-0000-0000000000b1', 'org_owner', 'active'),
   ('10000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-0000000000a2',
-   null, 'org_member', 'active');
+   null, 'org_member', 'active')
+  on conflict do nothing;
 
 -- ── repertoire: 2 demo-owned songs + 1 isolation-owned ──
 insert into songs (id, org_id, branch_id, title, artist, genre, created_by) values
@@ -66,65 +73,77 @@ insert into songs (id, org_id, branch_id, title, artist, genre, created_by) valu
    '10000000-0000-0000-0000-000000000001'),
   ('20000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-0000000000a2',
    null, 'Isolation Anthem', 'Isolation Band', 'rock',
-   '10000000-0000-0000-0000-000000000002');
+   '10000000-0000-0000-0000-000000000002')
+  on conflict do nothing;
 
 -- ── setlist: demo owner + isolation as accepted view-only collaborator + 2 items ──
 insert into setlists (id, org_id, branch_id, owner_id, name, visibility) values
   ('30000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-0000000000a1',
    '10000000-0000-0000-0000-0000000000b1', '10000000-0000-0000-0000-000000000001',
-   'Demo Setlist', 'shared');
+   'Demo Setlist', 'shared')
+  on conflict do nothing;
 
 insert into setlist_collaborators (setlist_id, user_id, can_edit, accepted_at) values
   ('30000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000002',
-   false, now());
+   false, now())
+  on conflict do nothing;
 
 -- ── band: demo ↔ isolation active pair (0006 pair-scope RLS walk target) ──
 insert into bandmate_links (user_id, bandmate_id, status, accepted_at) values
   ('10000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000002',
-   'active', now());
+   'active', now())
+  on conflict do nothing;
 
 -- PENDING collaborator for outsider (accepted_at NULL): the RLS 3.1 self-accept walk step
 -- (outsider accepts before gaining setlist visibility; comment-42501 probe runs pre-accept).
 insert into setlist_collaborators (setlist_id, user_id, can_edit) values
   ('30000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000003',
-   false);
+   false)
+  on conflict do nothing;
 
 insert into setlist_items (id, setlist_id, song_id, position, agreed_key) values
   ('30000000-0000-0000-0000-000000000002', '30000000-0000-0000-0000-000000000001',
    '20000000-0000-0000-0000-000000000001', 1, 'G'),
   ('30000000-0000-0000-0000-000000000003', '30000000-0000-0000-0000-000000000001',
-   '20000000-0000-0000-0000-000000000002', 2, 'C');
+   '20000000-0000-0000-0000-000000000002', 2, 'C')
+  on conflict do nothing;
 
 -- ── per-user dev rows (demo) ──
 insert into practice_sessions (id, user_id, song_id, instrument, started_at, ended_at) values
   ('40000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001',
    '20000000-0000-0000-0000-000000000001', 'guitar',
-   now() - interval '2 hours', now() - interval '118 minutes');
+   now() - interval '2 hours', now() - interval '118 minutes')
+  on conflict do nothing;
 
 insert into personal_annotations (id, user_id, song_id, anchor, kind, value) values
   ('40000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000001',
    '20000000-0000-0000-0000-000000000001',
-   '{"section":"Chorus","index":1}', 'note', 'Ring out the open A; watch the F#m voicing');
+   '{"section":"Chorus","index":1}', 'note', 'Ring out the open A; watch the F#m voicing')
+  on conflict do nothing;
 
 -- unread notification (read_at NULL)
 insert into notifications (id, user_id, category, title, body, payload) values
   ('40000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001',
    'setlist', 'Collaborator accepted', 'Isolation User accepted the invite to Demo Setlist.',
-   '{"setlist_id":"30000000-0000-0000-0000-000000000001"}');
+   '{"setlist_id":"30000000-0000-0000-0000-000000000001"}')
+  on conflict do nothing;
 
 insert into device_configs (id, user_id, device_id) values
-  ('40000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000001', 'dev-1');
+  ('40000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000001', 'dev-1')
+  on conflict do nothing;
 
 -- outbox: one synced entry correlating the first setlist_item insert
 insert into outbox (id, user_id, device_id, entity, entity_id, operation, payload, seq, state, synced_at) values
   ('40000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000001', 'dev-1',
    'setlist_items', '30000000-0000-0000-0000-000000000002', 'insert',
    '{"id":"30000000-0000-0000-0000-000000000002","setlist_id":"30000000-0000-0000-0000-000000000001","song_id":"20000000-0000-0000-0000-000000000001","position":1}'::jsonb,
-   1, 'synced', now());
+   1, 'synced', now())
+  on conflict do nothing;
 
 -- ── scale catalog ──
 insert into scale_catalog (id, name, aliases, intervals, cardinality) values
-  ('50000000-0000-0000-0000-000000000001', 'Major', array['Ionian'], '{0,2,4,5,7,9,11}', 7);
+  ('50000000-0000-0000-0000-000000000001', 'Major', array['Ionian'], '{0,2,4,5,7,9,11}', 7)
+  on conflict do nothing;
 
 -- ── gigs: venues, gigs, performances (PR#1a hito-2-remainder) ──
 -- Venues/gigs match the spec suggestions ("Café La Luna", "Parque El Retiro");
@@ -134,7 +153,8 @@ insert into venues (id, owner_id, name, location, type) values
   ('60000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001',
    'Café La Luna', 'Calle Luna 3, Madrid', 'bar'),
   ('60000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000001',
-   'Parque El Retiro', 'Parque del Retiro, Madrid', 'outdoor');
+   'Parque El Retiro', 'Parque del Retiro, Madrid', 'outdoor')
+  on conflict do nothing;
 
 insert into gigs (id, org_id, branch_id, owner_id, name, venue_id, scheduled_at, setlist_id, status) values
   ('61000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-0000000000a1',
@@ -147,11 +167,13 @@ insert into gigs (id, org_id, branch_id, owner_id, name, venue_id, scheduled_at,
    now() - interval '7 days', '30000000-0000-0000-0000-000000000001', 'completed'),
   ('61000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-0000000000a2',
    null, '10000000-0000-0000-0000-000000000002',
-   'Isolation Gig', null, now() + interval '5 days', null, 'planned');
+   'Isolation Gig', null, now() + interval '5 days', null, 'planned')
+  on conflict do nothing;
 
 insert into performances (id, gig_id, venue_id, performed_at) values
   ('62000000-0000-0000-0000-000000000001', '61000000-0000-0000-0000-000000000002',
-   '60000000-0000-0000-0000-000000000002', now() - interval '7 days' + interval '90 minutes');
+   '60000000-0000-0000-0000-000000000002', now() - interval '7 days' + interval '90 minutes')
+  on conflict do nothing;
 
 -- Church Sunday Service actually played both setlist songs (version_id NULL:
 -- no song_versions rows are seeded). Demand for both songs = 1 performance.
@@ -159,10 +181,12 @@ insert into performance_items (id, performance_id, song_id, version_id, state, p
   ('63000000-0000-0000-0000-000000000001', '62000000-0000-0000-0000-000000000001',
    '20000000-0000-0000-0000-000000000001', null, 'played', 1),
   ('63000000-0000-0000-0000-000000000002', '62000000-0000-0000-0000-000000000001',
-   '20000000-0000-0000-0000-000000000002', null, 'played', 2);
+   '20000000-0000-0000-0000-000000000002', null, 'played', 2)
+  on conflict do nothing;
 
 insert into user_preferences (user_id, transpose_offset, capo, preferences) values
-  ('10000000-0000-0000-0000-000000000001', 2, 1, '{}'::jsonb);
+  ('10000000-0000-0000-0000-000000000001', 2, 1, '{}'::jsonb)
+  on conflict do nothing;
 
 -- ── public library (S4.1): public-domain corpus + one CC-BY-4.0 contribution ──
 -- Deterministic UUID families (S4.1 doc: 3–5 public-domain entries + 1 licensed
@@ -193,7 +217,8 @@ insert into songs (id, org_id, branch_id, title, artist, genre, created_by) valu
   ('20000000-0000-0000-0000-000000000007', null, null, 'Shenandoah', 'Traditional', 'folk',
    '10000000-0000-0000-0000-000000000001'),
   ('20000000-0000-0000-0000-000000000008', null, null, 'Down to the River to Pray', 'Traditional', 'gospel',
-   '10000000-0000-0000-0000-000000000001');
+   '10000000-0000-0000-0000-000000000001')
+  on conflict do nothing;
 
 insert into chart_files (id, song_id, format, object_key, content, size_bytes) values
   ('71000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000004', 'chordpro',
@@ -335,7 +360,8 @@ And who shall wear the [C]starry [G]crown
 [G]O sisters, let's go [C]down, let's go [G]down
 Come on down, [D]come on [G]down
 [G]O sisters, let's go [C]down
-[G]Down to the [D]river to [G]pray$chordpro$));
+[G]Down to the [D]river to [G]pray$chordpro$))
+  on conflict do nothing;
 
 insert into song_versions (id, song_id, name, number, chart_file_id, base_key, base_tempo,
                            duration_seconds, is_ready, owner_id, created_by) values
@@ -353,7 +379,8 @@ insert into song_versions (id, song_id, name, number, chart_file_id, base_key, b
    '10000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001'),
   ('72000000-0000-0000-0000-000000000008', '20000000-0000-0000-0000-000000000008', 'Original', 1,
    '71000000-0000-0000-0000-000000000008', 'G', 88, 150, true,
-   '10000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001');
+   '10000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001')
+  on conflict do nothing;
 
 insert into public_songs (id, song_id, contributor_id, license, license_confirmed, status) values
   ('73000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000004',
@@ -365,4 +392,5 @@ insert into public_songs (id, song_id, contributor_id, license, license_confirme
   ('73000000-0000-0000-0000-000000000007', '20000000-0000-0000-0000-000000000007',
    '10000000-0000-0000-0000-000000000001', 'public-domain', true, 'live'),
   ('73000000-0000-0000-0000-000000000008', '20000000-0000-0000-0000-000000000008',
-   '10000000-0000-0000-0000-000000000001', 'CC-BY-4.0', true, 'live');
+   '10000000-0000-0000-0000-000000000001', 'CC-BY-4.0', true, 'live')
+  on conflict do nothing;
