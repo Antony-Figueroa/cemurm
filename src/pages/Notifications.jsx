@@ -9,8 +9,11 @@
 // notificationTarget (deep-link navigations are fully exercised in PR#4/PR#5
 // tasks); invitation action buttons are PR#4 task 4.4 (View/Decline/Accept on
 // invite/bandmate-accepted/bandmate-declined rows — dismissal = read, never
-// delete); comment/mention rows are PR#5 task 5.3 — deliberately out of this
-// slice.
+// delete); comment/mention rows (PR#5 task 5.3) need no per-row code — the
+// 0009 trigger bakes "{Actor} commented on {Song}" / "@{username} mentioned
+// you in {Song}" titles and notificationTarget (2.2) routes the tap to
+// /songs/:songId?anchor=<section>&cid=<comment_id> (5.2 deep-link target);
+// exercised by the PR#5 two-identity comment walk.
 
 /* eslint-disable react/prop-types */
 import { useMemo, useState } from 'react'
