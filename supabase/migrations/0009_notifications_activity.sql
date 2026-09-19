@@ -289,3 +289,12 @@ create trigger shared_comments_insert_notify
   after insert on public.shared_comments
   for each row execute function public.notify_comment_activity();
 
+-- ══════════════════════ 4. REALTIME PUBLICATION + REPLICA IDENTITY (task 1.4) ══════════════════════
+-- postgres_changes with the non-PK user_id filter requires replica identity
+-- FULL on the table (row-level-security delta; 0006 publication precedent —
+-- every published table is RLS-enabled; notifications already is, via the
+-- 0002 DO-loop). NO notification_preferences policy and NO client INSERT/
+-- DELETE grants on notifications — the 0002 locks stay verbatim (select +
+-- update(read_at) only, 0002 lines 469-470; task 1.5 (i) asserts the lock).
+alter publication supabase_realtime add table public.notifications;
+alter table public.notifications replica identity full;
