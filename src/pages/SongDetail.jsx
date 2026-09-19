@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useSongs } from '../hooks/useSongs.js'
 import { usePreferences } from '../hooks/usePreferences.js'
 import { useAuth } from '../hooks/useAuth.jsx'
@@ -42,7 +42,7 @@ function TransitionLine({ t }) {
 // default (spec R7). Body/actions/mine are derived from the row; anchors jump
 // to the section (spec R2). Personal annotations never appear here — the
 // renderer overlays those separately, so the two surfaces stay apart.
-function CommentCard({ comment, userId, isRoot, onReply, onResolve, onDelete, onSaveEdit, onJump }) {
+function CommentCard({ comment, userId, isRoot, onReply, onResolve, onDelete, onSaveEdit, onJump, highlightedCommentId }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
   const [saving, setSaving] = useState(false)
@@ -158,6 +158,7 @@ function CommentCard({ comment, userId, isRoot, onReply, onResolve, onDelete, on
               onDelete={onDelete}
               onSaveEdit={onSaveEdit}
               onJump={onJump}
+              highlightedCommentId={highlightedCommentId}
             />
           ))}
         </ul>
@@ -168,7 +169,7 @@ function CommentCard({ comment, userId, isRoot, onReply, onResolve, onDelete, on
   // Resolved roots collapse by default; expanding shows the thread under it.
   if (isRoot && comment.resolved) {
     return (
-      <li>
+      <li data-comment-id={comment.id}>
         <details className="rounded-md bg-cem-surface px-3 py-2" open={false}>
           <summary className="cursor-pointer text-xs font-medium text-cem-secondary">
             Resolved · {author}: {comment.body.slice(0, 80)}{comment.body.length > 80 ? '…' : ''}
@@ -179,7 +180,10 @@ function CommentCard({ comment, userId, isRoot, onReply, onResolve, onDelete, on
     )
   }
   return (
-    <li className={isRoot ? 'rounded-md bg-cem-surface px-3 py-2' : 'px-2 py-1'}>
+    <li
+      data-comment-id={comment.id}
+      className={`${isRoot ? 'rounded-md bg-cem-surface px-3 py-2' : 'px-2 py-1'}${highlightedCommentId === comment.id ? ' bg-cem-amber/10' : ''}`}
+    >
       {inner}
     </li>
   )
@@ -207,6 +211,11 @@ export default function SongDetail() {
   const [commentError, setCommentError] = useState('')
   const [sending, setSending] = useState(false)
   const [highlightSection, setHighlightSection] = useState(null)
+  const [highlightedCommentId, setHighlightedCommentId] = useState(null)
+  const lastHandledDeepLink = useRef(null)
+  const [searchParams] = useSearchParams()
+  const anchorParam = searchParams.get('anchor')
+  const cidParam = searchParams.get('cid')
 
   useEffect(() => {
     let cancelled = false
@@ -321,14 +330,39 @@ export default function SongDetail() {
   }
 
   /** Jump to the anchored section (spec R2) with a brief highlight. */
-  function jumpToComment(anchor) {
+  const jumpToComment = useCallback((anchor) => {
     if (!anchor?.section) return
     document.getElementById(sectionAnchorId(anchor.section))?.scrollIntoView({ behavior: 'smooth', block: 'center' })
     setHighlightSection(anchor.section)
     window.setTimeout(() => {
       setHighlightSection((current) => (current === anchor.section ? null : current))
     }, 2500)
-  }
+  }, [])
+
+  // 5.2 deep-link target (Feed6, S11/S12): a comment/mention notification
+  // lands here as /songs/:songId?anchor=<section>&cid=<comment_id>. Once the
+  // chart and that comment's row are in the DOM: jump to the anchored section,
+  // bring the comments panel into view, and flash a highlight on the comment
+  // row (sectionAnchorId precedent). One-shot per {anchor, cid} so unrelated
+  // re-renders don't re-trigger the scroll.
+  useEffect(() => {
+    if (!anchorParam || !cidParam || !parsed || !commentTree.length) return undefined
+    const found = commentTree.some((root) => (
+      root.id === cidParam || root.replies.some((reply) => reply.id === cidParam)
+    ))
+    if (!found) return undefined
+    if (lastHandledDeepLink.current === `${anchorParam}:${cidParam}`) return undefined
+    jumpToComment({ section: anchorParam, index: 0 })
+    document.getElementById('comments-panel')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    const rowEl = document.querySelector(`[data-comment-id="${cidParam}"]`)
+    if (rowEl) rowEl.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    setHighlightedCommentId(cidParam)
+    lastHandledDeepLink.current = `${anchorParam}:${cidParam}`
+    const timer = window.setTimeout(() => {
+      setHighlightedCommentId((current) => (current === cidParam ? null : current))
+    }, 2500)
+    return () => window.clearTimeout(timer)
+  }, [anchorParam, cidParam, parsed, commentTree, jumpToComment])
 
   function startReply(comment) {
     setReplyingTo(comment)
@@ -658,6 +692,7 @@ export default function SongDetail() {
                 onDelete={handleDelete}
                 onSaveEdit={saveEdit}
                 onJump={jumpToComment}
+                highlightedCommentId={highlightedCommentId}
               />
             ))}
           </ul>
