@@ -39,7 +39,11 @@ export function useNotifications() {
 
   const refresh = useCallback(async () => {
     if (!user) return
-    setLoading(true)
+    // 4.5 silent-refetch: only the first load (empty rows) flashes "Loading…";
+    // echo-convergence / online / drain / focus refetches with rows already in
+    // hand stay quiet — the page gating is `loading && rows.length === 0`, so
+    // no flicker when a second instance's markRead echo converges this one.
+    setLoading(rowsRef.current.length === 0)
     try {
       const [fetchedRows, fetchedUnread] = await Promise.all([
         notifications.listNotifications(user.id),
