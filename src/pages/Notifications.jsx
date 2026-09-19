@@ -50,7 +50,7 @@ function EmptyState({ text }) {
 
 export default function Notifications() {
   const { user } = useAuth()
-  const { rows, unreadCount, loading, online, markRead, markAllRead, refresh } = useNotifications()
+  const { rows, unreadCount, loading, online, summary, consumeSummary, markRead, markAllRead, refresh } = useNotifications()
   const [activeTab, setActiveTab] = useState('all')
   const [actionError, setActionError] = useState('')
   const navigate = useNavigate()
@@ -116,6 +116,26 @@ export default function Notifications() {
         <p className="mt-3 rounded-md bg-cem-rose/10 px-3 py-2 text-xs text-cem-rose" role="alert">
           {actionError}
         </p>
+      )}
+
+      {summary && (
+        <div className="mt-3 flex items-start justify-between gap-3 rounded-md border border-cem-amber/40 bg-cem-amber/10 px-3 py-2">
+          <div>
+            <p className="text-sm font-medium text-cem-text">
+              You have {summary.count} pending notification{summary.count === 1 ? '' : 's'}
+            </p>
+            {summary.byCategory.length > 0 && (
+              <p className="mt-1 text-xs text-cem-secondary">
+                {summary.byCategory
+                  .map((g) => `${g.count} ${CATEGORY_LABELS[g.category].toLowerCase()}`)
+                  .join(' · ')}
+              </p>
+            )}
+          </div>
+          <button type="button" onClick={consumeSummary} className={primaryBtn}>
+            Got it
+          </button>
+        </div>
       )}
 
       <div className="mt-4 flex flex-wrap gap-2">
