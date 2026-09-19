@@ -141,3 +141,53 @@ create trigger setlist_items_reorder_notify
   referencing old table as old_rows new table as new_rows
   for each statement execute function public.notify_setlist_reordered();
 
+-- ══════════════════════ 2. SONG-ADDED TRIGGER (task 1.2) ══════════════════════
+-- AFTER INSERT → owner + accepted collaborators of new.setlist_id (deduped,
+-- minus actor via notify_user). Body appends "Key: {base_key} · {base_tempo}
+-- BPM" when resolvable via song_versions — prefer the item's version_id,
+-- else the latest version by created_at desc (songs.js client default
+-- precedent, read-only); silently omitted otherwise (body NULL).
+create function public.notify_setlist_item_added() returns trigger
+  language plpgsql security definer set search_path = '' as $$
+declare
+  v_setlist_name text;
+  v_song_title   text;
+  v_key          text;
+  v_tempo        integer;
+  v_body         text;
+begin
+  v_setlist_name := (select s.name from public.setlists s where s.id = new.setlist_id);
+  v_song_title   := (select g.title from public.songs g where g.id = new.song_id);
+  select v.base_key, v.base_tempo into v_key, v_tempo
+  from public.song_versions v
+  where (new.version_id is not null and v.id = new.version_id)
+     or (new.version_id is null and v.song_id = new.song_id)
+  order by v.created_at desc
+  limit 1;
+  -- Format the body only when BOTH halves resolve (the literal format is
+  -- "Key: {base_key} · {base_tempo} BPM"; a partial version row omits silently).
+  if v_key is not null and v_tempo is not null then
+    v_body := 'Key: ' || v_key || ' · ' || v_tempo || ' BPM';
+  end if;
+  perform public.notify_user(
+    r.user_id, 'setlist',
+    public.notifier_actor_name() || ' added ' || coalesce(v_song_title, 'a song') ||
+      ' to ' || coalesce(v_setlist_name, 'a setlist'),
+    v_body,
+    jsonb_build_object('action', 'song-added', 'setlist_id', new.setlist_id,
+                       'song_id', new.song_id))
+  from (
+    select s.owner_id as user_id from public.setlists s where s.id = new.setlist_id
+    union
+    select c.user_id from public.setlist_collaborators c
+    where c.setlist_id = new.setlist_id and c.accepted_at is not null
+  ) r;
+  return null;
+end $$;
+
+revoke all on function public.notify_setlist_item_added() from public, anon, authenticated;
+
+create trigger setlist_items_insert_notify
+  after insert on public.setlist_items
+  for each row execute function public.notify_setlist_item_added();
+
