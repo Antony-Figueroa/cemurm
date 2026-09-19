@@ -79,21 +79,27 @@ Hito 4 (Basic Community) starts here: no community surface exists yet. This slic
 - [x] T3 — `publicLibrary.js` data layer
 - [x] T4 — `usePublicLibrary.js` hook
 - [x] T5 — `/library` page + card + nav
-- [ ] T6 — verification (lint, build, local smoke)
+- [x] T6 — verification (lint, build, local Supabase RPC smoke; browser click-through pending desktop)
 
 ## Verification evidence
 
 | Task | Outcome | Check | Commit |
 |------|---------|-------|--------|
 | T1 | success | `supabase db reset` — migration 0010 applied clean (0001→0010) | 06f7fc2 |
-| T2 | success | `supabase db reset` — seed.sql loaded (5 public-domain + 1 CC-BY-4.0, no UUID collisions) | d503f5f |
+| T2 | success | `supabase db reset` — seed.sql loaded (4 public-domain + 1 CC-BY-4.0, no UUID collisions) | d503f5f |
 | T3 | success | `node search.js demo` OK, `pnpm lint` 0 warnings, `pnpm build` passed | 61c78a1 |
 | T4 | success | `pnpm lint` 0 warnings, `pnpm build` passed | e1a687d |
 | T5 | success | `pnpm lint` 0 warnings, `pnpm build` passed | b84de79 |
-| T6 | — | — | — |
+| T6 | success | RPC smoke (db layer, ~runtime-equivalent to the client call): catalog as authenticated = 5 live entries; copy via wrapper → new song owned by caller, chart copied, version 'Original' #1, key/tempo/duration carried, is_ready t; original untouched (1 chart/1 version, no linkage); bogus id → `Song not found.`; anon denied; attribution as user …0002 = 'Demo User'. `pnpm lint` 0 warnings, `pnpm build` OK. Browser click-through pending a connected desktop browser | 050f1a0 (fix) |
 
 - Engram mirror: **pending** — Engram MCP unavailable in this session (server restarted mid-work); resync `mem_save` to topic `odd/hito4-s41-public-library/tasks` when available.
 
 ## Next step
 
 T1 + T2 (backend batch) → T3+T4 (data+state) → T5 (UI) → T6 (verification). Then slice close: review PR on `feat/hito4-s41-public-library`.
+
+## Slice findings (smoke)
+
+- **Fix-forward 0011**: 0010's `private.copy_public_song_to_repertoire` was unreachable from `supabase.rpc` (PostgREST exposes only `public`; config.toml). Thin public SECURITY DEFINER wrapper + authenticated-only grant (`050f1a0`). Verified end-to-end: copy creates an editable `songs`+`chart_files`+`song_versions` triplet owned by the caller, original public entry untouched, no `linked_copies`.
+- **Seed count correction**: the seed corpus is **5 entries (4 public-domain + 1 CC-BY-4.0)**, not 6. Families 2000/7100/7200/7300-…004–008.
+- **Browser click-through** (dev server UI) is the only remaining smoke gap: the desktop browser is not connected in this runtime; the DB-layer smoke covers the same RPC/RLS path the client uses.
