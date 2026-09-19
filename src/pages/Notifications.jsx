@@ -6,15 +6,19 @@
 // optimistic markRead/markAllRead — the realtime echo converges the badge);
 // empty/offline states. Events and System tabs render empty states until the
 // Hito 4 emitters exist (frozen Feed5 contract). Tap routes through
-// notificationTarget (deep-link navigations are fully exercised in PR#3/PR#4
-// tasks); invitation action buttons are PR#3 task 3.4, comment/mention rows
-// are PR#4 task 4.3 — deliberately out of this lean slice.
+// notificationTarget (deep-link navigations are fully exercised in PR#4/PR#5
+// tasks); invitation action buttons are PR#4 task 4.4 (View/Decline/Accept on
+// invite/bandmate-accepted/bandmate-declined rows — dismissal = read, never
+// delete); comment/mention rows are PR#5 task 5.3 — deliberately out of this
+// slice.
 
 /* eslint-disable react/prop-types */
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useNotifications } from '../hooks/useNotifications.js'
+import { useAuth } from '../hooks/useAuth.jsx'
 import { CATEGORY_ORDER, groupByCategory } from '../lib/notifications.js'
+import { acceptInvite, declineInvite } from '../lib/bandmates.js'
 import { relativeTime } from '../utils/relativeTime.js'
 
 const CATEGORY_LABELS = {
@@ -25,6 +29,13 @@ const CATEGORY_LABELS = {
   system: 'System',
 }
 const TABS = ['all', ...CATEGORY_ORDER]
+
+// Invitation-row action contract (I1–I3): action buttons render only on
+// invite / bandmate-accepted / bandmate-declined rows. Decline/Accept apply
+// only to the invitee's own pending invite (action 'invite'); the inviter-side
+// accepted/declined rows are informational (View only) — the invitation is
+// already resolved, so responding again would fail in respondToInvite.
+const INVITATION_ACTIONS = ['invite', 'bandmate-accepted', 'bandmate-declined']
 
 const tabClass = (active) =>
   active
@@ -38,8 +49,10 @@ function EmptyState({ text }) {
 }
 
 export default function Notifications() {
-  const { rows, unreadCount, loading, online, markRead, markAllRead } = useNotifications()
+  const { user } = useAuth()
+  const { rows, unreadCount, loading, online, markRead, markAllRead, refresh } = useNotifications()
   const [activeTab, setActiveTab] = useState('all')
+  const [actionError, setActionError] = useState('')
   const navigate = useNavigate()
 
   const visibleRows = useMemo(
@@ -58,6 +71,30 @@ export default function Notifications() {
     navigate(params ? `${target.route}?${params}` : target.route)
   }
 
+  // Invitation action contract (I1–I3): bandmateId is the INVITER's id — the
+  // `user_id` of the bandmate_links row — which normalizeNotification already
+  // promotes as row.actorId (the authenticated INSERT actor). Decline keeps
+  // the row (dismissal = read; notifications has no client DELETE grant) and
+  // Accept navigates to /bandmates. Connectivity failures fall through to the
+  // existing offline respondInvite queue inside acceptInvite/declineInvite.
+  async function handleInviteAction(row, action) {
+    if (!user) return
+    setActionError('')
+    try {
+      if (action === 'accept') {
+        await acceptInvite(user.id, row.actorId)
+        if (!row.read) markRead(row.id)
+        navigate('/bandmates')
+      } else {
+        await declineInvite(user.id, row.actorId)
+        if (!row.read) markRead(row.id)
+      }
+    } catch (err) {
+      setActionError(err.message || 'Could not update the invitation.')
+      refresh()
+    }
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between">
@@ -72,6 +109,12 @@ export default function Notifications() {
       {!online && (
         <p className="mt-3 rounded-md bg-cem-elevated/50 px-3 py-2 text-xs text-cem-secondary">
           You&apos;re offline — showing cached notifications.
+        </p>
+      )}
+
+      {actionError && (
+        <p className="mt-3 rounded-md bg-cem-rose/10 px-3 py-2 text-xs text-cem-rose" role="alert">
+          {actionError}
         </p>
       )}
 
@@ -150,6 +193,35 @@ export default function Notifications() {
                       </button>
                     )}
                   </div>
+                  {INVITATION_ACTIONS.includes(row.action) && (
+                    <div className="flex gap-2 border-t border-cem-elevated/60 px-4 py-2">
+                      <button
+                        type="button"
+                        onClick={() => handleRowTap(row)}
+                        className="rounded border border-cem-elevated px-2.5 py-1 text-xs font-medium text-cem-text hover:bg-cem-elevated"
+                      >
+                        View
+                      </button>
+                      {row.action === 'invite' && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => handleInviteAction(row, 'decline')}
+                            className="rounded border border-cem-rose/40 px-2.5 py-1 text-xs font-medium text-cem-rose hover:bg-cem-rose/10"
+                          >
+                            Decline
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleInviteAction(row, 'accept')}
+                            className="rounded-md bg-cem-amber px-2.5 py-1 text-xs font-medium text-cem-base hover:bg-cem-amber/90"
+                          >
+                            Accept
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>
