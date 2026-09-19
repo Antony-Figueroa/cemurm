@@ -122,4 +122,86 @@ revoke all on function public.notify_bandmate_responded() from public, anon, aut
 
 create trigger bandmate_links_update_notify
   after update on public.bandmate_links
-  for each row execute function public.notify_bandmate_responded();
+  for each row execute function public.notify_bandmate_responded();-- ══════════════════════ 3. SETLIST COLLABORATORS — INVITE / PERMISSION / REMOVAL (tasks 0.3-0.4) ══════════════════════
+-- (a) INSERT → the invitee ("invited you to edit"), skipping when the invitee
+-- is the CURRENT owner at statement time — the transfer RPC re-inserts the
+-- former owner BEFORE the ownership flip, so the immediate check identifies
+-- the transfer re-insert (Decision 4: immediate, NOT deferred).
+create function public.notify_collaborator_added() returns trigger
+  language plpgsql security definer set search_path = '' as $$
+declare
+  v_owner uuid;
+begin
+  select s.owner_id into v_owner from public.setlists s where s.id = new.setlist_id;
+  if v_owner is not null and new.user_id = v_owner then
+    return null; -- transfer re-insert: former owner re-added inside the RPC transaction
+  end if;
+  perform public.notify_user(
+    new.user_id, 'setlist',
+    public.notifier_actor_name() || ' invited you to edit ' ||
+      coalesce((select s.name from public.setlists s where s.id = new.setlist_id), ''),
+    null,
+    jsonb_build_object('action', 'shared', 'setlist_id', new.setlist_id));
+  return null;
+end $$;
+
+revoke all on function public.notify_collaborator_added() from public, anon, authenticated;
+
+create trigger setlist_collaborators_insert_notify
+  after insert on public.setlist_collaborators
+  for each row execute function public.notify_collaborator_added();
+
+-- (b) UPDATE where can_edit flips → the affected member ("permissions ...
+-- changed to View Only / to Edit"). Self-flips are excluded by notify_user's
+-- self-suppression (the 0006 self-accept wrinkle never reaches this trigger).
+create function public.notify_collaborator_permission() returns trigger
+  language plpgsql security definer set search_path = '' as $$
+declare
+  v_name text := (select s.name from public.setlists s where s.id = new.setlist_id);
+begin
+  if old.can_edit is distinct from new.can_edit then
+    perform public.notify_user(
+      new.user_id, 'setlist',
+      'Your permissions on ' || coalesce(v_name, '') || ' have changed to ' ||
+        case when new.can_edit then 'Edit' else 'View Only' end,
+      null,
+      jsonb_build_object('action', 'permission', 'setlist_id', new.setlist_id));
+  end if;
+  return null;
+end $$;
+
+revoke all on function public.notify_collaborator_permission() from public, anon, authenticated;
+
+create trigger setlist_collaborators_update_notify
+  after update on public.setlist_collaborators
+  for each row execute function public.notify_collaborator_permission();
+
+-- (c) DEFERRED DELETE → the removed member, evaluated at COMMIT: emits only
+-- when the setlist still exists (setlist cascade-delete removed the row with
+-- its setlist → skip) AND the deleted user is not the commit-time owner
+-- (ownership transfer → the deleted user IS the new owner → skip, Decision 3).
+-- Title is the spec literal "You have been removed from {Setlist}" with NO
+-- actor prefix (Resolved Decision 1, supersedes the design line 285 draft);
+-- body NULL. "No further notifications" holds by row absence, not filter logic.
+create function public.notify_removed_collaborator() returns trigger
+  language plpgsql security definer set search_path = '' as $$
+declare
+  v_setlist public.setlists%rowtype;
+begin
+  select * into v_setlist from public.setlists s where s.id = old.setlist_id;
+  if v_setlist.id is not null and old.user_id <> v_setlist.owner_id then
+    perform public.notify_user(
+      old.user_id, 'setlist',
+      'You have been removed from ' || coalesce(v_setlist.name, ''),
+      null,
+      jsonb_build_object('action', 'removed', 'setlist_id', old.setlist_id));
+  end if;
+  return null;
+end $$;
+
+revoke all on function public.notify_removed_collaborator() from public, anon, authenticated;
+
+create constraint trigger setlist_collaborators_delete_notify
+  after delete on public.setlist_collaborators
+  deferrable initially deferred
+  for each row execute function public.notify_removed_collaborator();
