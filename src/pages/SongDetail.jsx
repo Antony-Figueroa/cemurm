@@ -4,6 +4,7 @@ import { useSongs } from '../hooks/useSongs.js'
 import { usePreferences } from '../hooks/usePreferences.js'
 import { useAuth } from '../hooks/useAuth.jsx'
 import { useComments } from '../hooks/useComments.js'
+import { usePublicLibrary } from '../hooks/usePublicLibrary.js'
 import { parseChordPro } from '../lib/chordpro/parser.js'
 import { capoLabel, initialSemitones, transposeKey, transposeParsed } from '../lib/transpose.js'
 import { listAnnotations } from '../lib/annotations.js'
@@ -205,6 +206,13 @@ export default function SongDetail() {
   const [versionId, setVersionId] = useState('')
   const [semitones, setSemitones] = useState(0)
   const comments = useComments(id)
+  // S4.2 T2: catalog state backs the contribution actions + published badge.
+  const library = usePublicLibrary()
+  const [publishOpen, setPublishOpen] = useState(false)
+  const [publishLicense, setPublishLicense] = useState('CC-BY-4.0')
+  const [publishRights, setPublishRights] = useState(false)
+  const [publishError, setPublishError] = useState('')
+  const [contributionError, setContributionError] = useState('')
   const [commentDraft, setCommentDraft] = useState('')
   const [commentAnchor, setCommentAnchor] = useState(null)
   const [replyingTo, setReplyingTo] = useState(null)
@@ -245,6 +253,13 @@ export default function SongDetail() {
   }, [user?.id, id])
 
   const versions = useMemo(() => song?.versions || [], [song?.versions])
+
+  // S4.2 T2: my live catalog entry for this song (the view hides withdrawn
+  // entries, so the action flips back to Contribute after a withdraw).
+  const myEntry = useMemo(
+    () => library.entries.find((entry) => entry.song_id === id) || null,
+    [library.entries, id],
+  )
 
   // 3.4: the band-visible thread for the OPEN version — buildCommentTree
   // filters other-version pins (version_id isolation) and deleted rows, and
@@ -318,6 +333,41 @@ export default function SongDetail() {
   async function handleReactivate() {
     const reactivated = await reactivateSong(id)
     setSong(reactivated)
+  }
+
+  // ── S4.2 T2 contribution actions ─────────────────────────────────────────
+  // The RPCs own the hard gates (license confirmation, ownership); this page
+  // only drives the UI. Publish errors surface inside the modal; withdraw
+  // errors inline under the action row.
+
+  function openPublish() {
+    setPublishLicense('CC-BY-4.0')
+    setPublishRights(false)
+    setPublishError('')
+    setPublishOpen(true)
+  }
+
+  async function handlePublish(e) {
+    e.preventDefault()
+    if (!publishRights) return
+    setPublishError('')
+    try {
+      await library.publishEntry(id, publishLicense)
+      setPublishOpen(false)
+    } catch (err) {
+      setPublishError(err.message)
+    }
+  }
+
+  async function handleWithdraw() {
+    if (!myEntry) return
+    if (!window.confirm(`Withdraw "${song.title}" from the public library? Copies others already added stay theirs.`)) return
+    setContributionError('')
+    try {
+      await library.withdrawEntry(myEntry.id)
+    } catch (err) {
+      setContributionError(err.message)
+    }
   }
 
   // ── 3.4 shared-comments panel ────────────────────────────────────────────
@@ -457,6 +507,11 @@ export default function SongDetail() {
             {song.status === 'draft' && (
               <span className="text-xs text-cem-amber">{computeReadiness(song).reason}</span>
             )}
+            {myEntry && (
+              <span className="rounded-full bg-cem-amber/10 px-2 py-0.5 text-xs font-medium text-cem-amber">
+                In public library · {myEntry.license}
+              </span>
+            )}
           </div>
         </div>
         <div className="flex gap-2">
@@ -477,6 +532,24 @@ export default function SongDetail() {
               </button>
             </>
           )}
+          {!isRetired && !editing && (myEntry ? (
+            <button
+              type="button"
+              onClick={handleWithdraw}
+              disabled={library.withdrawingEntryId === myEntry.id}
+              className="rounded-md border border-cem-elevated px-3 py-1.5 text-sm font-medium text-cem-secondary hover:bg-cem-elevated disabled:opacity-50"
+            >
+              {library.withdrawingEntryId === myEntry.id ? 'Withdrawing…' : 'Withdraw from library'}
+            </button>
+          ) : (song.userId === user?.id && song.body && (
+            <button
+              type="button"
+              onClick={openPublish}
+              className="rounded-md border border-cem-amber/40 px-3 py-1.5 text-sm font-medium text-cem-amber hover:bg-cem-amber/10"
+            >
+              Contribute to library
+            </button>
+          )))}
           {isRetired ? (
             <button
               type="button"
@@ -496,6 +569,10 @@ export default function SongDetail() {
           )}
         </div>
       </div>
+
+      {contributionError && (
+        <p className="mt-2 text-sm text-cem-rose" role="alert">{contributionError}</p>
+      )}
 
       {versions.length > 1 && (
         <div className="mt-3 flex items-center gap-2">
@@ -698,6 +775,69 @@ export default function SongDetail() {
           </ul>
         )}
       </div>
+
+      {publishOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/85 p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setPublishOpen(false) }}
+        >
+          <form
+            onSubmit={handlePublish}
+            className="mt-8 w-full max-w-md rounded-lg border border-cem-elevated bg-cem-surface p-4 text-cem-text shadow-xl"
+          >
+            <h2 className="text-lg font-semibold text-cem-text">Contribute to public library</h2>
+            <p className="mt-1 text-sm text-cem-secondary">
+              This song becomes a public entry with the license you choose, attributed to you as the
+              contributor.
+            </p>
+
+            <label htmlFor="publish-license" className="mt-4 block text-sm font-medium text-cem-text">
+              License
+            </label>
+            <select
+              id="publish-license"
+              value={publishLicense}
+              onChange={(e) => setPublishLicense(e.target.value)}
+              className="mt-1 w-full rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text focus:border-cem-amber focus:outline-none focus:ring-1 focus:ring-cem-amber"
+            >
+              <option value="public-domain">Public domain</option>
+              <option value="CC-BY-4.0">CC BY 4.0</option>
+              <option value="proprietary">Proprietary</option>
+            </select>
+
+            <label className="mt-4 flex items-start gap-2 text-sm text-cem-text">
+              <input
+                type="checkbox"
+                checked={publishRights}
+                onChange={(e) => setPublishRights(e.target.checked)}
+                className="mt-0.5"
+              />
+              I confirm I hold the right to share this chart under the chosen license.
+            </label>
+
+            {publishError && (
+              <p className="mt-3 text-sm text-cem-rose" role="alert">{publishError}</p>
+            )}
+
+            <div className="mt-6 flex gap-2">
+              <button
+                type="submit"
+                disabled={!publishRights || library.publishingSongId === id}
+                className="rounded-md bg-cem-amber px-4 py-2 text-sm font-medium text-cem-base hover:bg-cem-amber/90 disabled:opacity-60"
+              >
+                {library.publishingSongId === id ? 'Publishing…' : 'Publish'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setPublishOpen(false)}
+                className="rounded-md border border-cem-elevated px-4 py-2 text-sm font-medium text-cem-text hover:bg-cem-elevated"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   )
 }
