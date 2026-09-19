@@ -10,8 +10,8 @@
 -- setlist_collaborators ×3 incl. a DEFERRABLE INITIALLY DEFERRED DELETE) plus 1
 -- security-definer write RPC (transfer_setlist_ownership), and the two shared
 -- helper functions that 0009 consumes. Dependency rule: 0009 applies AFTER 0008
--- (helpers defined first) — no forward cross-references; the 0.6 dry-run asserts
--- to_regprocedure(…) IS NULL for every 0009 object while only 0008 is applied.
+-- (helpers defined first) — no forward cross-references (verified statically:
+-- 0008 references none of 0009's objects).
 --
 -- Contract: every notification row is inserted in the SAME transaction as its
 -- event (AFTER triggers see the committed row); recipients are computed from
@@ -22,7 +22,7 @@
 -- suppression lives in ONE place (notify_user). notifications keeps its 0002
 -- grants verbatim (select + update(read_at) only, 0002 lines 469-470) — NO
 -- client INSERT/DELETE (42501 stays); notification_preferences stays deny-by-
--- default with zero policies (0.6(i) asserts both).
+-- default with zero policies (the PR#0 core walk, assertion i2, asserts both).
 --
 -- Precedents: 0006 trigger contract — security definer set search_path = '',
 -- fully-qualified public. refs, trigger-only revoke from public/anon/
