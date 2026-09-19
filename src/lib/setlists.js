@@ -474,26 +474,23 @@ export async function moveSongInSetlist(userId, setlistId, fromIndex, toIndex) {
       const [moved] = reordered.splice(from, 1)
       reordered.splice(to, 0, moved)
 
-      // Bump all to temporary positions first, then set finals.
-      // ponytail: sequential updates, no transaction — the two-phase bump
-      // avoids UNIQUE(setlist_id, position) collisions; add a Postgres RPC
-      // when contention matters.
-      for (let i = 0; i < reordered.length; i++) {
-        const { error } = await supabase
-          .from('setlist_items')
-          .update({ position: 10000 + i })
-          .eq('setlist_id', setlistId)
-          .eq('song_id', reordered[i])
-        if (error) throw error
-      }
-      for (let i = 0; i < reordered.length; i++) {
-        const { error } = await supabase
-          .from('setlist_items')
-          .update({ position: i })
-          .eq('setlist_id', setlistId)
-          .eq('song_id', reordered[i])
-        if (error) throw error
-      }
+      // 4.1 (RPC swap, S15): the reorder now runs server-side in ONE
+      // transaction — move_setlist_items (0009) does the two-phase bump
+      // (positions 10000+i, REQUIRED by UNIQUE(setlist_id, position)) then a
+      // single multi-row final pass, and sets the transaction-local GUC
+      // cemurm.reorder_moved_song_id. The statement-level reorder trigger
+      // fires exactly ONCE on that final pass — closing the interim-window
+      // N-row emissions (one per-song UPDATE statement) — and names the moved
+      // song from the GUC. Offline replay drains through this same RPC
+      // (WRITE_OPS → moveSongInSetlist): idempotent, positions recomputed
+      // from the ordered ids.
+      const { error } = await supabase
+        .rpc('move_setlist_items', {
+          p_setlist_id: setlistId,
+          p_ordered_song_ids: reordered,
+          p_moved_song_id: moved,
+        })
+      if (error) throw error
 
       const freshSetlist = await fetchSetlistById(userId, setlistId)
       invalidateSetlists(userId, [setlistId])
