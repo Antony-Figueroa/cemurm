@@ -34,13 +34,13 @@ The system MUST resolve a unique user ID to a profile and MUST allow inviting th
 
 ### Requirement: Invitation acceptance and revocation
 
-An accepted `bandmate_links` row MUST become active, and INVITEES MUST sync shared setlists. A pending invitation to a removed bandmate MUST NOT be acceptable.
+An accepted `bandmate_links` row MUST become active, and INVITEES MUST sync shared setlists. A pending invitation to a removed bandmate MUST NOT be acceptable. (Previously: acceptance created no shared-setlist fan-out beyond the local row; the notification to the inviter clause is now IN — a `notifications` row is emitted to the inviter per change-1 bandmates S5 and Sys1.)
 
 #### Scenario: Bandmate accepts a pending invitation
 
 - GIVEN I invited "Lucia" with status "pending"
 - WHEN Lucia accepts
-- THEN her status becomes "active" and shared setlists sync to her device
+- THEN her status becomes "active", shared setlists sync to her device, and I receive a notification: "Lucia accepted your invitation"
 
 #### Scenario: Removing a bandmate cancels their pending invitation
 
@@ -50,14 +50,13 @@ An accepted `bandmate_links` row MUST become active, and INVITEES MUST sync shar
 
 ### Requirement: Invitation decline
 
-The system MUST record a declined invitation and MUST surface the decline to the inviter.
+The system MUST record a declined invitation and MUST surface the decline to the inviter, including via a `notifications` row emitted to the inviter (change-1 bandmates S5 — now IN).
 
 #### Scenario: Bandmate declines a pending invitation
 
 - GIVEN I invited "Lucia"
 - WHEN Lucia declines the invitation
-- THEN her status becomes "declined" and the decline surfaces to me in the declined-outgoing list section (the "notification that Lucia declined" clause defers to change 2 — no notification system ships in this change; see Deferred Scenarios, verify Finding 4)
-
+- THEN her status becomes "declined", the decline surfaces to me in the declined-outgoing list, and I receive a notification: "Lucia declined your invitation"
 ### Requirement: Invitation validation
 
 The system MUST reject self-invites and MUST disable inviting an existing active bandmate.
