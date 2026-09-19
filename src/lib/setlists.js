@@ -647,11 +647,13 @@ export async function removeCollaborator(userId, setlistId, collaboratorId) {
 /**
  * Transfer ownership to an accepted collaborator (setlists R9): the new
  * owner gains ownership controls, the former owner keeps edit access.
- * No transaction spans PostgREST calls, so the steps are ordered so the
- * session never loses its update right: (1) drop the new owner's collaborator
- * row, (2) add the former owner as an accepted can_edit collaborator, and
- * only then (3) flip setlists.owner_id. A mid-failure leaves the old owner
- * still owning — recoverable by re-running.
+ * The three ops (drop the new owner's collaborator row → re-insert the
+ * former owner as an accepted can_edit collaborator → flip setlists.owner_id)
+ * now run inside transfer_setlist_ownership (0008) as ONE transaction. The
+ * DEFERRABLE removal trigger evaluates at commit — owner_id has already
+ * flipped — so a transfer emits zero 'removed' rows. The RPC re-asserts
+ * ownership + guardTransfer server-side with the same USER_ERRORS messages;
+ * the client pre-flight guard below stays for UX.
  */
 export async function transferOwnership(userId, setlistId, newOwnerId) {
   return withErrorMapping(async () => {
@@ -672,29 +674,12 @@ export async function transferOwnership(userId, setlistId, newOwnerId) {
       const guard = guardTransfer(collabs || [], newOwnerId)
       if (guard) throw new Error(guard)
 
-      const { error: removeErr } = await supabase
-        .from('setlist_collaborators')
-        .delete()
-        .eq('setlist_id', setlistId)
-        .eq('user_id', newOwnerId)
-      if (removeErr) throw removeErr
-
-      const { error: keepErr } = await supabase
-        .from('setlist_collaborators')
-        .insert({
-          setlist_id: setlistId,
-          user_id: userId,
-          can_edit: true,
-          accepted_at: new Date().toISOString(),
-        })
-      if (keepErr) throw keepErr
-
-      const { error: flipErr } = await supabase
-        .from('setlists')
-        .update({ owner_id: newOwnerId })
-        .eq('id', setlistId)
-        .eq('owner_id', userId)
-      if (flipErr) throw flipErr
+      // 4.2 (RPC swap): the three ops run server-side in one transaction.
+      const { error } = await supabase.rpc('transfer_setlist_ownership', {
+        p_setlist_id: setlistId,
+        p_new_owner_id: newOwnerId,
+      })
+      if (error) throw error
 
       const fresh = await fetchSetlistById(userId, setlistId)
       invalidateSetlists(userId, [setlistId])
