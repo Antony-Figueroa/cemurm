@@ -74,8 +74,8 @@ Hito 4 (Basic Community) starts here: no community surface exists yet. This slic
 
 ## Progress
 
-- [ ] T1 — migration 0010 (RLS + view/RPC)
-- [ ] T2 — seed public-domain entries
+- [x] T1 — migration 0010 (RLS + view/RPC)
+- [x] T2 — seed public-domain entries
 - [ ] T3 — `publicLibrary.js` data layer
 - [ ] T4 — `usePublicLibrary.js` hook
 - [ ] T5 — `/library` page + card + nav
@@ -85,12 +85,14 @@ Hito 4 (Basic Community) starts here: no community surface exists yet. This slic
 
 | Task | Outcome | Check | Commit |
 |------|---------|-------|--------|
-| T1 | — | — | — |
-| T2 | — | — | — |
+| T1 | success | `supabase db reset` — migration 0010 applied clean (0001→0010) | 06f7fc2 |
+| T2 | success | `supabase db reset` — seed.sql loaded (5 public-domain + 1 CC-BY-4.0, no UUID collisions) | d503f5f |
 | T3 | — | — | — |
 | T4 | — | — | — |
 | T5 | — | — | — |
 | T6 | — | — | — |
+
+- Engram mirror: **pending** — Engram MCP unavailable in this session (server restarted mid-work); resync `mem_save` to topic `odd/hito4-s41-public-library/tasks` when available.
 
 ## Next step
 
