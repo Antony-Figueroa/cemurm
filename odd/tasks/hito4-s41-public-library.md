@@ -105,6 +105,18 @@ T1 + T2 (backend batch) → T3+T4 (data+state) → T5 (UI) → T6 (verification)
 - **Browser click-through** (dev server UI) is the only remaining smoke gap: the desktop browser is not connected in this runtime; the HTTP smoke covers the same login/catalog/RPC/RLS path the client uses.
 - **`.env.local` points at the HOSTED project** (`https://kspnacfcietqikbufcka.supabase.co`), not the local stack.
 
+## Seed idempotency (debt paid, 2026-09-19)
+
+The user-flagged debt ("el seed no es idempotente") is resolved. Every one of the **25 inserts** in `supabase/seed.sql` now ends with `on conflict do nothing` (no target: catches any unique violation — id PK, email, composite keys), header documents the property. Verified:
+
+1. `supabase db reset` — fresh DB: migrations 0001→0011 + seed applied clean.
+2. **Re-seed against the SAME DB** (`docker exec -i … psql -f seed.sql`) — 0 errors, the true idempotency proof.
+3. Counts stable after double-seed: users 3, profiles 3, orgs 2, songs 8, charts 5, versions 5, public_songs 5, setlists 1, setlist_collabs 2, performance_items 2 — no duplicates.
+4. Catalog view intact: 5 entries, `Demo User` attribution.
+
+Note: on a re-seed the random values (`now()`, `crypt` salts) of already-existing rows are NOT refreshed (conflicting rows are skipped) — acceptable for a deterministic dev seed. Updates to `profiles` (username/display_name) are naturally idempotent and still run.
+Commit: `4eca999`.
+
 ## Hosted deployment (2026-09-19, user-authorized option A)
 
 - **Migrations**: hosted had only **0001–0003** recorded. Applied the full pending chain **0004→0011** via `supabase db query --linked` (Management API + token; the direct DB host is IPv6-only and unroutable from this machine — `db query --linked` is the working remote path). All 8 applied clean; history recorded in `supabase_migrations.schema_migrations` (version = numeric prefix, name = slug, statements round-tripped from local DB) so future `supabase db push` sees everything applied. `migration repair --linked` does NOT use the API (still direct IPv6 connection) — manual history insert was required.
