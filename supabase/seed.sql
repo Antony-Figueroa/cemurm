@@ -163,3 +163,206 @@ insert into performance_items (id, performance_id, song_id, version_id, state, p
 
 insert into user_preferences (user_id, transpose_offset, capo, preferences) values
   ('10000000-0000-0000-0000-000000000001', 2, 1, '{}'::jsonb);
+
+-- ── public library (S4.1): public-domain corpus + one CC-BY-4.0 contribution ──
+-- Deterministic UUID families (S4.1 doc: 3–5 public-domain entries + 1 licensed
+-- entry so the license filter is testable). New per-table families, no
+-- collision with existing rows:
+--   songs:         20000000-… (continues the existing songs family, …004–…008)
+--   chart_files:   71000000-… (first chart rows ever seeded)
+--   song_versions: 72000000-… (first version rows ever seeded)
+--   public_songs:  73000000-… (first public entries ever seeded)
+-- The public_songs suffix mirrors its source song's suffix (…004 ↔ …004) so
+-- the join is obvious at a glance. Contributor = demo user …0001 for every
+-- entry; license_confirmed = true and status = 'live' so the catalog READ path
+-- (0010 RLS + view) is exercisable from seed alone. org_id/branch_id NULL =
+-- system-level songs (0001 lines 72–73, 84–85). Chart bodies are abbreviated
+-- (2 verses / verse+chorus) ChordPro with inline chords + lyric text, so every
+-- version computes is_ready = true under both the RPC's key+body contract and
+-- the full readiness.js rule (base key + chord line + lyric text).
+-- The 'CC-BY-4.0' row stands in for the community-contribution flow (S4.2),
+-- where that license is the public_songs table default (0001 line 442).
+
+insert into songs (id, org_id, branch_id, title, artist, genre, created_by) values
+  ('20000000-0000-0000-0000-000000000004', null, null, 'Amazing Grace', 'John Newton', 'hymn',
+   '10000000-0000-0000-0000-000000000001'),
+  ('20000000-0000-0000-0000-000000000005', null, null, 'Scarborough Fair', 'Traditional', 'folk',
+   '10000000-0000-0000-0000-000000000001'),
+  ('20000000-0000-0000-0000-000000000006', null, null, 'Oh! Susanna', 'Stephen Foster', 'folk',
+   '10000000-0000-0000-0000-000000000001'),
+  ('20000000-0000-0000-0000-000000000007', null, null, 'Shenandoah', 'Traditional', 'folk',
+   '10000000-0000-0000-0000-000000000001'),
+  ('20000000-0000-0000-0000-000000000008', null, null, 'Down to the River to Pray', 'Traditional', 'gospel',
+   '10000000-0000-0000-0000-000000000001');
+
+insert into chart_files (id, song_id, format, object_key, content, size_bytes) values
+  ('71000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000004', 'chordpro',
+   'seed/amazing-grace.chordpro',
+   $chordpro${title: Amazing Grace}
+{artist: John Newton}
+{key: G}
+{section: Verse 1}
+[G]Amazing [D]grace, how [G]sweet the [Em]sound
+That [C]saved a [D]wretch like [G]me
+[G]I once was [D]lost, but [G]now am [Em]found
+Was [C]blind, but [D]now I [G]see
+{section: Verse 2}
+'Twas [G]grace that [D]taught my [G]heart to [Em]fear
+And [C]grace my [D]fears re-[G]lieved
+How [G]precious [D]did that [G]grace ap-[Em]pear
+The [C]hour I [D]first be-[G]lieved$chordpro$,
+   octet_length($chordpro${title: Amazing Grace}
+{artist: John Newton}
+{key: G}
+{section: Verse 1}
+[G]Amazing [D]grace, how [G]sweet the [Em]sound
+That [C]saved a [D]wretch like [G]me
+[G]I once was [D]lost, but [G]now am [Em]found
+Was [C]blind, but [D]now I [G]see
+{section: Verse 2}
+'Twas [G]grace that [D]taught my [G]heart to [Em]fear
+And [C]grace my [D]fears re-[G]lieved
+How [G]precious [D]did that [G]grace ap-[Em]pear
+The [C]hour I [D]first be-[G]lieved$chordpro$)),
+  ('71000000-0000-0000-0000-000000000005', '20000000-0000-0000-0000-000000000005', 'chordpro',
+   'seed/scarborough-fair.chordpro',
+   $chordpro${title: Scarborough Fair}
+{artist: Traditional}
+{key: Em}
+{section: Verse 1}
+[Em]Are you going to [D]Scarborough [Em]Fair
+[G]Parsley, [D]sage, rose-[Em]mary and [B7]thyme
+[Em]Remember [D]me to one who lives [Em]there
+[G]For she once was a [B7]true love of [Em]mine
+{section: Verse 2}
+[Em]Tell her to [D]make me a [Em]cambric [B7]shirt
+[G]Without [D]any [Em]seam or needle[B7]work
+[Em]And then she'll [D]be a true [Em]love of [B7]mine
+[G]For she once was a [B7]true love of [Em]mine$chordpro$,
+   octet_length($chordpro${title: Scarborough Fair}
+{artist: Traditional}
+{key: Em}
+{section: Verse 1}
+[Em]Are you going to [D]Scarborough [Em]Fair
+[G]Parsley, [D]sage, rose-[Em]mary and [B7]thyme
+[Em]Remember [D]me to one who lives [Em]there
+[G]For she once was a [B7]true love of [Em]mine
+{section: Verse 2}
+[Em]Tell her to [D]make me a [Em]cambric [B7]shirt
+[G]Without [D]any [Em]seam or needle[B7]work
+[Em]And then she'll [D]be a true [Em]love of [B7]mine
+[G]For she once was a [B7]true love of [Em]mine$chordpro$)),
+  ('71000000-0000-0000-0000-000000000006', '20000000-0000-0000-0000-000000000006', 'chordpro',
+   'seed/oh-susanna.chordpro',
+   $chordpro${title: Oh! Susanna}
+{artist: Stephen Foster}
+{key: F}
+{section: Verse 1}
+[F]I came from Alabama with my [C7]banjo on my [F]knee
+I'm [F]going to Louisiana, my [C7]true love for to [F]see
+It [F]rained all night the day I left, the [C7]weather it was [F]dry
+The [F]sun so hot I froze to death, Su[C7]sanna, don't you [F]cry
+{section: Chorus}
+Oh, [F]Susanna, oh don't you cry for [C7]me
+For I [F]come from Alabama with my [C7]banjo on my [F]knee$chordpro$,
+   octet_length($chordpro${title: Oh! Susanna}
+{artist: Stephen Foster}
+{key: F}
+{section: Verse 1}
+[F]I came from Alabama with my [C7]banjo on my [F]knee
+I'm [F]going to Louisiana, my [C7]true love for to [F]see
+It [F]rained all night the day I left, the [C7]weather it was [F]dry
+The [F]sun so hot I froze to death, Su[C7]sanna, don't you [F]cry
+{section: Chorus}
+Oh, [F]Susanna, oh don't you cry for [C7]me
+For I [F]come from Alabama with my [C7]banjo on my [F]knee$chordpro$)),
+  ('71000000-0000-0000-0000-000000000007', '20000000-0000-0000-0000-000000000007', 'chordpro',
+   'seed/shenandoah.chordpro',
+   $chordpro${title: Shenandoah}
+{artist: Traditional}
+{key: F}
+{section: Verse 1}
+[F]Oh Shenan[C7]doah, I [F]long to [C7]see you
+[F]A[C7]way, you rolling [F]river
+[F]Oh Shenan[C7]doah, I [F]long to [C7]see you
+[F]A[C7]way, I'm bound a[F]way
+'Cross the [C7]wide Mis[F]souri
+{section: Verse 2}
+[F]For seven [C7]years I [F]longed to [C7]see her
+[F]A[C7]way, you rolling [F]river
+[F]For seven [C7]years I [F]longed to [C7]see her
+[F]A[C7]way, I'm bound a[F]way
+'Cross the [C7]wide Mis[F]souri$chordpro$,
+   octet_length($chordpro${title: Shenandoah}
+{artist: Traditional}
+{key: F}
+{section: Verse 1}
+[F]Oh Shenan[C7]doah, I [F]long to [C7]see you
+[F]A[C7]way, you rolling [F]river
+[F]Oh Shenan[C7]doah, I [F]long to [C7]see you
+[F]A[C7]way, I'm bound a[F]way
+'Cross the [C7]wide Mis[F]souri
+{section: Verse 2}
+[F]For seven [C7]years I [F]longed to [C7]see her
+[F]A[C7]way, you rolling [F]river
+[F]For seven [C7]years I [F]longed to [C7]see her
+[F]A[C7]way, I'm bound a[F]way
+'Cross the [C7]wide Mis[F]souri$chordpro$)),
+  ('71000000-0000-0000-0000-000000000008', '20000000-0000-0000-0000-000000000008', 'chordpro',
+   'seed/down-to-the-river.chordpro',
+   $chordpro${title: Down to the River to Pray}
+{artist: Traditional}
+{key: G}
+{section: Verse 1}
+[G]As I went down in the [C]river to [G]pray
+Studying about that [D]good old [G]way
+And who shall wear the [C]starry [G]crown
+[G]Good Lord, show me the [D]way
+{section: Chorus}
+[G]O sisters, let's go [C]down, let's go [G]down
+Come on down, [D]come on [G]down
+[G]O sisters, let's go [C]down
+[G]Down to the [D]river to [G]pray$chordpro$,
+   octet_length($chordpro${title: Down to the River to Pray}
+{artist: Traditional}
+{key: G}
+{section: Verse 1}
+[G]As I went down in the [C]river to [G]pray
+Studying about that [D]good old [G]way
+And who shall wear the [C]starry [G]crown
+[G]Good Lord, show me the [D]way
+{section: Chorus}
+[G]O sisters, let's go [C]down, let's go [G]down
+Come on down, [D]come on [G]down
+[G]O sisters, let's go [C]down
+[G]Down to the [D]river to [G]pray$chordpro$));
+
+insert into song_versions (id, song_id, name, number, chart_file_id, base_key, base_tempo,
+                           duration_seconds, is_ready, owner_id, created_by) values
+  ('72000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000004', 'Original', 1,
+   '71000000-0000-0000-0000-000000000004', 'G', 66, 150, true,
+   '10000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001'),
+  ('72000000-0000-0000-0000-000000000005', '20000000-0000-0000-0000-000000000005', 'Original', 1,
+   '71000000-0000-0000-0000-000000000005', 'Em', 84, 180, true,
+   '10000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001'),
+  ('72000000-0000-0000-0000-000000000006', '20000000-0000-0000-0000-000000000006', 'Original', 1,
+   '71000000-0000-0000-0000-000000000006', 'F', 104, 120, true,
+   '10000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001'),
+  ('72000000-0000-0000-0000-000000000007', '20000000-0000-0000-0000-000000000007', 'Original', 1,
+   '71000000-0000-0000-0000-000000000007', 'F', 76, 210, true,
+   '10000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001'),
+  ('72000000-0000-0000-0000-000000000008', '20000000-0000-0000-0000-000000000008', 'Original', 1,
+   '71000000-0000-0000-0000-000000000008', 'G', 88, 150, true,
+   '10000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001');
+
+insert into public_songs (id, song_id, contributor_id, license, license_confirmed, status) values
+  ('73000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000004',
+   '10000000-0000-0000-0000-000000000001', 'public-domain', true, 'live'),
+  ('73000000-0000-0000-0000-000000000005', '20000000-0000-0000-0000-000000000005',
+   '10000000-0000-0000-0000-000000000001', 'public-domain', true, 'live'),
+  ('73000000-0000-0000-0000-000000000006', '20000000-0000-0000-0000-000000000006',
+   '10000000-0000-0000-0000-000000000001', 'public-domain', true, 'live'),
+  ('73000000-0000-0000-0000-000000000007', '20000000-0000-0000-0000-000000000007',
+   '10000000-0000-0000-0000-000000000001', 'public-domain', true, 'live'),
+  ('73000000-0000-0000-0000-000000000008', '20000000-0000-0000-0000-000000000008',
+   '10000000-0000-0000-0000-000000000001', 'CC-BY-4.0', true, 'live');
