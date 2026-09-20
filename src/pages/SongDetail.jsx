@@ -8,6 +8,7 @@ import { usePublicLibrary } from '../hooks/usePublicLibrary.js'
 import { parseChordPro } from '../lib/chordpro/parser.js'
 import { capoLabel, initialSemitones, transposeKey, transposeParsed } from '../lib/transpose.js'
 import { listAnnotations } from '../lib/annotations.js'
+import { resolveDegree } from '../lib/degreeResolver.js'
 import { buildCommentTree, formatAnchor } from '../lib/comments.js'
 import { computeReadiness } from '../lib/readiness.js'
 import ChordProRenderer, { sectionAnchorId } from '../components/notation/ChordProRenderer.jsx'
@@ -205,6 +206,7 @@ export default function SongDetail() {
   const [annotations, setAnnotations] = useState([])
   const [versionId, setVersionId] = useState('')
   const [semitones, setSemitones] = useState(0)
+  const [degreeView, setDegreeView] = useState(false)
   const comments = useComments(id)
   // S4.2 T2: catalog state backs the contribution actions + published badge.
   const library = usePublicLibrary()
@@ -303,6 +305,43 @@ export default function SongDetail() {
     if (!parsed) return null
     return transposeParsed(parsed, semitones)
   }, [parsed, semitones])
+
+  // Degree map: maps concrete chord strings → roman numeral strings.
+  // Computed from the song's key context + scale catalog. Only populated
+  // when degreeView is enabled to avoid unnecessary async work.
+  const [degreeMap, setDegreeMap] = useState(null)
+
+  useEffect(() => {
+    if (!degreeView || !parsed?.key) {
+      setDegreeMap(null)
+      return undefined
+    }
+
+    let cancelled = false
+
+    async function buildDegreeMap() {
+      // Collect all unique chords from all sections.
+      const allChords = new Set()
+      for (const section of parsed.sections) {
+        for (const line of section.lines) {
+          for (const c of line.chords) {
+            allChords.add(c.chord)
+          }
+        }
+      }
+
+      const map = {}
+      for (const chord of allChords) {
+        const numeral = await resolveDegree(parsed.key, chord)
+        if (numeral) map[chord] = numeral
+      }
+
+      if (!cancelled) setDegreeMap(map)
+    }
+
+    buildDegreeMap()
+    return () => { cancelled = true }
+  }, [degreeView, parsed])
 
   function startEditing() {
     setBody(song?.body || '')
@@ -664,6 +703,19 @@ export default function SongDetail() {
               {prefs.capo > 0 ? capoLabel(displayKey, prefs.capo) : ''}
             </p>
           )}
+          {parsed.key && (
+            <button
+              type="button"
+              onClick={() => setDegreeView((v) => !v)}
+              className={`mb-3 rounded-md border px-3 py-1 text-xs font-medium transition-colors ${
+                degreeView
+                  ? 'border-cem-amber bg-cem-amber/10 text-cem-amber'
+                  : 'border-cem-elevated text-cem-secondary hover:bg-cem-elevated'
+              }`}
+            >
+              {degreeView ? 'Showing: Roman numerals' : 'Show roman numerals'}
+            </button>
+          )}
           <ChordProRenderer
             parsed={transposed}
             annotations={annotations}
@@ -671,6 +723,8 @@ export default function SongDetail() {
             baseKey={parsed?.key}
             onSectionComment={anchorToSection}
             highlightSection={highlightSection}
+            degreeView={degreeView}
+            degreeMap={degreeMap}
           />
         </div>
       ) : (
