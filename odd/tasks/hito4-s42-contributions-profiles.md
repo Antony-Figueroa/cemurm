@@ -104,7 +104,7 @@ Checklist — each item is a work-unit with its own PR in the chain.
 - [x] T3 (S4.2.3) **Public profile** — route `/profile/:userId`, page listing
       the contributor's live `public_songs` entries, attribution links from
       `PublicSongCard` → profile. Collections excluded (honest scope note).
-- [ ] T4 (S4.2.4) **Follows** — migration 0013: RLS policies on `follows`
+- [x] T4 (S4.2.4) **Follows** — migration 0013: RLS policies on `follows`
       (+ follow/unfollow entry points), follow buttons on profile page,
       follower/following counts.
 - [ ] T5 (S4.2.5) **Discovery feed** — "Following" tab on `/library`:
@@ -148,6 +148,24 @@ DEFERRED (recorded, not tasks of this chain):
   attribution links now resolve to `/profile/:userId` instead of dead-end
   (no profile existed before). No backend change needed (read path reuses
   the 0010 view + cache).
+- 2026-09-19: **T4 S4.2.4 done** — follows complete: migration 0013
+  (RLS participant-only select on `follows`, first table grant SELECT-only;
+  follow/unfollow/get_profile_follow_counts entry points, SECURITY DEFINER
+  cores + thin public wrappers, 0012 pattern, self-follow + anonymous
+  guards, idempotent INSERT ON CONFLICT / DELETE), `src/lib/follows.js`
+  (read-through cache, offline-first invalidation),
+  `src/hooks/useFollows.js` (isFollowing, counts, follow/unfollow,
+  canFollow), Profile.jsx follow button + counts (own profile: no button).
+  RLS participant-only means no public follower lists — intentional; counts
+  are aggregates only (no row exposure for arbitrary users).
+  Verification: lint 0 warnings, build success, db reset 0001→0013 + seed
+  clean, local RPC introspection confirms 3+3 functions with
+  `prosecdef`, authenticated-only execute. Native assess post-commit
+  `--base-ref 45239b8` → risk **medium** (`executable_change` on
+  useFollows.js), review_due=slice_budget_reached; preflight STATUS stopped
+  at `managed_assets_outdated` and `gentle-ai sync` FAILED (telemetry
+  runtime ownership conflict in ~/.config/opencode; custom files preserved)
+  — slice review BLOCKED on the same global-config/plugins issue.
 
 ## Verification evidence
 
@@ -174,16 +192,39 @@ DEFERRED (recorded, not tasks of this chain):
   → risk **passive** (new page + attribution Link + App route only, no
   executable lib change), structural readback by orchestrator, boundary
   advances to `45239b8` for the next slice.
+- T4 (branch feat/hito4-s42-contrib-follows): `pnpm lint` 0 warnings
+  (writer + parent spot-check, exit 0); `pnpm build` success (149 modules,
+  exit 0); `supabase db reset` 0001→0013 + seed clean, exit 0; local RPC
+  introspection confirms 3 public + 3 private functions (`follow_user`,
+  `unfollow_user`, `get_profile_follow_counts`) with `prosecdef`, execute
+  granted to authenticated only, anon revoked; `follows` RLS enabled with
+  participant-only SELECT policy, authenticated has SELECT only (no
+  INSERT/UPDATE/DELETE — RPC-only writes). Native assess post-commit
+  `--base-ref 45239b8` → risk **medium** (`executable_change` on
+  useFollows.js), `review_due` = slice_budget_reached (424 changed lines);
+  preflight STATUS stopped `managed_assets_outdated`; `gentle-ai sync`
+  failed (telemetry runtime ownership conflict in ~/.config/opencode,
+  custom files preserved) — T4 slice native review BLOCKED until the
+  global-config issue is resolved, per system decision.
 
 ## Next step
 
-- S4.2.4: follows — migration 0013 RLS + follow/unfollow entry points,
-  follow buttons on profile, follower/following counts, on the next child
-  branch `feat/hito4-s42-contrib-follows` (creating from
-  `feat/hito4-s42-contrib-profile` @ 45239b8).
-- Then S4.2.5: discovery feed ("Following" tab on /library).
-- Push/PR for the chain slice remains the user's decision (T1–T3 committed
+- S4.2.5: discovery feed — "Following" tab on `/library`:
+  `public_songs where contributor_id in (my follows)` ordered `updated_at
+  desc`, using the participant-only RLS read surface + `src/lib/follows.js`
+  from T4. Branch `feat/hito4-s42-contrib-feed` (from
+  `feat/hito4-s42-contrib-follows` @ c3c7c65).
+- BEFORE that slice's native review can run, resolve the
+  `gentle-ai sync` failure (telemetry runtime ownership conflict in
+  ~/.config/opencode) — same root area as the "plugins fail" report.
+- Push/PR for the chain slice remains the user's decision (T1–T4 committed
   locally on their child branches; nothing pushed).
+
+## Commits (S4.2.4)
+
+- `feat: S4.2 follows (RLS + follow/unfollow RPCs + profile follow UI)` —
+  migration 0013 + src/lib/follows.js + src/hooks/useFollows.js +
+  Profile.jsx follow UI (c3c7c65 on feat/hito4-s42-contrib-follows).
 
 ## Commits (S4.2.1)
 
