@@ -96,7 +96,7 @@ Checklist — each item is a work-unit with its own PR in the chain.
       (status `live` → `withdrawn`, `updated_at` bumped).
       ACCEPT: db reset clean; gates verified via `supabase db query --linked`
       after merge; lint/build untouched (SQL-only).
-- [ ] T2 (S4.2.2) **Contribution UI** — "Contribute" action on SongDetail
+- [x] T2 (S4.2.2) **Contribution UI** — "Contribute" action on SongDetail
       (own songs only), license confirmation modal (deliberate checkbox),
       "My contributions" surface + withdraw with confirm. Uses the
       read-through cache pattern from `src/lib/publicLibrary.js`
@@ -133,6 +133,13 @@ DEFERRED (recorded, not tasks of this chain):
   deferred); doc created; branches created.
 - 2026-09-19: **T1 S4.2.1 done** — migration 0012 (publish/withdraw cores +
   wrappers) written and verified. Commits listed below.
+- 2026-09-19: **T2 S4.2.2 done** — contribution UI complete: Contribute
+  action on SongDetail (own songs only via `song.userId === user?.id`),
+  license confirmation modal (deliberate rights checkbox, 0001 license
+  vocabulary only), withdraw with confirm + inline error, published badge,
+  and a "My contributions" tab on /library with per-entry withdraw.
+  Publish/withdraw RPCs wired through the read-through cache pattern with
+  `offlineRemove('publicLibrary:entries')` invalidation.
 
 ## Verification evidence
 
@@ -147,13 +154,20 @@ DEFERRED (recorded, not tasks of this chain):
   lineage validation, withdraw owner-only) to be verified via hosted API
   (`supabase db query --linked` with the demo JWT) AFTER merge, per the
   established S4.1 pattern.
+- T2 (branch feat/hito4-s42-contrib-ui): `pnpm lint` 0 warnings (spot-check
+  + writer run, both exit 0); `pnpm build` success (146 modules, exit 0;
+  only pre-existing chunk-size + dynamic-import warnings); native assess
+  post-commit `--base-ref 08a1aa6` → risk **medium**
+  (`executable_change` on usePublicLibrary.js), deferred to PR slice per
+  ODD medium rule.
 
 ## Next step
 
-- S4.2.2: contribution UI (Contribute button + license modal + "My
-  contributions" + withdraw confirm) on the next child branch
-  `feat/hito4-s42-contrib-ui`, once T1 is merged into the tracker (push/PR
-  are user decisions).
+- S4.2.3: public profile (`/profile/:userId`, live `public_songs` list,
+  attribution links from PublicSongCard → profile) on the next child
+  branch `feat/hito4-s42-contrib-profile`.
+- Push/PR for the chain slice remains the user's decision (T2 is committed
+  on `feat/hito4-s42-contrib-ui`, T1 on `feat/hito4-s42-contrib-backend`).
 
 ## Commits (S4.2.1)
 
@@ -161,3 +175,10 @@ DEFERRED (recorded, not tasks of this chain):
 - `feat: S4.2 contribution RPCs (publish/withdraw)` — migration 0012.
 - `docs: evidence hito4-s42.1 db reset + lint + RPC introspection` — this
   verification evidence.
+
+## Commits (S4.2.2)
+
+- `feat: S4.2 contribution UI (publish/withdraw + my contributions)` —
+  SongDetail contribute modal + withdraw, /library My contributions tab,
+  publicLibrary.js publish/withdraw + usePublicLibrary.js actions
+  (2baab6f on feat/hito4-s42-contrib-ui).
