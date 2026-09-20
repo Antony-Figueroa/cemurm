@@ -126,6 +126,19 @@ DEFERRED (recorded, not tasks of this chain):
 - Running authored line count (additions + deletions, generated excluded):
   verified at each PR against origin/main; record slice boundaries below.
 
+### PRs (created 2026-09-19)
+
+| PR | Branch | Title | Base |
+|----|--------|-------|------|
+| #131 | feat/hito4-s42-contrib-backend | S4.2.1 Contribution backend (publish/withdraw RPCs) | main |
+| #132 | feat/hito4-s42-contrib-ui | S4.2.2 Contribution UI (publish/withdraw + my contributions) | #131 branch |
+| #133 | feat/hito4-s42-contrib-profile | S4.2.3 Public contributor profile (/profile/:userId) | #132 branch |
+| #134 | feat/hito4-s42-contrib-follows | S4.2.4 Follows (RLS + follow/unfollow RPCs + profile UI) | #133 branch |
+| #135 | feat/hito4-s42-contrib-feed | S4.2.5 Discovery feed (Following tab on library) | #134 branch |
+| #136 | feat/hito4-s42-contributions | S4.2 Tracker → main | main |
+
+Merge order: #131 → #132 → #133 → #134 → #135 → #136.
+
 ## Progress
 
 - 2026-09-19: exploration complete (schema map, RLS, activity infra,
@@ -231,17 +244,14 @@ DEFERRED (recorded, not tasks of this chain):
 
 ## Next step
 
-- The S4.2 chain is IMPLEMENTED end-to-end (T1–T5, five branches). What
-  remains is user-owned delivery: resolve the `gentle-ai sync` /
-  plugins blocker, run the accumulated-slice native review (T4 slice is
-  review_due=true, budget reached), and then push/PR the chain slices.
-- `gentle-ai sync` fails with "telemetry runtime ownership conflict in
-  ~/.config/opencode; custom files preserved" — the same root area as the
-  "plugins fail" report (old-format TS plugins in ~/.config/opencode/plugins
-  don't export the v2 `default { id, effect/setup }` shape). Native review
-  cannot proceed until that is resolved.
-- Push/PR for the chain slices remains the user's decision (T1–T5 committed
-  locally on their child branches; nothing pushed).
+- S4.2 chain PRs #131–#136 created and pushed (2026-09-19). Merge order:
+  #131 → #132 → #133 → #134 → #135 → #136 (tracker).
+- `gentle-ai sync` still fails (telemetry runtime ownership conflict in
+  ~/.config/opencode). Native review lifecycle blocked until resolved.
+  PRs are open for manual review in the meantime.
+- After merge: verify hosted API behavior gates (license_confirmed raise,
+  owner-only, one-live-per-song, lineage, withdraw) via
+  `supabase db query --linked` per the S4.1 pattern.
 
 ## Commits (S4.2.4)
 
