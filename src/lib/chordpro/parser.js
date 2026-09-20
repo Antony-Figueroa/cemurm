@@ -49,12 +49,15 @@ function stripChords(line) {
 export function parseChordPro(text) {
   const meta = {}
   const sections = []
+  const sectionKeyContexts = []
   let current = null
+  let currentSectionIndex = -1
 
   function ensureSection(type) {
     if (!current || current.type !== type) {
       current = { type, lines: [] }
       sections.push(current)
+      currentSectionIndex = sections.length - 1
     }
     return current
   }
@@ -65,6 +68,21 @@ export function parseChordPro(text) {
     if (directive) {
       if (KNOWN_META.has(directive.name)) {
         meta[directive.name] = directive.value
+        continue
+      }
+      if (directive.name === 'key') {
+        // Sectional key context: {key: E} within a section records a
+        // modulation. The song-level key is the first {key} directive; any
+        // subsequent {key} within a section is a sectional override.
+        if (meta.key === undefined) {
+          meta.key = directive.value
+        } else {
+          ensureSection('lyrics')
+          sectionKeyContexts.push({
+            sectionIndex: currentSectionIndex,
+            key: directive.value,
+          })
+        }
         continue
       }
       if (directive.name === 'section' || directive.name === 'comment') {
@@ -82,7 +100,7 @@ export function parseChordPro(text) {
     ensureSection('lyrics').lines.push(stripChords(raw))
   }
 
-  return { ...meta, sections }
+  return { ...meta, sections, sectionKeyContexts }
 }
 
 // Self-check: run with `node -e "import('./src/lib/chordpro/parser.js').then(m => m.demo())"`
@@ -123,6 +141,23 @@ No hell beneath us
   expect(lines[1].text, 'No hell beneath us', 'plain lyric line kept')
   expect(lines[1].chords.length, 0, 'plain lyric line has no chords')
   expect(lines[2].chords.length, 2, 'two inline chords on line 3')
+
+  // Sectional key contexts
+  expect(parsed.sectionKeyContexts.length, 0, 'no sectional keys in basic sample')
+
+  const modSample = `{title: ModSong}
+{key: C}
+{section: Verse}
+[C]Verse in C
+{section: Chorus}
+{key: G}
+[G]Chorus in G`
+
+  const modParsed = parseChordPro(modSample)
+  expect(modParsed.key, 'C', 'song-level key is first directive')
+  expect(modParsed.sectionKeyContexts.length, 1, 'one sectional key')
+  expect(modParsed.sectionKeyContexts[0].key, 'G', 'sectional key is G')
+  expect(typeof modParsed.sectionKeyContexts[0].sectionIndex, 'number', 'sectional key has sectionIndex')
 
   console.log('parser demo OK:', JSON.stringify(parsed, null, 2))
 }

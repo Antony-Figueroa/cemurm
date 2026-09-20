@@ -20,7 +20,7 @@ function toSegments({ text, chords }) {
   return segments
 }
 
-function LyricLine({ line, substitutions, semitones, baseKey }) {
+function LyricLine({ line, substitutions, semitones, baseKey, degreeView, degreeMap }) {
   const segments = toSegments(line)
   if (!segments.length) return <div className="h-3" />
 
@@ -28,9 +28,16 @@ function LyricLine({ line, substitutions, semitones, baseKey }) {
     <div className="flex flex-wrap items-baseline whitespace-pre-wrap">
       {segments.map((segment, i) => (
         <span key={i} className="inline-flex flex-col items-start">
+          {segment.chord && degreeView && degreeMap && degreeMap[segment.chord] && (
+            <span className="mb-0.5 text-xs font-semibold text-cem-secondary italic">
+              {degreeMap[segment.chord]}
+            </span>
+          )}
           {segment.chord && (
-            <span className="mb-0.5 text-sm font-bold text-cem-amber">
-              {applySubstitution(segment.chord, semitones, substitutions, baseKey)}
+            <span className={`text-sm font-bold ${degreeView ? 'text-cem-secondary opacity-60' : 'text-cem-amber'}`}>
+              {degreeView
+                ? segment.chord
+                : applySubstitution(segment.chord, semitones, substitutions, baseKey)}
             </span>
           )}
           {segment.text && <span className="text-cem-text">{segment.text}</span>}
@@ -59,6 +66,8 @@ export default function ChordProRenderer({
   baseKey = '',
   onSectionComment,
   highlightSection,
+  degreeView = false,
+  degreeMap = null,
 }) {
   const { title, artist, key, sections = [] } = parsed
 
@@ -117,6 +126,8 @@ export default function ChordProRenderer({
                           substitutions={substitutions}
                           semitones={semitones}
                           baseKey={baseKey}
+                          degreeView={degreeView}
+                          degreeMap={degreeMap}
                         />
                         {note && <p className="text-xs italic text-cem-secondary">— {note}</p>}
                       </div>
