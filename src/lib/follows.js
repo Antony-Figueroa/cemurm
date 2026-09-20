@@ -2,13 +2,14 @@
 // Follow/unfollow writes go through the S4.2 SECURITY DEFINER RPCs (0013);
 // the own-graph read (is-following state) hits the `follows` table directly
 // under the participant-only RLS select policy (0013) — the same surface the
-// T5 discovery feed query will use. Profile counts come from the aggregate
+// T5 discovery feed query uses. Profile counts come from the aggregate
 // RPC (followers/following BIGINTs; no row/identity exposure). Reads are
 // read-through cached in IndexedDB exactly like publicLibrary.js / songs.js.
 // Public surface: getProfileFollowCounts, getFollowState, followUser,
-// unfollowUser, invalidateFollowCaches.
+// unfollowUser, getDiscoveryFeed, invalidateFollowCaches.
 // Scenario coverage: features/public-library-community.feature
-// (Follow another musician / Follow and unfollow are reversible).
+// (Follow another musician / Follow and unfollow are reversible —
+// the T5 discovery feed query also lives here).
 
 import { supabase } from './supabase.js'
 import { offlineGet, offlineRemove, offlineSet } from './offlineCache.js'
@@ -47,13 +48,17 @@ async function withReadThrough(key, fn) {
 }
 
 /**
- * Drop the follow caches a mutation invalidates: the (follower → followed)
- * state row and the target profile's counts. Invalidate-before-refresh shape
- * matches publishSongToLibrary's offlineRemove('publicLibrary:entries').
+ * Drop the follow caches a follow/unfollow mutation invalidates: the
+ * (follower → followed) state row, the target profile's counts, and the
+ * follower's discovery feed (T5 — a new follow must surface that
+ * contributor's entries, an unfollow must hide them, scenarios 11/12).
+ * Invalidate-before-refresh shape matches
+ * publishSongToLibrary's offlineRemove('publicLibrary:entries').
  */
 export async function invalidateFollowCaches(followerId, followedId) {
   await offlineRemove(`follows:state:${followerId}:${followedId}`)
   await offlineRemove(`follows:counts:${followedId}`)
+  await offlineRemove(`follows:feed:${followerId}`)
 }
 
 /**
@@ -116,4 +121,39 @@ export async function unfollowUser(followedId) {
     const { error } = await supabase.rpc('unfollow_user', { p_followed_id: followedId })
     if (error) throw error
   })
+}
+
+/**
+ * T5 discovery feed (scenarios 11/12): live public entries by the musicians
+ * the caller follows, newest first. Two-hop resolution reuses ONLY existing
+ * read surfaces — no new RPC/migration:
+ *   1. own follow rows (0013 participant RLS select where follower_id =
+ *      auth.uid()) → followed contributor ids
+ *   2. the open `public_library_entries` view (0010, live + withdrawn
+ *      filtering already in the view) filtered on contributor_id, ordered
+ *      updated_at desc per the feed contract.
+ * The caller must pass the session user as `userId` (the hook does); RLS
+ * zero-returns another caller's graph. Follows nobody → [] without a second
+ * round trip. Feed cache is dropped by invalidateFollowCaches on any
+ * follow/unfollow mutation.
+ */
+export function getDiscoveryFeed(userId) {
+  return withErrorMapping(() => withReadThrough(`follows:feed:${userId}`, async () => {
+    const { data: followRows, error: followsError } = await supabase
+      .from('follows')
+      .select('followed_id')
+      .eq('follower_id', userId)
+    if (followsError) throw followsError
+
+    const followedIds = (followRows || []).map((row) => row.followed_id)
+    if (followedIds.length === 0) return []
+
+    const { data, error } = await supabase
+      .from('public_library_entries')
+      .select('*')
+      .in('contributor_id', followedIds)
+      .order('updated_at', { ascending: false })
+    if (error) throw error
+    return data || []
+  }))
 }

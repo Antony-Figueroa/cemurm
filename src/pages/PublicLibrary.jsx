@@ -3,8 +3,11 @@
 // (private.copy_public_song_to_repertoire) so chart content never reaches
 // the client. Search/license filtering is client-side on the full catalog
 // (mirrors Songs.jsx ponytail; bounded catalog for now).
+// Tabs: Catalog, My contributions (S4.2 T2), Following — the T5 discovery
+// feed of live entries by the musicians I follow (scenarios 11/12).
 // Scenario coverage: features/public-library-community.feature
-// (BROWSING THE PUBLIC LIBRARY + Add a public song to my repertoire).
+// (BROWSING THE PUBLIC LIBRARY + Add a public song to my repertoire +
+// Follow another musician + Follow and unfollow are reversible).
 
 /* eslint-disable react/prop-types */
 
@@ -12,6 +15,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { filterPublicEntries } from '../lib/search.js'
 import { usePublicLibrary } from '../hooks/usePublicLibrary.js'
+import { useDiscoveryFeed } from '../hooks/useDiscoveryFeed.js'
 
 const LICENSE_OPTIONS = [
   { value: '', label: 'All licenses' },
@@ -91,12 +95,16 @@ export default function PublicLibrary() {
     withdrawingEntryId,
     withdrawEntry,
   } = usePublicLibrary()
+  const feed = useDiscoveryFeed()
   const [addedIds, setAddedIds] = useState({})
   const [tab, setTab] = useState('catalog')
 
   const filtersActive = Boolean(search.trim() || licenseFilter)
   const visible = filterPublicEntries(entries, { query: search, license: licenseFilter })
   const mine = entries.filter((entry) => entry.contributor_id === userId)
+  // Errors bind to the active tab: the library error (catalog/mine) or the
+  // feed error (following) — catalog/mine behavior is untouched.
+  const activeError = tab === 'following' ? feed.error : error
 
   async function handleAdd(publicSongId) {
     try {
@@ -128,10 +136,17 @@ export default function PublicLibrary() {
         >
           My contributions
         </button>
+        <button
+          type="button"
+          onClick={() => setTab('following')}
+          className={tab === 'following' ? 'border-b-2 border-cem-amber text-cem-amber' : 'text-cem-secondary'}
+        >
+          Following
+        </button>
       </div>
 
-      {error && (
-        <p className="mt-3 rounded-md bg-cem-rose/10 px-3 py-2 text-sm text-cem-rose">{error}</p>
+      {activeError && (
+        <p className="mt-3 rounded-md bg-cem-rose/10 px-3 py-2 text-sm text-cem-rose">{activeError}</p>
       )}
 
       {tab === 'catalog' ? (
@@ -166,6 +181,28 @@ export default function PublicLibrary() {
           ) : (
             <ul className="mt-4 divide-y divide-cem-elevated rounded-lg border border-cem-elevated bg-cem-surface shadow-sm">
               {visible.map((entry) => (
+                <PublicSongCard
+                  key={entry.id}
+                  entry={entry}
+                  pending={pendingId === entry.id}
+                  added={Boolean(addedIds[entry.id])}
+                  onAdd={handleAdd}
+                />
+              ))}
+            </ul>
+          )}
+        </>
+      ) : tab === 'following' ? (
+        <>
+          {feed.loading ? (
+            <p className="mt-6 text-sm text-cem-secondary">Loading your feed…</p>
+          ) : feed.entries.length === 0 ? (
+            <p className="mt-6 text-sm text-cem-secondary">
+              Follow musicians to see their new contributions here.
+            </p>
+          ) : (
+            <ul className="mt-4 divide-y divide-cem-elevated rounded-lg border border-cem-elevated bg-cem-surface shadow-sm">
+              {feed.entries.map((entry) => (
                 <PublicSongCard
                   key={entry.id}
                   entry={entry}
