@@ -16,6 +16,7 @@ import Auth from './pages/Auth.jsx'
 import Practice from './pages/Practice.jsx'
 import PublicLibrary from './pages/PublicLibrary.jsx'
 import Profile from './pages/Profile.jsx'
+import Moderation from './pages/Moderation.jsx'
 import Storage from './pages/Storage.jsx'
 import Settings from './pages/Settings.jsx'
 import NotFound from './pages/NotFound.jsx'
@@ -32,6 +33,7 @@ const router = createBrowserRouter([
           { path: '/songs/:id', element: <SongDetail /> },
           { path: '/songs/:id/practice', element: <Practice /> },
           { path: '/library', element: <PublicLibrary /> },
+          { path: '/moderation', element: <Moderation /> },
           { path: '/profile/:userId', element: <Profile /> },
           { path: '/setlists', element: <Setlists /> },
           { path: '/setlists/:id', element: <SetlistDetail /> },
