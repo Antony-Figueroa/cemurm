@@ -45,4 +45,8 @@ Plan and run rehearsals against setlists: agenda with per-song parts/readiness, 
 ## Notes
 - Event-scope rehearsals resolve participants via event_participants (org-level PK) — documented in the migration header.
 - RSVP self-response is a single transition ('invited' → response); further changes go through the leader (delete + republish).
-- Review status (RDD): assess + preflight deferred per session policy (same managed-assets block as previous features; sync refuses the custom plugin). Fill in after assess run.
+
+## Review status (RDD)
+- Assess `medium` (2241 lines base main, `slice_budget_reached`) → preflight STATUS: `stop / managed_assets_outdated` (same environment block as all previous Hito 4 features; `gentle-ai sync` refuses the custom plugin `opencode-review-transport.ts`). **Deferred per session policy** (user decision 2026-09-20: skip native review for now; can run later on the PR slice after the plugin asset state is resolved).
+- Commits: `0f084d9` (backend, 980 lines) `5c75a7e` (frontend, 1261 lines). Branch `feat/hito4-rehearsal-workflow` from main; no push/PR yet.
+- The `src/pages/ServiceDetail.jsx` cross-reference in the generate-next-agenda carry-over render is client-side heuristic (inSetlist join); the backend carry-over contract is the note copy + carry_over_to backlink (validated).
