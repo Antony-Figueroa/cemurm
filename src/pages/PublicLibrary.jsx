@@ -3,14 +3,19 @@
 // (private.copy_public_song_to_repertoire) so chart content never reaches
 // the client. Search/license filtering is client-side on the full catalog
 // (mirrors Songs.jsx ponytail; bounded catalog for now).
+// Tabs: Catalog, My contributions (S4.2 T2), Following — the T5 discovery
+// feed of live entries by the musicians I follow (scenarios 11/12).
 // Scenario coverage: features/public-library-community.feature
-// (BROWSING THE PUBLIC LIBRARY + Add a public song to my repertoire).
+// (BROWSING THE PUBLIC LIBRARY + Add a public song to my repertoire +
+// Follow another musician + Follow and unfollow are reversible).
 
 /* eslint-disable react/prop-types */
 
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { filterPublicEntries } from '../lib/search.js'
 import { usePublicLibrary } from '../hooks/usePublicLibrary.js'
+import { useDiscoveryFeed } from '../hooks/useDiscoveryFeed.js'
 
 const LICENSE_OPTIONS = [
   { value: '', label: 'All licenses' },
@@ -36,9 +41,7 @@ function LicenseBadge({ license }) {
 }
 
 function PublicSongCard({ entry, pending, added, onAdd }) {
-  const meta = [entry.artist, entry.genre, entry.contributor_name && `by ${entry.contributor_name}`]
-    .filter(Boolean)
-    .join(' · ')
+  const meta = [entry.artist, entry.genre].filter(Boolean).join(' · ')
   const label = added ? 'Added ✓' : pending ? 'Adding…' : 'Add to repertoire'
 
   return (
@@ -48,7 +51,18 @@ function PublicSongCard({ entry, pending, added, onAdd }) {
           <span className="truncate text-sm font-medium text-cem-text">{entry.title}</span>
           <LicenseBadge license={entry.license} />
         </div>
-        <p className="mt-0.5 text-xs text-cem-secondary">{meta}</p>
+        <p className="mt-0.5 text-xs text-cem-secondary">
+          {meta}
+          {meta && entry.contributor_name && <span> · </span>}
+          {entry.contributor_name && (
+            <Link
+              to={`/profile/${entry.contributor_id}`}
+              className="text-cem-amber hover:underline"
+            >
+              by {entry.contributor_name}
+            </Link>
+          )}
+        </p>
       </div>
       <button
         type="button"
@@ -77,11 +91,20 @@ export default function PublicLibrary() {
     setLicenseFilter,
     pendingId,
     addToRepertoire,
+    userId,
+    withdrawingEntryId,
+    withdrawEntry,
   } = usePublicLibrary()
+  const feed = useDiscoveryFeed()
   const [addedIds, setAddedIds] = useState({})
+  const [tab, setTab] = useState('catalog')
 
   const filtersActive = Boolean(search.trim() || licenseFilter)
   const visible = filterPublicEntries(entries, { query: search, license: licenseFilter })
+  const mine = entries.filter((entry) => entry.contributor_id === userId)
+  // Errors bind to the active tab: the library error (catalog/mine) or the
+  // feed error (following) — catalog/mine behavior is untouched.
+  const activeError = tab === 'following' ? feed.error : error
 
   async function handleAdd(publicSongId) {
     try {
@@ -98,49 +121,133 @@ export default function PublicLibrary() {
         <h1 className="text-2xl font-bold text-cem-text">Public Library</h1>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by title, artist or genre…"
-          className="w-full max-w-md rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text placeholder:text-cem-secondary focus:border-cem-amber focus:outline-none focus:ring-1 focus:ring-cem-amber"
-        />
-        <select
-          value={licenseFilter}
-          onChange={(e) => setLicenseFilter(e.target.value)}
-          className="rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text focus:border-cem-amber focus:outline-none focus:ring-1 focus:ring-cem-amber"
+      <div className="mt-3 flex gap-4 text-sm font-medium">
+        <button
+          type="button"
+          onClick={() => setTab('catalog')}
+          className={tab === 'catalog' ? 'border-b-2 border-cem-amber text-cem-amber' : 'text-cem-secondary'}
         >
-          {LICENSE_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+          Catalog
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab('mine')}
+          className={tab === 'mine' ? 'border-b-2 border-cem-amber text-cem-amber' : 'text-cem-secondary'}
+        >
+          My contributions
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab('following')}
+          className={tab === 'following' ? 'border-b-2 border-cem-amber text-cem-amber' : 'text-cem-secondary'}
+        >
+          Following
+        </button>
       </div>
 
-      {error && (
-        <p className="mt-3 rounded-md bg-cem-rose/10 px-3 py-2 text-sm text-cem-rose">{error}</p>
+      {activeError && (
+        <p className="mt-3 rounded-md bg-cem-rose/10 px-3 py-2 text-sm text-cem-rose">{activeError}</p>
       )}
 
-      {loading ? (
-        <p className="mt-6 text-sm text-cem-secondary">Loading public library…</p>
-      ) : visible.length === 0 ? (
-        <p className="mt-6 text-sm text-cem-secondary">
-          {filtersActive ? 'No results — try adjusting your filters.' : 'The public library is empty.'}
-        </p>
-      ) : (
-        <ul className="mt-4 divide-y divide-cem-elevated rounded-lg border border-cem-elevated bg-cem-surface shadow-sm">
-          {visible.map((entry) => (
-            <PublicSongCard
-              key={entry.id}
-              entry={entry}
-              pending={pendingId === entry.id}
-              added={Boolean(addedIds[entry.id])}
-              onAdd={handleAdd}
+      {tab === 'catalog' ? (
+        <>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by title, artist or genre…"
+              className="w-full max-w-md rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text placeholder:text-cem-secondary focus:border-cem-amber focus:outline-none focus:ring-1 focus:ring-cem-amber"
             />
-          ))}
-        </ul>
+            <select
+              value={licenseFilter}
+              onChange={(e) => setLicenseFilter(e.target.value)}
+              className="rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text focus:border-cem-amber focus:outline-none focus:ring-1 focus:ring-cem-amber"
+            >
+              {LICENSE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {loading ? (
+            <p className="mt-6 text-sm text-cem-secondary">Loading public library…</p>
+          ) : visible.length === 0 ? (
+            <p className="mt-6 text-sm text-cem-secondary">
+              {filtersActive ? 'No results — try adjusting your filters.' : 'The public library is empty.'}
+            </p>
+          ) : (
+            <ul className="mt-4 divide-y divide-cem-elevated rounded-lg border border-cem-elevated bg-cem-surface shadow-sm">
+              {visible.map((entry) => (
+                <PublicSongCard
+                  key={entry.id}
+                  entry={entry}
+                  pending={pendingId === entry.id}
+                  added={Boolean(addedIds[entry.id])}
+                  onAdd={handleAdd}
+                />
+              ))}
+            </ul>
+          )}
+        </>
+      ) : tab === 'following' ? (
+        <>
+          {feed.loading ? (
+            <p className="mt-6 text-sm text-cem-secondary">Loading your feed…</p>
+          ) : feed.entries.length === 0 ? (
+            <p className="mt-6 text-sm text-cem-secondary">
+              Follow musicians to see their new contributions here.
+            </p>
+          ) : (
+            <ul className="mt-4 divide-y divide-cem-elevated rounded-lg border border-cem-elevated bg-cem-surface shadow-sm">
+              {feed.entries.map((entry) => (
+                <PublicSongCard
+                  key={entry.id}
+                  entry={entry}
+                  pending={pendingId === entry.id}
+                  added={Boolean(addedIds[entry.id])}
+                  onAdd={handleAdd}
+                />
+              ))}
+            </ul>
+          )}
+        </>
+      ) : (
+        <>
+          {loading ? (
+            <p className="mt-6 text-sm text-cem-secondary">Loading public library…</p>
+          ) : mine.length === 0 ? (
+            <p className="mt-6 text-sm text-cem-secondary">You haven&apos;t contributed any songs yet.</p>
+          ) : (
+            <ul className="mt-4 divide-y divide-cem-elevated rounded-lg border border-cem-elevated bg-cem-surface shadow-sm">
+              {mine.map((entry) => (
+                <li key={entry.id} className="flex items-center justify-between px-4 py-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="truncate text-sm font-medium text-cem-text">{entry.title}</span>
+                      <LicenseBadge license={entry.license} />
+                    </div>
+                    <p className="mt-0.5 text-xs text-cem-secondary">
+                      {[entry.artist, entry.genre, entry.contributor_name && `by ${entry.contributor_name}`]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => withdrawEntry(entry.id)}
+                    disabled={withdrawingEntryId === entry.id}
+                    className="ml-4 shrink-0 rounded-md border border-cem-elevated px-3 py-1.5 text-sm font-medium text-cem-text hover:bg-cem-elevated disabled:opacity-50"
+                  >
+                    {withdrawingEntryId === entry.id ? 'Withdrawing…' : 'Withdraw'}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
       )}
     </div>
   )
