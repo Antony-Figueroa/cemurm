@@ -101,7 +101,7 @@ Checklist — each item is a work-unit with its own PR in the chain.
       "My contributions" surface + withdraw with confirm. Uses the
       read-through cache pattern from `src/lib/publicLibrary.js`
       (`invalidateSongs` on publish).
-- [ ] T3 (S4.2.3) **Public profile** — route `/profile/:userId`, page listing
+- [x] T3 (S4.2.3) **Public profile** — route `/profile/:userId`, page listing
       the contributor's live `public_songs` entries, attribution links from
       `PublicSongCard` → profile. Collections excluded (honest scope note).
 - [ ] T4 (S4.2.4) **Follows** — migration 0013: RLS policies on `follows`
@@ -140,6 +140,14 @@ DEFERRED (recorded, not tasks of this chain):
   and a "My contributions" tab on /library with per-entry withdraw.
   Publish/withdraw RPCs wired through the read-through cache pattern with
   `offlineRemove('publicLibrary:entries')` invalidation.
+- 2026-09-19: **T3 S4.2.3 done** — public profile complete: new
+  `src/pages/Profile.jsx` (route `/profile/:userId`, under RequireAuth)
+  lists the contributor's live `public_songs` entries by filtering
+  `usePublicLibrary().entries` on `contributor_id`, with empty state and
+  honest note that curated collections are not built yet; PublicSongCard
+  attribution links now resolve to `/profile/:userId` instead of dead-end
+  (no profile existed before). No backend change needed (read path reuses
+  the 0010 view + cache).
 
 ## Verification evidence
 
@@ -160,14 +168,22 @@ DEFERRED (recorded, not tasks of this chain):
   post-commit `--base-ref 08a1aa6` → risk **medium**
   (`executable_change` on usePublicLibrary.js), deferred to PR slice per
   ODD medium rule.
+- T3 (branch feat/hito4-s42-contrib-profile): `pnpm lint` 0 warnings
+  (writer + spot-check, exit 0); `pnpm build` success (exit 0); working
+  tree clean after commit; native assess post-commit `--base-ref 2baab6f`
+  → risk **passive** (new page + attribution Link + App route only, no
+  executable lib change), structural readback by orchestrator, boundary
+  advances to `45239b8` for the next slice.
 
 ## Next step
 
-- S4.2.3: public profile (`/profile/:userId`, live `public_songs` list,
-  attribution links from PublicSongCard → profile) on the next child
-  branch `feat/hito4-s42-contrib-profile`.
-- Push/PR for the chain slice remains the user's decision (T2 is committed
-  on `feat/hito4-s42-contrib-ui`, T1 on `feat/hito4-s42-contrib-backend`).
+- S4.2.4: follows — migration 0013 RLS + follow/unfollow entry points,
+  follow buttons on profile, follower/following counts, on the next child
+  branch `feat/hito4-s42-contrib-follows` (creating from
+  `feat/hito4-s42-contrib-profile` @ 45239b8).
+- Then S4.2.5: discovery feed ("Following" tab on /library).
+- Push/PR for the chain slice remains the user's decision (T1–T3 committed
+  locally on their child branches; nothing pushed).
 
 ## Commits (S4.2.1)
 
@@ -182,3 +198,11 @@ DEFERRED (recorded, not tasks of this chain):
   SongDetail contribute modal + withdraw, /library My contributions tab,
   publicLibrary.js publish/withdraw + usePublicLibrary.js actions
   (2baab6f on feat/hito4-s42-contrib-ui).
+- `docs(odd): record T2 verification evidence + commit identity`
+  (2a55bbf on feat/hito4-s42-contrib-ui).
+
+## Commits (S4.2.3)
+
+- `feat: public contributor profile page (/profile/:userId)` — Profile.jsx
+  (80 new lines), PublicSongCard attribution → profile Link, App route
+  (45239b8 on feat/hito4-s42-contrib-profile).
