@@ -39,6 +39,11 @@ Structure a service into ordered blocks with assigned musicians, per-block setli
 - [x] Client INSERT into service_change_log / substitution_requests → permission denied
 - [x] Execute grants: 5 public wrappers authenticated-only, anon false; private cores/helpers locked
 
+## Review status (RDD)
+- Assess `medium` (2212 lines base main, `slice_budget_reached`) → preflight STATUS: `stop / managed_assets_outdated` (same environment block as org-repertoire/minors; `gentle-ai sync` refuses the custom plugin `opencode-review-transport.ts`). **Deferred per session policy** (user decision 2026-09-20: skip native review for now; can run later on the PR slice after the plugin asset state is resolved).
+- Commits: `0749146` (backend, 799 lines) `b90453c` (frontend + stopgap, 1413 lines). Branch `feat/hito4-service-planning` from main; no push/PR yet.
+- Merge note: `src/lib/orgRepertoire.js` on this branch is a stopgap (only `getMyOrganizations` + `session_org_ids` fallback); the org-repertoire branch owns the richer module. At stacked merge, take the org branch's version — its `getMyOrganizations` signature matches.
+
 ## Notes
 - Block "simultaneous" semantics derive from start_offset_minutes + time_budget intervals; overlap is skipped when starts_at is NULL (documented).
 - Completed-edit observation in tests needed a temporary table-level UPDATE grant (writes are RPC-only in the final grants); revoked immediately.
