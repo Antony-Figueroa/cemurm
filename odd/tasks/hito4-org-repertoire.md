@@ -24,11 +24,12 @@ Hierarchical repertoire: system-level unified catalog, org-level and branch-leve
   - `event_repertoire` — organizer-or-participant scoped union: system songs + all songs of participating orgs (org and branch level) for the event picker
 - Grants: orgs/branches/org_memberships SELECT; events/participants/setlists full CRUD (organizer policies); rsvps select/insert/update; songs kept from 0002
 
-## Frontend (pending)
-- `src/lib/orgRepertoire.js`: getMyOrganizations, getBranches, getMemberRoster, promoteSong, demoteSong, leaveOrganization, getEventRepertoire
-- `src/pages/Organizations.jsx`: org dashboard — current orgs/branches/memberships (self-view), roster view for org admins, promote/demote controls for elevated members, leave-org action
-- Route `/organizations` + nav link
-- Home page: org summary chips (multi-role dashboard hint)
+## Frontend (validated — lint + build green)
+- `src/lib/orgRepertoire.js`: `getMyOrganizations` (self memberships with nested org/branch + former history; explicit self-row filter because the roster policy also exposes full rosters to owners/admins), `promoteSong`, `demoteSong`, `leaveOrganization` — RPC wrappers with exact user-error mapping (songs.js convention)
+- `src/pages/Organizations.jsx`: My organizations cards (org name/type/role/branch/status), Repertoire scopes grouped by level (System / Org-level / Branch-level) with promote/demote buttons gated by elevated-active memberships (mirrors RPC authority), Leave-organization flow with confirm; RLS is the source of truth; hole state hides repertoire/leave when no memberships
+- `src/App.jsx` route `/organizations` (protected) + `src/components/layout/AppLayout.jsx` nav link
+- `src/lib/songs.js`: `flattenSong` adds additive `orgId`/`branchId`/`sourceOrgId` only (no other behavior touched)
+- Delegate spot-check: lint exit 0 (zero warnings), build 2.13s, consumers unaffected
 
 ## Verification (backend)
 - [x] `supabase db reset` applies 0001→0013 + 0016 cleanly
@@ -40,6 +41,12 @@ Hierarchical repertoire: system-level unified catalog, org-level and branch-leve
 - [x] Leave: isolation leaves a2 → status former + left_at; own row still readable (history)
 - [x] Event: participant isolation sees union (Way Maker/Oceans a1 + Isolation Anthem a2); outsider → 'Not a participant.'
 - [x] Concluded guard: organizer creates event_setlist; after conclusion UPDATE → RLS rejects; SELECT persists
+
+## Review status (RDD)
+- Assess `medium` (executable_change), `slice_budget_reached` (1067 changed lines base main).
+- Preflight STATUS returned `stop / managed_assets_outdated` → `gentle-ai sync` fails (exit 1): OpenCode plugin `opencode-review-transport.ts` at `~/.config/opencode/plugins/` has unverified ownership (custom bytes, differs from `.bak-plugin-v1`); sync preserves custom bytes by design, no `--force`. Environment/install state, not a product defect.
+- User decision (2026-09-20): **skip native review for now** — deferred; can run later on the PR slice after the plugin asset state is resolved.
+- Commits: `3ead458` (backend, 605 lines) `a04f33b` (frontend + flatten fields, 462 lines). Branch `feat/hito4-org-repertoire` from main; no push/PR yet (ordinary repo policy).
 
 ## Notes
 - Offline cross-org scenarios (13-14) are future work tied to the outbox; this slice delivers the online RLs/RPC contract they will validate against.
