@@ -107,7 +107,7 @@ Checklist — each item is a work-unit with its own PR in the chain.
 - [x] T4 (S4.2.4) **Follows** — migration 0013: RLS policies on `follows`
       (+ follow/unfollow entry points), follow buttons on profile page,
       follower/following counts.
-- [ ] T5 (S4.2.5) **Discovery feed** — "Following" tab on `/library`:
+- [x] T5 (S4.2.5) **Discovery feed** — "Following" tab on `/library`:
       `public_songs` where `contributor_id` in my follows, `updated_at desc`.
 
 DEFERRED (recorded, not tasks of this chain):
@@ -166,6 +166,19 @@ DEFERRED (recorded, not tasks of this chain):
   at `managed_assets_outdated` and `gentle-ai sync` FAILED (telemetry
   runtime ownership conflict in ~/.config/opencode; custom files preserved)
   — slice review BLOCKED on the same global-config/plugins issue.
+- 2026-09-19: **T5 S4.2.5 done** — discovery feed complete: no new
+  migration needed (client-side composition of two existing read surfaces:
+  participant-only follows RLS select via `getFollowState` + open
+  `public_library_entries` view filtered `.in('contributor_id', ...)`
+  ordered `updated_at desc`); `src/lib/follows.js` gained additive
+  `getDiscoveryFeed()` + feed cache-drop in `invalidateFollowCaches`;
+  new `src/hooks/useDiscoveryFeed.js`; "Following" tab on `/library`
+  reusing PublicSongCard + empty state, catalog/mine tabs untouched.
+  IGNORED round-trip when follow graph empty. Verification: lint 0
+  warnings, build success (150 modules), db reset 0001→0013 + seed clean.
+  Native assess post-commit `--base-ref c3c7c65` → risk **medium**
+  (`executable_change` on useDiscoveryFeed.js), 195 changed lines →
+  review_due **false** (`under_budget`), deferred to accumulated slice.
 
 ## Verification evidence
 
@@ -206,18 +219,28 @@ DEFERRED (recorded, not tasks of this chain):
   failed (telemetry runtime ownership conflict in ~/.config/opencode,
   custom files preserved) — T4 slice native review BLOCKED until the
   global-config issue is resolved, per system decision.
+- T5 (branch feat/hito4-s42-contrib-feed): `pnpm lint` 0 warnings (writer
+  + parent spot-check, exit 0); `pnpm build` success (150 modules, exit 0;
+  parent spot-check re-run exit 0); `supabase db reset` 0001→0013 + seed
+  clean, exit 0. No migration in this slice (client-side composition of
+  follows RLS read + public_library_entries view). Native assess
+  post-commit `--base-ref c3c7c65` → risk **medium** (`executable_change`
+  on useDiscoveryFeed.js), 195 changed lines, `review_due` **false**
+  (`under_budget`) → deferred; T4 slice still carries the earlier
+  review_due=true budget hold, blocked on the sync/plugins issue.
 
 ## Next step
 
-- S4.2.5: discovery feed — "Following" tab on `/library`:
-  `public_songs where contributor_id in (my follows)` ordered `updated_at
-  desc`, using the participant-only RLS read surface + `src/lib/follows.js`
-  from T4. Branch `feat/hito4-s42-contrib-feed` (from
-  `feat/hito4-s42-contrib-follows` @ c3c7c65).
-- BEFORE that slice's native review can run, resolve the
-  `gentle-ai sync` failure (telemetry runtime ownership conflict in
-  ~/.config/opencode) — same root area as the "plugins fail" report.
-- Push/PR for the chain slice remains the user's decision (T1–T4 committed
+- The S4.2 chain is IMPLEMENTED end-to-end (T1–T5, five branches). What
+  remains is user-owned delivery: resolve the `gentle-ai sync` /
+  plugins blocker, run the accumulated-slice native review (T4 slice is
+  review_due=true, budget reached), and then push/PR the chain slices.
+- `gentle-ai sync` fails with "telemetry runtime ownership conflict in
+  ~/.config/opencode; custom files preserved" — the same root area as the
+  "plugins fail" report (old-format TS plugins in ~/.config/opencode/plugins
+  don't export the v2 `default { id, effect/setup }` shape). Native review
+  cannot proceed until that is resolved.
+- Push/PR for the chain slices remains the user's decision (T1–T5 committed
   locally on their child branches; nothing pushed).
 
 ## Commits (S4.2.4)
@@ -225,6 +248,13 @@ DEFERRED (recorded, not tasks of this chain):
 - `feat: S4.2 follows (RLS + follow/unfollow RPCs + profile follow UI)` —
   migration 0013 + src/lib/follows.js + src/hooks/useFollows.js +
   Profile.jsx follow UI (c3c7c65 on feat/hito4-s42-contrib-follows).
+- `docs(odd): record T4 verification evidence + commit identity` (b68b2bd).
+
+## Commits (S4.2.5)
+
+- `feat: S4.2 discovery feed (Following tab on library)` —
+  getDiscoveryFeed in follows.js + useDiscoveryFeed.js + PublicLibrary
+  Following tab (40d5067 on feat/hito4-s42-contrib-feed).
 
 ## Commits (S4.2.1)
 
