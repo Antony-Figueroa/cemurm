@@ -10,6 +10,8 @@ import SetlistDetail from './pages/SetlistDetail.jsx'
 import Gigs from './pages/Gigs.jsx'
 import GigDetail from './pages/GigDetail.jsx'
 import Bandmates from './pages/Bandmates.jsx'
+import Services from './pages/Services.jsx'
+import ServiceDetail from './pages/ServiceDetail.jsx'
 import Notifications from './pages/Notifications.jsx'
 import StageMode from './pages/StageMode.jsx'
 import Auth from './pages/Auth.jsx'
@@ -39,6 +41,8 @@ const router = createBrowserRouter([
           { path: '/gigs', element: <Gigs /> },
           { path: '/gigs/:id', element: <GigDetail /> },
           { path: '/bandmates', element: <Bandmates /> },
+          { path: '/services', element: <Services /> },
+          { path: '/services/:id', element: <ServiceDetail /> },
           { path: '/notifications', element: <Notifications /> },
           { path: '/settings', element: <Settings /> },
           { path: '/settings/storage', element: <Storage /> },
