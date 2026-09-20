@@ -29,7 +29,8 @@ Minor accounts require guardian consent before features unlock; visibility-restr
 - Delegate spot-check: lint exit 0, build 2.25s, `isMinor` confined to gate/signup/pre-check; existing users (metadata-less) pass through unchanged
 
 ## Review status (RDD)
-- Assess + preflight deferred per user decision (same managed-assets block as org-repertoire — see that feature's review note; sync still refuses the custom plugin). Fill in after assess run.
+- Assess `high` (1013 lines base main, `high_risk` due) → preflight STATUS run: `stop / managed_assets_outdated` (same environment block as org-repertoire; `gentle-ai sync` refuses the custom plugin `opencode-review-transport.ts`, unverified ownership). **Deferred per session policy** (user decision 2026-09-20: skip native review for now; can run later on the PR slice after the plugin asset state is resolved).
+- Commits: `09eb7e1` (backend, 483 lines) `cd550e1` (frontend, 511 lines). Branch `feat/hito4-minors-consent` from main; no push/PR yet.
 
 ## Verification (backend)
 - [x] `supabase db reset` applies 0001→0013 + 0017 cleanly (spot re-check EXIT=0)
