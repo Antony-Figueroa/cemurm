@@ -9,6 +9,7 @@
 /* eslint-disable react/prop-types */
 
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { filterPublicEntries } from '../lib/search.js'
 import { usePublicLibrary } from '../hooks/usePublicLibrary.js'
 
@@ -36,9 +37,7 @@ function LicenseBadge({ license }) {
 }
 
 function PublicSongCard({ entry, pending, added, onAdd }) {
-  const meta = [entry.artist, entry.genre, entry.contributor_name && `by ${entry.contributor_name}`]
-    .filter(Boolean)
-    .join(' · ')
+  const meta = [entry.artist, entry.genre].filter(Boolean).join(' · ')
   const label = added ? 'Added ✓' : pending ? 'Adding…' : 'Add to repertoire'
 
   return (
@@ -48,7 +47,18 @@ function PublicSongCard({ entry, pending, added, onAdd }) {
           <span className="truncate text-sm font-medium text-cem-text">{entry.title}</span>
           <LicenseBadge license={entry.license} />
         </div>
-        <p className="mt-0.5 text-xs text-cem-secondary">{meta}</p>
+        <p className="mt-0.5 text-xs text-cem-secondary">
+          {meta}
+          {meta && entry.contributor_name && <span> · </span>}
+          {entry.contributor_name && (
+            <Link
+              to={`/profile/${entry.contributor_id}`}
+              className="text-cem-amber hover:underline"
+            >
+              by {entry.contributor_name}
+            </Link>
+          )}
+        </p>
       </div>
       <button
         type="button"
