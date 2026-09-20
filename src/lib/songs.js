@@ -99,6 +99,12 @@ function flattenSong(row) {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     deletedAt: row.is_deleted ? row.updated_at : null,
+    // Organizational repertoire (0016): scope fields — null at system level;
+    // sourceOrgId keeps provenance for promoted songs. Additive, only used by
+    // the org repertoire surface today.
+    orgId: row.org_id || null,
+    branchId: row.branch_id || null,
+    sourceOrgId: row.source_org_id || null,
     // Internal fields — used by mutations to locate the version/chart rows
     versionId: latest?.id || null,
     chartFileId: chart?.id || null,
