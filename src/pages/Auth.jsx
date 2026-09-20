@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.jsx'
-import { EMAIL_RE } from '../lib/auth.js'
+import { EMAIL_RE, getSession } from '../lib/auth.js'
 
 const inputClass =
   'w-full rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text placeholder:text-cem-secondary focus:border-cem-amber focus:outline-none focus:ring-1 focus:ring-cem-amber disabled:bg-cem-elevated'
@@ -22,9 +22,11 @@ function Auth() {
     email: '',
     password: '',
     passwordConfirm: '',
+    ageDeclaration: '', // '' | 'minor' | 'adult' (signup only)
   })
   const [errors, setErrors] = useState({})
   const [formError, setFormError] = useState('')
+  const [notice, setNotice] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const isSignUp = mode === 'signup'
@@ -39,6 +41,7 @@ function Auth() {
     setMode(nextMode)
     setErrors({})
     setFormError('')
+    setNotice('')
   }
 
   function validate() {
@@ -63,6 +66,9 @@ function Auth() {
       if (form.passwordConfirm !== form.password) {
         nextErrors.passwordConfirm = 'Passwords do not match.'
       }
+      if (!form.ageDeclaration) {
+        nextErrors.ageDeclaration = 'Please tell us your age to continue.'
+      }
     } else if (!form.password) {
       nextErrors.password = 'Password is required.'
     }
@@ -79,16 +85,29 @@ function Auth() {
     }
     setErrors({})
     setFormError('')
+    setNotice('')
     setIsSubmitting(true)
     try {
       if (isSignUp) {
-        await signUp({
+        const createdUser = await signUp({
           firstName: form.firstName.trim(),
           lastName: form.lastName.trim(),
           displayName: form.displayName.trim(),
           email: form.email.trim(),
           password: form.password,
+          ageDeclaration: form.ageDeclaration,
         })
+        // Hito 4: minors land on the guardian consent screen (the gate in
+        // the protected layout renders it once they hit any app route). With
+        // email confirmation (session-less signup) they can't reach it until
+        // the email is confirmed — tell them instead.
+        if (createdUser?.isMinor) {
+          const session = await getSession()
+          if (!session) {
+            setNotice('Complete guardian consent after confirming your email.')
+            return
+          }
+        }
       } else {
         await signIn({ email: form.email.trim(), password: form.password })
       }
@@ -146,6 +165,12 @@ function Auth() {
           </p>
         )}
 
+        {notice && (
+          <p role="status" className="rounded-md bg-cem-amber/10 px-3 py-2 text-sm text-cem-amber">
+            {notice}
+          </p>
+        )}
+
         {isSignUp && (
           <div className="grid grid-cols-2 gap-4">
             {renderField('firstName', 'First name', { autoComplete: 'given-name' })}
@@ -154,6 +179,56 @@ function Auth() {
         )}
 
         {isSignUp && renderField('displayName', 'Display name', { autoComplete: 'nickname' })}
+
+        {isSignUp && (
+          <div>
+            <span className="block text-sm font-medium text-cem-text">Are you under 18?</span>
+            <div className="mt-1 grid grid-cols-2 gap-2">
+              <label
+                className={`cursor-pointer rounded-md border px-3 py-2 text-center text-sm font-medium ${
+                  form.ageDeclaration === 'minor'
+                    ? 'border-cem-amber bg-cem-amber/10 text-cem-amber'
+                    : 'border-cem-elevated text-cem-text hover:bg-cem-elevated'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="ageDeclaration"
+                  value="minor"
+                  checked={form.ageDeclaration === 'minor'}
+                  onChange={handleChange}
+                  disabled={isSubmitting}
+                  className="sr-only"
+                />
+                Under 18
+              </label>
+              <label
+                className={`cursor-pointer rounded-md border px-3 py-2 text-center text-sm font-medium ${
+                  form.ageDeclaration === 'adult'
+                    ? 'border-cem-amber bg-cem-amber/10 text-cem-amber'
+                    : 'border-cem-elevated text-cem-text hover:bg-cem-elevated'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="ageDeclaration"
+                  value="adult"
+                  checked={form.ageDeclaration === 'adult'}
+                  onChange={handleChange}
+                  disabled={isSubmitting}
+                  className="sr-only"
+                />
+                18 or older
+              </label>
+            </div>
+            {form.ageDeclaration === 'minor' && (
+              <p className="mt-1 text-xs text-cem-secondary">Guardian consent will be required.</p>
+            )}
+            {errors.ageDeclaration && (
+              <p className="mt-1 text-xs text-cem-rose">{errors.ageDeclaration}</p>
+            )}
+          </div>
+        )}
 
         {renderField('email', 'Email', { type: 'email', autoComplete: 'email' })}
         {renderField('password', 'Password', {

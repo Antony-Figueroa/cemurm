@@ -1,6 +1,10 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import AppLayout from './components/layout/AppLayout.jsx'
-import { RedirectIfAuthed, RequireAuth } from './components/auth/AuthGuards.jsx'
+import {
+  RedirectIfAuthed,
+  RequireAuth,
+  RequireGuardianConsent,
+} from './components/auth/AuthGuards.jsx'
 import { AuthProvider } from './hooks/useAuth.jsx'
 import Home from './pages/Home.jsx'
 import Songs from './pages/Songs.jsx'
@@ -28,20 +32,27 @@ const router = createBrowserRouter([
       {
         element: <RequireAuth />,
         children: [
-          { path: '/songs', element: <Songs /> },
-          { path: '/songs/:id', element: <SongDetail /> },
-          { path: '/songs/:id/practice', element: <Practice /> },
-          { path: '/library', element: <PublicLibrary /> },
-          { path: '/profile/:userId', element: <Profile /> },
-          { path: '/setlists', element: <Setlists /> },
-          { path: '/setlists/:id', element: <SetlistDetail /> },
-          { path: '/setlists/:id/stage', element: <StageMode /> },
-          { path: '/gigs', element: <Gigs /> },
-          { path: '/gigs/:id', element: <GigDetail /> },
-          { path: '/bandmates', element: <Bandmates /> },
-          { path: '/notifications', element: <Notifications /> },
-          { path: '/settings', element: <Settings /> },
-          { path: '/settings/storage', element: <Storage /> },
+          // Hito 4: minors without an ACTIVE guardian consent never reach the
+          // app routes — RequireGuardianConsent swaps them for the lock screen.
+          {
+            element: <RequireGuardianConsent />,
+            children: [
+              { path: '/songs', element: <Songs /> },
+              { path: '/songs/:id', element: <SongDetail /> },
+              { path: '/songs/:id/practice', element: <Practice /> },
+              { path: '/library', element: <PublicLibrary /> },
+              { path: '/profile/:userId', element: <Profile /> },
+              { path: '/setlists', element: <Setlists /> },
+              { path: '/setlists/:id', element: <SetlistDetail /> },
+              { path: '/setlists/:id/stage', element: <StageMode /> },
+              { path: '/gigs', element: <Gigs /> },
+              { path: '/gigs/:id', element: <GigDetail /> },
+              { path: '/bandmates', element: <Bandmates /> },
+              { path: '/notifications', element: <Notifications /> },
+              { path: '/settings', element: <Settings /> },
+              { path: '/settings/storage', element: <Storage /> },
+            ],
+          },
         ],
       },
       {

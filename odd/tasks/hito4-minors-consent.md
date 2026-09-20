@@ -19,13 +19,17 @@ Minor accounts require guardian consent before features unlock; visibility-restr
   - `revoke_guardian_consent(user_id, guardian_email, revocation_token)` — login-less capability (ONLY anon-granted definer entry; documented); 'Consent not found or already finalized.'; after revoke, notifies org admins (org_owner/org_admin/branch_admin of the minor's active orgs) via `public.notify_user` category 'system'.
 - Auth initPlan guard message: 'Guardian consent required.'
 
-## Frontend (pending)
-- `src/lib/minors.js`: `getConsentStatus()` (guardian_consents self select), `recordConsent`, `approvePublicSharing` (authenticated RPCs) — error mapping convention
-- `src/pages/Auth.jsx` + `src/lib/auth.js`: age gate at signup (`isMinor` in user_metadata; date_of_birth self-update for minors), under-18 routes to consent flow
-- Guard wrapper in `src/App.jsx`: if `user_metadata.isMinor` && no ACTIVE consent → "Guardian consent required" screen (BDD scenario 2: no feature usable) instead of the app
-- Consent screen: shows the consent text, guardian name/email inputs, submit → `record_guardian_consent` → unlock; once active, optional "Public sharing approval" action (needed before publishing to the library)
-- PublicLibrary publish gate: if minor without approval → surface 'Guardian approval required for public sharing' (server already blocks; UI should pre-check consent status)
-- (revoke UI = emailed link hitting the revoke RPC; out of scope for the PWA slice — RPC + tests cover it)
+## Frontend (validated — lint + build green)
+- `src/lib/minors.js`: `getConsentStatus` (self-select guardian_consents, latest row camelCase), `recordConsent`, `approvePublicSharing` (RPC wrappers, exact-string error mapping)
+- `src/lib/auth.js` + `src/pages/Auth.jsx`: signup age gate (`ageDeclaration` required → `isMinor` in user_metadata; `mapUser` gains additive `isMinor`), segmented "Under 18 / 18 or older" control + guardian note, minor signup routing note
+- `src/components/auth/AuthGuards.jsx`: `RequireGuardianConsent` gate — non-minors pass instantly; minors locked until ACTIVE consent (loading state, cancel-safe effect)
+- `src/App.jsx`: gate composed inside RequireAuth wrapping all protected routes
+- `src/pages/GuardianConsentRequired.jsx`: lock screen with consent statement, guardian name/email, submit → recordConsent, unlock on success
+- `src/pages/SongDetail.jsx`: publish pre-check — minors see disabled "Contribute to library" + helper text unless ACTIVE consent with public_sharing_approved; inline "Approve public sharing" (confirm → approvePublicSharing → re-read) unlocks
+- Delegate spot-check: lint exit 0, build 2.25s, `isMinor` confined to gate/signup/pre-check; existing users (metadata-less) pass through unchanged
+
+## Review status (RDD)
+- Assess + preflight deferred per user decision (same managed-assets block as org-repertoire — see that feature's review note; sync still refuses the custom plugin). Fill in after assess run.
 
 ## Verification (backend)
 - [x] `supabase db reset` applies 0001→0013 + 0017 cleanly (spot re-check EXIT=0)

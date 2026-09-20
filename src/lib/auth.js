@@ -18,6 +18,9 @@ const _unsubscribeAuth = supabase.auth
   .data.subscription.unsubscribe
 
 // D3: application user shape — flat fields mapped from user_metadata.
+// isMinor is the ONLY signal for minor-ness the app can see (date_of_birth /
+// is_minor stay server-side per migration 0017); metadata missing → false,
+// so pre-existing accounts pass straight through.
 function mapUser(user) {
   const metadata = user.user_metadata ?? {}
   return {
@@ -26,6 +29,7 @@ function mapUser(user) {
     firstName: metadata.firstName ?? '',
     lastName: metadata.lastName ?? '',
     displayName: metadata.displayName || user.email,
+    isMinor: metadata.isMinor === true,
   }
 }
 
@@ -40,7 +44,7 @@ function toAuthError(error) {
   return new Error(messages[error?.code] || 'Something went wrong. Please try again.')
 }
 
-export async function signUp({ firstName, lastName, displayName, email, password }) {
+export async function signUp({ firstName, lastName, displayName, email, password, ageDeclaration }) {
   // Same local validation and messages as the mock, kept client-side (D4).
   const normalizedEmail = email.trim().toLowerCase()
   if (!EMAIL_RE.test(normalizedEmail)) {
@@ -49,12 +53,24 @@ export async function signUp({ firstName, lastName, displayName, email, password
   if (password.length < 8) {
     throw new Error('Password must be at least 8 characters.')
   }
+  if (ageDeclaration !== 'minor' && ageDeclaration !== 'adult') {
+    throw new Error('Please tell us your age to continue.')
+  }
 
   try {
     const { data, error } = await supabase.auth.signUp({
       email: normalizedEmail,
       password,
-      options: { data: { firstName, lastName, displayName } },
+      options: {
+        data: {
+          firstName,
+          lastName,
+          displayName,
+          // Hito 4: minor-ness lives in user_metadata — the DB keeps
+          // date_of_birth server-side and never exposes is_minor.
+          isMinor: ageDeclaration === 'minor',
+        },
+      },
     })
     if (error) throw error
     // D1/D4: keep the session cache in sync. With email confirmation enabled,
