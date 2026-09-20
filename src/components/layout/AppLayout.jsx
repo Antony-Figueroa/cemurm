@@ -6,6 +6,7 @@ const navLinks = [
   { to: '/', label: 'Home' },
   { to: '/songs', label: 'Repertoire' },
   { to: '/library', label: 'Library' },
+  { to: '/moderation', label: 'Moderation' },
   { to: '/setlists', label: 'Setlists' },
   { to: '/gigs', label: 'Gigs' },
   { to: '/bandmates', label: 'Bandmates' },

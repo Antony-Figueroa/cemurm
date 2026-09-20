@@ -16,6 +16,8 @@ import { Link } from 'react-router-dom'
 import { filterPublicEntries } from '../lib/search.js'
 import { usePublicLibrary } from '../hooks/usePublicLibrary.js'
 import { useDiscoveryFeed } from '../hooks/useDiscoveryFeed.js'
+import { useModeration } from '../hooks/useModeration.js'
+import ReportDialog from '../components/moderation/ReportDialog.jsx'
 
 const LICENSE_OPTIONS = [
   { value: '', label: 'All licenses' },
@@ -40,7 +42,7 @@ function LicenseBadge({ license }) {
   )
 }
 
-function PublicSongCard({ entry, pending, added, onAdd }) {
+function PublicSongCard({ entry, pending, added, mine, onAdd, onReport }) {
   const meta = [entry.artist, entry.genre].filter(Boolean).join(' · ')
   const label = added ? 'Added ✓' : pending ? 'Adding…' : 'Add to repertoire'
 
@@ -64,18 +66,28 @@ function PublicSongCard({ entry, pending, added, onAdd }) {
           )}
         </p>
       </div>
-      <button
-        type="button"
-        onClick={() => onAdd(entry.id)}
-        disabled={Boolean(pending || added)}
-        className={`ml-4 shrink-0 rounded-md px-3 py-1.5 text-sm font-medium ${
-          added
-            ? 'bg-cem-elevated text-cem-secondary'
-            : 'bg-cem-amber text-cem-base hover:bg-cem-amber/90 disabled:opacity-50'
-        }`}
-      >
-        {label}
-      </button>
+      <div className="ml-4 flex shrink-0 items-center gap-2">
+        <button
+          type="button"
+          onClick={() => onReport(entry)}
+          disabled={Boolean(mine)}
+          className="rounded-md border border-cem-elevated px-3 py-1.5 text-sm font-medium text-cem-secondary hover:bg-cem-elevated disabled:opacity-40"
+        >
+          Report
+        </button>
+        <button
+          type="button"
+          onClick={() => onAdd(entry.id)}
+          disabled={Boolean(pending || added)}
+          className={`rounded-md px-3 py-1.5 text-sm font-medium ${
+            added
+              ? 'bg-cem-elevated text-cem-secondary'
+              : 'bg-cem-amber text-cem-base hover:bg-cem-amber/90 disabled:opacity-50'
+          }`}
+        >
+          {label}
+        </button>
+      </div>
     </li>
   )
 }
@@ -96,8 +108,11 @@ export default function PublicLibrary() {
     withdrawEntry,
   } = usePublicLibrary()
   const feed = useDiscoveryFeed()
+  const moderation = useModeration()
   const [addedIds, setAddedIds] = useState({})
   const [tab, setTab] = useState('catalog')
+  const [reportTarget, setReportTarget] = useState(null)
+  const [alreadyReported, setAlreadyReported] = useState({})
 
   const filtersActive = Boolean(search.trim() || licenseFilter)
   const visible = filterPublicEntries(entries, { query: search, license: licenseFilter })
@@ -113,6 +128,25 @@ export default function PublicLibrary() {
     } catch {
       // The hook surfaced the error banner already.
     }
+  }
+
+  /** Open the report dialog for an entry and pre-check already-filed reasons. */
+  async function openReport(entry) {
+    setReportTarget(entry)
+    const reported = {}
+    for (const reason of moderation.REPORT_REASONS) {
+      try {
+        reported[reason] = await moderation.checkReported(entry.id, reason)
+      } catch {
+        reported[reason] = false
+      }
+    }
+    setAlreadyReported(reported)
+  }
+
+  async function submitReport(publicSongId, reason) {
+    await moderation.reportEntry(publicSongId, reason)
+    setReportTarget(null)
   }
 
   return (
@@ -186,7 +220,9 @@ export default function PublicLibrary() {
                   entry={entry}
                   pending={pendingId === entry.id}
                   added={Boolean(addedIds[entry.id])}
+                  mine={userId === entry.contributor_id}
                   onAdd={handleAdd}
+                  onReport={openReport}
                 />
               ))}
             </ul>
@@ -208,7 +244,9 @@ export default function PublicLibrary() {
                   entry={entry}
                   pending={pendingId === entry.id}
                   added={Boolean(addedIds[entry.id])}
+                  mine={userId === entry.contributor_id}
                   onAdd={handleAdd}
+                  onReport={openReport}
                 />
               ))}
             </ul>
@@ -248,6 +286,16 @@ export default function PublicLibrary() {
             </ul>
           )}
         </>
+      )}
+
+      {reportTarget && (
+        <ReportDialog
+          entry={reportTarget}
+          reasons={moderation.REPORT_REASONS}
+          onSubmit={submitReport}
+          onClose={() => setReportTarget(null)}
+          alreadyReported={alreadyReported}
+        />
       )}
     </div>
   )
