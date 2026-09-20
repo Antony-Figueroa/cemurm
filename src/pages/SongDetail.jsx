@@ -11,6 +11,7 @@ import { listAnnotations } from '../lib/annotations.js'
 import { resolveDegree } from '../lib/degreeResolver.js'
 import { buildCommentTree, formatAnchor } from '../lib/comments.js'
 import { computeReadiness } from '../lib/readiness.js'
+import { approvePublicSharing, getConsentStatus } from '../lib/minors.js'
 import ChordProRenderer, { sectionAnchorId } from '../components/notation/ChordProRenderer.jsx'
 
 /* eslint-disable react/prop-types */
@@ -215,6 +216,11 @@ export default function SongDetail() {
   const [publishRights, setPublishRights] = useState(false)
   const [publishError, setPublishError] = useState('')
   const [contributionError, setContributionError] = useState('')
+  // Hito 4: minor publish pre-check — UX mirror of the server-side guard
+  // (migration 0017). The route gate guarantees an ACTIVE consent; the only
+  // open question is guardian approval of public sharing.
+  const [consentStatus, setConsentStatus] = useState(null)
+  const [approvingSharing, setApprovingSharing] = useState(false)
   const [commentDraft, setCommentDraft] = useState('')
   const [commentAnchor, setCommentAnchor] = useState(null)
   const [replyingTo, setReplyingTo] = useState(null)
@@ -253,6 +259,19 @@ export default function SongDetail() {
     listAnnotations(user.id, id).then((rows) => { if (!cancelled) setAnnotations(rows) })
     return () => { cancelled = true }
   }, [user?.id, id])
+
+  // Hito 4: minors re-check their consent ledger on mount so the publish
+  // action reflects CURRENT guardian approval (revocation flips the gate
+  // back on server-side; this keeps the button honest).
+  const isMinor = user?.isMinor === true
+  useEffect(() => {
+    let cancelled = false
+    if (!isMinor || !user?.id) return undefined
+    getConsentStatus(user.id)
+      .then((row) => { if (!cancelled) setConsentStatus(row) })
+      .catch(() => { if (!cancelled) setConsentStatus(null) })
+    return () => { cancelled = true }
+  }, [isMinor, user?.id])
 
   const versions = useMemo(() => song?.versions || [], [song?.versions])
 
@@ -408,6 +427,34 @@ export default function SongDetail() {
       setContributionError(err.message)
     }
   }
+
+  // Hito 4: guardian approval of public sharing — called from the inline
+  // "Approve public sharing" action when the minor's ACTIVE consent hasn't
+  // been approved yet. The RPC records the approval; we re-read the ledger
+  // so the publish button unlocks immediately.
+  async function handleApproveSharing() {
+    if (!user) return
+    if (!window.confirm('Approve public sharing of this contribution? Your guardian can revoke this later via the emailed link.')) return
+    setApprovingSharing(true)
+    setContributionError('')
+    try {
+      await approvePublicSharing(user.id)
+      const row = await getConsentStatus(user.id)
+      setConsentStatus(row)
+    } catch (err) {
+      setContributionError(err.message)
+    } finally {
+      setApprovingSharing(false)
+    }
+  }
+
+  // Minor publish gate: disabled (helper text) unless an ACTIVE consent with
+  // public-sharing approval exists. The server stays the authority — this is
+  // UX so minors see the reason before the RPC rejects them.
+  const minorCanPublish =
+    !isMinor || (consentStatus?.status === 'active' && consentStatus?.publicSharingApproved)
+  const sharingNeedsApproval =
+    consentStatus?.status === 'active' && !consentStatus?.publicSharingApproved
 
   // ── 3.4 shared-comments panel ────────────────────────────────────────────
 
@@ -581,13 +628,38 @@ export default function SongDetail() {
               {library.withdrawingEntryId === myEntry.id ? 'Withdrawing…' : 'Withdraw from library'}
             </button>
           ) : (song.userId === user?.id && song.body && (
-            <button
-              type="button"
-              onClick={openPublish}
-              className="rounded-md border border-cem-amber/40 px-3 py-1.5 text-sm font-medium text-cem-amber hover:bg-cem-amber/10"
-            >
-              Contribute to library
-            </button>
+            isMinor && !minorCanPublish ? (
+              <span className="flex flex-col items-end gap-1.5">
+                <button
+                  type="button"
+                  disabled
+                  className="rounded-md border border-cem-elevated px-3 py-1.5 text-sm font-medium text-cem-secondary opacity-60"
+                >
+                  Contribute to library
+                </button>
+                <span className="text-xs text-cem-secondary">
+                  Guardian approval required for public sharing
+                </span>
+                {sharingNeedsApproval && (
+                  <button
+                    type="button"
+                    onClick={handleApproveSharing}
+                    disabled={approvingSharing}
+                    className="rounded-md border border-cem-amber/40 px-3 py-1 text-xs font-medium text-cem-amber hover:bg-cem-amber/10 disabled:opacity-50"
+                  >
+                    {approvingSharing ? 'Approving…' : 'Approve public sharing'}
+                  </button>
+                )}
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={openPublish}
+                className="rounded-md border border-cem-amber/40 px-3 py-1.5 text-sm font-medium text-cem-amber hover:bg-cem-amber/10"
+              >
+                Contribute to library
+              </button>
+            )
           )))}
           {isRetired ? (
             <button
