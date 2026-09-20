@@ -9,6 +9,7 @@ const navLinks = [
   { to: '/setlists', label: 'Setlists' },
   { to: '/gigs', label: 'Gigs' },
   { to: '/bandmates', label: 'Bandmates' },
+  { to: '/rehearsals', label: 'Rehearsals' },
   { to: '/notifications', label: 'Notifications' },
   { to: '/settings', label: 'Settings' },
   { to: '/settings/storage', label: 'Storage' },
