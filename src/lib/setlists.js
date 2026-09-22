@@ -11,6 +11,7 @@ import { formatDuration } from './duration.js'
 import { offlineGet, offlineSet, offlineRemove } from './offlineCache.js'
 import { enqueueOp } from './offlineQueue.js'
 import { guardVisibility, shareTargets, guardTransfer } from './setlistCollab.js'
+import { normalizeProgram } from './midi.js'
 
 // ponytail: known user-facing errors re-thrown as-is; network/PostgREST
 // errors map to a safe generic message.
@@ -84,6 +85,15 @@ function flattenSetlist(row, userId) {
     if (item.version_id) versionIds[item.song_id] = item.version_id
   }
 
+  // MIDI program per song (Hito 5 #56): map omits null entries so an
+  // unmapped song simply has no key (Stage Mode reads ─ absent key = no send).
+  const midiPrograms = {}
+  for (const item of items) {
+    if (item.midi_program !== null && item.midi_program !== undefined) {
+      midiPrograms[item.song_id] = item.midi_program
+    }
+  }
+
   const collaborators = (row.setlist_collaborators || []).map((c) => ({
     userId: c.user_id,
     canEdit: c.can_edit,
@@ -99,6 +109,7 @@ function flattenSetlist(row, userId) {
     visibility: row.visibility,
     itemIds,
     versionIds,
+    midiPrograms,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     isOwner,
@@ -116,7 +127,7 @@ function flattenSetlist(row, userId) {
 async function fetchSetlistById(userId, id) {
   const { data, error } = await supabase
     .from('setlists')
-    .select('*, setlist_items(song_id, position, version_id), setlist_collaborators(user_id, can_edit, accepted_at)')
+    .select('*, setlist_items(song_id, position, version_id, midi_program), setlist_collaborators(user_id, can_edit, accepted_at)')
     .eq('id', id)
     .maybeSingle()
 
@@ -147,7 +158,7 @@ async function readBaseSetlist(userId, id) {
  * reload shows the pending version. Validation already ran before the
  * connectivity catch fired, so falling back to a minimal stub is safe.
  */
-async function buildOptimisticSetlist(userId, id, { name, mutateItemIds, mutateVersions }) {
+async function buildOptimisticSetlist(userId, id, { name, mutateItemIds, mutateVersions, mutateMidi }) {
   const base = await readBaseSetlist(userId, id)
 
   const fallback = {
@@ -156,6 +167,7 @@ async function buildOptimisticSetlist(userId, id, { name, mutateItemIds, mutateV
     name: name ?? 'Setlist',
     itemIds: [],
     versionIds: {},
+    midiPrograms: {},
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   }
@@ -167,6 +179,9 @@ async function buildOptimisticSetlist(userId, id, { name, mutateItemIds, mutateV
     versionIds: mutateVersions
       ? mutateVersions(current.versionIds || {})
       : (current.versionIds || {}),
+    midiPrograms: mutateMidi
+      ? mutateMidi(current.midiPrograms || {})
+      : (current.midiPrograms || {}),
     updatedAt: new Date().toISOString(),
     pendingSync: true,
   }
@@ -223,7 +238,7 @@ export function listSetlists(userId) {
       // collaborators (0002 select_member); no owner_id filter.
       const { data, error } = await supabase
         .from('setlists')
-        .select('*, setlist_items(song_id, position, version_id), setlist_collaborators(user_id, can_edit, accepted_at)')
+        .select('*, setlist_items(song_id, position, version_id, midi_program), setlist_collaborators(user_id, can_edit, accepted_at)')
         .order('created_at', { ascending: true })
 
       if (error) throw error
@@ -245,7 +260,7 @@ export async function createSetlist(userId, { name }) {
       const { data, error } = await supabase
         .from('setlists')
         .insert({ owner_id: userId, name: trimmed })
-        .select('*, setlist_items(song_id, position, version_id)')
+        .select('*, setlist_items(song_id, position, version_id, midi_program)')
         .single()
       if (error) throw error
 
@@ -336,12 +351,14 @@ export async function duplicateSetlist(userId, id, { name }) {
       .single()
     if (createErr) throw createErr
 
-    // 2. Copy items
+    // 2. Copy items (MIDI programs included — a duplicated setlist reuses
+    // the same per-song program mapping on the new gig)
     if (source.itemIds.length > 0) {
       const items = source.itemIds.map((songId, i) => ({
         setlist_id: copyRow.id,
         song_id: songId,
         position: i,
+        midi_program: source.midiPrograms?.[songId] ?? null,
       }))
       const { error: itemsErr } = await supabase
         .from('setlist_items')
@@ -425,6 +442,47 @@ export async function setSongVersion(userId, setlistId, songId, versionId) {
       return buildOptimisticSetlist(userId, setlistId, {
         mutateItemIds: (itemIds) => itemIds,
         mutateVersions: (versionIds) => ({ ...versionIds, [songId]: versionId || undefined }),
+      })
+    }
+  })
+}
+
+/**
+ * Set (or clear) the MIDI program mapping for one setlist item (Hito 5 #56).
+ * Same shape as setSongVersion: value is per (setlist_id, song_id), guarded
+ * by the setlist read, invalidated after success, and enqueued offline (the
+ * replay re-applies the same value — idempotent).
+ * `program`: null/'' clears the mapping ("No patch"); else an integer 0-127
+ * (normalized via midi.js; the 0024 CHECK constraint is the final guard).
+ */
+export async function setMidiProgram(userId, setlistId, songId, program) {
+  return withErrorMapping(async () => {
+    try {
+      const normalized = normalizeProgram(program)
+      await fetchSetlistById(userId, setlistId)
+
+      const { error } = await supabase
+        .from('setlist_items')
+        .update({ midi_program: normalized })
+        .eq('setlist_id', setlistId)
+        .eq('song_id', songId)
+      if (error) throw error
+
+      const setlist = await fetchSetlistById(userId, setlistId)
+      invalidateSetlists(userId, [setlistId])
+      return setlist
+    } catch (e) {
+      if (USER_ERRORS.has(e?.message) || !isConnectivityError(e)) throw e
+      await enqueueOp(userId, { name: 'setMidiProgram', args: [userId, setlistId, songId, program] })
+      return buildOptimisticSetlist(userId, setlistId, {
+        mutateItemIds: (itemIds) => itemIds,
+        mutateMidi: (midiPrograms) => {
+          const next = { ...midiPrograms }
+          const n = normalizeProgram(program)
+          if (n === null) delete next[songId]
+          else next[songId] = n
+          return next
+        },
       })
     }
   })
