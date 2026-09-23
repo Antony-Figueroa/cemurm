@@ -331,3 +331,70 @@ revoke delete on table public.profiles from authenticated;
 grant select (id, username, display_name, avatar_url) on table public.profiles to authenticated;
 grant insert (id, display_name, username, instrument, avatar_url) on table public.profiles to authenticated;
 grant update (display_name, username, instrument, avatar_url) on table public.profiles to authenticated;
+
+-- ══════════════════════ 5. GUARDIAN SHARING APPROVAL — CAPABILITY TOKEN (#150) ══════════════════════
+-- H10 (0017:318-337 + SongDetail.jsx:643): 'Approve public sharing' was
+-- rendered in the MINOR's own song page while the RPC demanded
+-- p_user_id = auth.uid() AND session_is_minor() — the only possible actor was
+-- the minor themself, i.e. self-approval of their own public sharing (the
+-- feature requires "when the guardian approves"). Mirror the login-less
+-- REVOCATION capability pattern (0017:353+: guardian_email + revocation_token,
+-- anon-granted RPC, single bounded UPDATE): each consent row gets its own
+-- sharing_approval_token, the guardian approves through a link carrying
+-- (user_id, guardian_email, token) without authenticating, and the UPDATE
+-- below is the entry point's entire reach — one flag flip on one active row.
+alter table public.guardian_consents
+  add column if not exists sharing_approval_token uuid not null default gen_random_uuid();
+
+-- Capability check: (user_id + guardian_email + sharing_approval_token) is the
+-- witness. Any mismatch (wrong token, wrong guardian, unknown user) and any
+-- non-active row (already approved, revoked, archived) collapse into one
+-- error — no oracle, no state reachable beyond public_sharing_approved.
+create or replace function private.approve_guardian_sharing(
+  p_user_id uuid,
+  p_guardian_email text,
+  p_sharing_approval_token uuid
+)
+returns void
+language plpgsql security definer set search_path = '' as $$
+begin
+  update public.guardian_consents
+  set public_sharing_approved = true,
+      public_sharing_approved_at = now(),
+      updated_at = now()
+  where user_id = p_user_id
+    and guardian_email = p_guardian_email
+    and sharing_approval_token = p_sharing_approval_token
+    and status = 'active';
+
+  if not found then
+    raise exception 'Consent not found or already finalized.';
+  end if;
+end $$;
+
+create or replace function public.approve_guardian_sharing(
+  p_user_id uuid,
+  p_guardian_email text,
+  p_sharing_approval_token uuid
+)
+returns void
+language sql security definer set search_path = '' as $$
+  select private.approve_guardian_sharing(p_user_id, p_guardian_email, p_sharing_approval_token);
+$$;
+
+-- 0017:436-439 grant mirror: private layer authenticated-only; the public
+-- wrapper is the SECOND and last anon-granted surface in the app (first:
+-- revoke_guardian_consent) — anon access is exactly what makes the guardian's
+-- login-less link work, and the capability tuple above bounds its effect.
+revoke execute on function private.approve_guardian_sharing(uuid, text, uuid) from public, anon;
+revoke execute on function public.approve_guardian_sharing(uuid, text, uuid) from public, anon;
+grant execute on function private.approve_guardian_sharing(uuid, text, uuid) to authenticated;
+grant execute on function public.approve_guardian_sharing(uuid, text, uuid) to anon, authenticated;
+
+-- Drop the self-approval path entirely (authenticated bypass): both layers go,
+-- nothing else references them (verified over 0001..0019 and src/), and a drop
+-- takes its grants with it. The publish guard (0017:227) reads
+-- public_sharing_approved — both flows set that same flag; only WHO may set it
+-- changed, from the minor to whoever holds the token.
+drop function if exists public.approve_guardian_public_sharing(uuid);
+drop function if exists private.approve_guardian_public_sharing(uuid);
