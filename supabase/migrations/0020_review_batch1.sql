@@ -398,3 +398,250 @@ grant execute on function public.approve_guardian_sharing(uuid, text, uuid) to a
 -- changed, from the minor to whoever holds the token.
 drop function if exists public.approve_guardian_public_sharing(uuid);
 drop function if exists private.approve_guardian_public_sharing(uuid);
+
+-- ══════════════════════ 6. MODERATION — DECISIONS, APPEALS, REINSTATEMENT (#151) ══════════════════════
+-- Contributor read path (issue: "appeal unreachable"): the only SELECT policy
+-- on moderation_cases is moderator-only (0015:349), so a contributor could
+-- never even read the decided case they want to appeal. A policy cannot
+-- subquery public_songs directly — public_songs_select_live (0010:56) hides
+-- status='removed' rows from everyone but the flow's target rows are exactly
+-- the removed ones, which would defeat the appeal. Hence a definer helper: it
+-- reads public_songs as the table owner (RLS bypassed) and only ever answers
+-- about the SESSION's own rows. Case rows only — the reports table (reporter
+-- confidentiality) gets no new read path; the select grant already exists
+-- (0015:375).
+create or replace function private.session_owns_public_entry(p_public_song_id uuid)
+returns boolean
+language sql security definer stable set search_path = '' as $$
+  select exists (
+    select 1 from public.public_songs
+    where id = p_public_song_id
+      and contributor_id = (select auth.uid())
+  );
+$$;
+
+revoke execute on function private.session_owns_public_entry(uuid) from public, anon;
+grant execute on function private.session_owns_public_entry(uuid) to authenticated, service_role;
+
+drop policy if exists moderation_cases_select_contributor on public.moderation_cases;
+create policy moderation_cases_select_contributor on public.moderation_cases
+  for select to authenticated
+  using (
+    (select auth.uid()) is not null
+    and private.session_owns_public_entry(public_song_id)
+  );
+
+-- decide_moderation_case — two dead ends closed (#151):
+--  (a) ESCALATED cases: 0015:222-233 wrote decision='escalate', after which
+--      every call raised 'Already decided.' AND is_community_moderator gated
+--      out a pure system_admin ('Not a moderator.') — escalated cases could
+--      never be decided, though the feature says they wait "until the system
+--      admin decides". Now: decision='escalate' ⇒ system_admin-only; the
+--      null-decision path keeps the original moderator gate verbatim.
+--  (b) UPHELD APPEALS: the remove branch flipped public_songs to 'removed',
+--      but a 'keep' on the appeal only closed reports — nothing restored
+--      'live', so a successful appeal could never reinstate the entry.
+-- Session check still comes first; the row is then fetched BEFORE gating
+-- because the gate now depends on the row's own state.
+create or replace function private.decide_moderation_case(
+  p_case_id uuid,
+  p_decision text,
+  p_notes text default null
+)
+returns void
+language plpgsql security definer set search_path = '' as $$
+declare
+  v_mod              uuid := (select auth.uid());
+  v_case             public.moderation_cases%rowtype;
+  v_original_decider uuid;
+  v_entry            public.public_songs%rowtype;
+  v_reporter         uuid;
+begin
+  if v_mod is null then
+    raise exception 'Case not found.';
+  end if;
+
+  select * into v_case from public.moderation_cases where id = p_case_id;
+  if not found then
+    raise exception 'Case not found.';
+  end if;
+
+  if p_decision not in ('keep', 'remove', 'escalate') then
+    raise exception 'Invalid decision.';
+  end if;
+
+  if v_case.decision = 'escalate' then
+    -- escalated branch: ONLY a system_admin decides, and only forward
+    -- (keep/remove) — re-escalating an escalated case stays closed.
+    if not private.session_has_system_role('system_admin') then
+      raise exception 'Not a moderator.';
+    end if;
+    if p_decision = 'escalate' then
+      raise exception 'Already decided.';
+    end if;
+  else
+    -- null-decision path keeps the moderator gate (0015:152); any other
+    -- non-null state (keep/remove) stays decided — defensive against a value
+    -- the enum of writes never produces.
+    if not private.is_community_moderator(v_mod) then
+      raise exception 'Not a moderator.';
+    end if;
+    if v_case.decision is not null then
+      raise exception 'Already decided.';
+    end if;
+  end if;
+
+  -- appeal gate (scenario 13): the ORIGINAL decider never reviews the appeal
+  if v_case.appeal_of is not null then
+    select decider_id into v_original_decider
+    from public.moderation_cases where id = v_case.appeal_of;
+    if v_original_decider = v_mod then
+      raise exception 'Cannot review your own decision.';
+    end if;
+  end if;
+
+  update public.moderation_cases
+  set decision = p_decision, decider_id = v_mod, decided_at = now(), notes = p_notes
+  where id = p_case_id;
+
+  -- close the entry's open reports
+  update public.reports
+  set status = 'closed'
+  where public_song_id = v_case.public_song_id and status in ('pending', 'consolidated');
+
+  -- takedown propagation (scenario 12) — unchanged from 0015:187-206
+  if p_decision = 'remove' then
+    select * into v_entry from public.public_songs where id = v_case.public_song_id;
+    if found then
+      update public.public_songs
+      set status = 'removed', updated_at = now(), linked_copies = '{}'
+      where id = v_case.public_song_id;
+
+      -- confirmed-violation counter (0001 rating_restrictions)
+      insert into public.rating_restrictions (contributor_id, confirmed_violations)
+      values (v_entry.contributor_id, 1)
+      on conflict (contributor_id)
+      do update set confirmed_violations = public.rating_restrictions.confirmed_violations + 1;
+
+      perform public.notify_user(
+        v_entry.contributor_id, 'system',
+        'Entry removed from public library',
+        coalesce('Your public entry has been removed. Reason: ' || nullif(p_notes, ''), 'Your public entry has been removed from the public library.'),
+        jsonb_build_object('action', 'moderation-removed', 'public_song_id', v_case.public_song_id));
+    end if;
+  end if;
+
+  -- successful appeal REINSTATEMENT (issue b): only an appeal row decided
+  -- 'keep' flips the entry back, and only when the remove branch actually took
+  -- it down (rows removed by any other path, or re-removed meanwhile, are left
+  -- alone). The contributor is told with action 'moderation-reinstated'.
+  if v_case.appeal_of is not null and p_decision = 'keep' then
+    select * into v_entry from public.public_songs where id = v_case.public_song_id;
+    if found and v_entry.status = 'removed' then
+      update public.public_songs
+      set status = 'live', updated_at = now()
+      where id = v_case.public_song_id;
+
+      perform public.notify_user(
+        v_entry.contributor_id, 'system',
+        'Entry reinstated',
+        'Your appeal was upheld. Your public entry is live in the public library again.',
+        jsonb_build_object('action', 'moderation-reinstated', 'public_song_id', v_case.public_song_id));
+    end if;
+  end if;
+
+  -- reporters learn the outcome (scenario 9-10); self-suppression in notify_user
+  for v_reporter in
+    select distinct reporter_id from public.reports
+    where public_song_id = v_case.public_song_id
+  loop
+    perform public.notify_user(
+      v_reporter, 'system',
+      'Report reviewed',
+      'Your report on a public entry has been reviewed. Outcome: ' || p_decision || '.',
+      jsonb_build_object('action', 'moderation-decision',
+        'public_song_id', v_case.public_song_id, 'outcome', p_decision));
+  end loop;
+
+  -- escalation reaches system admins (scenario 11)
+  if p_decision = 'escalate' then
+    for v_reporter in
+      select user_id from public.user_roles where role = 'system_admin'
+    loop
+      perform public.notify_user(
+        v_reporter, 'system',
+        'Case escalated for review',
+        coalesce('A moderation case has been escalated. Notes: ' || nullif(p_notes, ''), 'A moderation case has been escalated for your review.'),
+        jsonb_build_object('action', 'moderation-escalated',
+          'case_id', p_case_id, 'public_song_id', v_case.public_song_id));
+    end loop;
+  end if;
+end $$;
+
+-- file_appeal: ONE appeal per original case (issue #151: the shipped check
+-- only rejected appealing a ROW THAT IS an appeal — a rejected contributor
+-- could appeal the original again forever, producing unlimited fresh rounds
+-- and duplicate OPEN appeal rows, violating "an unsuccessful appeal is final
+-- at the in-app level"). The ownership check STAYS ahead of the existence
+-- check so a non-owner can never learn whether an appeal exists. (The partial
+-- unique index race backstop for concurrent filings is a pass-2 medium.)
+create or replace function private.file_appeal(p_case_id uuid, p_reason text)
+returns void
+language plpgsql security definer set search_path = '' as $$
+declare
+  v_owner uuid := (select auth.uid());
+  v_case  public.moderation_cases%rowtype;
+  v_entry_owner uuid;
+begin
+  if v_owner is null then
+    raise exception 'Case not found.';
+  end if;
+
+  select * into v_case from public.moderation_cases where id = p_case_id;
+  if not found then
+    raise exception 'Case not found.';
+  end if;
+  if v_case.decision is null then
+    raise exception 'Case is still open.';
+  end if;
+  if v_case.appeal_of is not null then
+    raise exception 'Appeal already reviewed.';
+  end if;
+
+  -- only the entry's contributor can appeal (scenario 13)
+  select contributor_id into v_entry_owner
+  from public.public_songs where id = v_case.public_song_id;
+  if v_entry_owner is distinct from v_owner then
+    raise exception 'Only the contributor can appeal.';
+  end if;
+
+  -- one appeal per ORIGINAL case — any existing appeal (open or decided) ends
+  -- the road for this case id.
+  if exists (
+    select 1 from public.moderation_cases
+    where appeal_of = p_case_id
+  ) then
+    raise exception 'Appeal already filed.';
+  end if;
+
+  insert into public.moderation_cases (public_song_id, reason_counts, grounds, appeal_of, notes)
+  values (v_case.public_song_id, '{}'::jsonb, '{}'::text[], p_case_id, p_reason);
+end $$;
+
+-- 0015:294-306 grant mirror (0017 defensive pattern): create or replace
+-- preserves ACLs; re-stating them keeps this file the single audience source.
+revoke execute on function private.decide_moderation_case(uuid, text, text) from public, anon;
+revoke execute on function public.decide_moderation_case(uuid, text, text) from public, anon;
+revoke execute on function private.file_appeal(uuid, text) from public, anon;
+revoke execute on function public.file_appeal(uuid, text) from public, anon;
+grant execute on function private.decide_moderation_case(uuid, text, text) to authenticated, service_role;
+grant execute on function public.decide_moderation_case(uuid, text, text) to authenticated, service_role;
+grant execute on function private.file_appeal(uuid, text) to authenticated, service_role;
+grant execute on function public.file_appeal(uuid, text) to authenticated, service_role;
+
+-- KNOWN GAP (reported, deliberately NOT fixed here): ordinary null-decision
+-- cases — including fresh appeal rows — keep the moderator-only gate, so a
+-- pure system_admin still cannot review a new appeal even though the feature
+-- (community-moderation.feature:124) says "a different moderator or a system
+-- admin". Unblocking that needs a principled authorization split between the
+-- two roles on the open path; tracked for pass 2 rather than bolted on here.
