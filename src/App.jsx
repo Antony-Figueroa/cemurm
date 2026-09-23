@@ -22,6 +22,7 @@ import RehearsalDetail from './pages/RehearsalDetail.jsx'
 import Notifications from './pages/Notifications.jsx'
 import StageMode from './pages/StageMode.jsx'
 import Auth from './pages/Auth.jsx'
+import GuardianApprove from './pages/GuardianApprove.jsx'
 import Practice from './pages/Practice.jsx'
 import PublicLibrary from './pages/PublicLibrary.jsx'
 import Profile from './pages/Profile.jsx'
@@ -67,6 +68,9 @@ const router = createBrowserRouter([
           },
         ],
       },
+      // H10 (0020): the guardian's capability link — public on purpose, it
+      // must work WITHOUT a session (outside RequireAuth/RequireGuardianConsent).
+      { path: '/guardian-approve', element: <GuardianApprove /> },
       {
         element: <RedirectIfAuthed />,
         children: [{ path: '/auth', element: <Auth /> }],
