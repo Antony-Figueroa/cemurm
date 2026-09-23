@@ -67,7 +67,7 @@ export default function ChordProRenderer({
   onSectionComment,
   highlightSection,
   degreeView = false,
-  degreeMap = null,
+  degreeMaps = null,
 }) {
   const { title, artist, key, sections = [] } = parsed
 
@@ -87,6 +87,9 @@ export default function ChordProRenderer({
 
       <div className="mt-4 space-y-3">
         {sections.map((section, i) => {
+          // Per-section degree map (issue #152): chords in a modulated
+          // section resolve against that section's key, not the song key.
+          const sectionDegrees = degreeMaps ? degreeMaps[i] || null : null
           if (section.type === 'section') {
             sectionName = section.lines[0]?.text || ''
             lineInSection = 0
@@ -127,7 +130,7 @@ export default function ChordProRenderer({
                           semitones={semitones}
                           baseKey={baseKey}
                           degreeView={degreeView}
-                          degreeMap={degreeMap}
+                          degreeMap={sectionDegrees}
                         />
                         {note && <p className="text-xs italic text-cem-secondary">— {note}</p>}
                       </div>

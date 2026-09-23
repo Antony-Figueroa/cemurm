@@ -43,31 +43,44 @@ export async function getScaleById(id) {
 }
 
 /**
- * Fuzzy-match a scale by name or alias (case-insensitive).
- * Exact name match first, then alias match, then substring.
- * Returns the scale object or null.
+ * Pure catalog match (exported for tests): exact name → exact alias →
+ * ambiguity-safe substring. The old substring scan ran over a
+ * cardinality-ASCENDING list, so a query like "minor" silently hit
+ * Pentatonic Minor (5 notes) before Natural Minor (7) and computed degrees
+ * against the wrong scale (issue #152). The fallback now fires only when the
+ * substring uniquely identifies ONE scale; ambiguous queries return null
+ * instead of guessing.
  */
-export async function findScaleByName(name) {
-  if (!name) return null
-  const scales = await fetchScales()
+export function matchScaleByName(scales, name) {
+  if (!name || !scales) return null
   const normalized = name.trim().toLowerCase()
 
   // Exact name match
   const exact = scales.find((s) => s.name.toLowerCase() === normalized)
   if (exact) return exact
 
-  // Alias match
+  // Exact alias match
   const alias = scales.find(
     (s) => s.aliases?.some((a) => a.toLowerCase() === normalized),
   )
   if (alias) return alias
 
-  // Substring match (e.g. "phrygian dominant" matches "Phrygian Dominant")
-  const sub = scales.find(
+  // Unique substring match (e.g. "harmonic" → "Harmonic Minor"); null when
+  // several scales match, so "minor" can never resolve to Pentatonic Minor.
+  const matches = scales.filter(
     (s) => s.name.toLowerCase().includes(normalized)
       || s.aliases?.some((a) => a.toLowerCase().includes(normalized)),
   )
-  return sub || null
+  return matches.length === 1 ? matches[0] : null
+}
+
+/**
+ * Fuzzy-match a scale by name or alias (case-insensitive) against the
+ * fetched catalog. Returns the scale object or null.
+ */
+export async function findScaleByName(name) {
+  if (!name) return null
+  return matchScaleByName(await fetchScales(), name)
 }
 
 /**
@@ -95,5 +108,22 @@ export async function demo() {
   const none2 = await findScaleByName('no-such-scale')
   assert(none2, null, 'missing name returns null')
 
-  console.log('scaleCatalog demo OK: 3 asserts (cache, id lookup, name lookup)')
+  // Exact/alias hits win; the ambiguous substring "minor" must NOT resolve
+  // (the old cardinality-ascending scan picked Pentatonic Minor first).
+  // Fixture ordered the way fetchScales returns it (cardinality ASC → the
+  // 5-note pentatonics first, exactly where the old scan went wrong).
+  const fixture = [
+    { name: 'Pentatonic Major', aliases: ['Major Pentatonic'] },
+    { name: 'Pentatonic Minor', aliases: ['Minor Pentatonic', 'Blues Pentatonic'] },
+    { name: 'Major', aliases: ['Ionian'] },
+    { name: 'Natural Minor', aliases: ['Aeolian'] },
+    { name: 'Harmonic Minor', aliases: [] },
+    { name: 'Melodic Minor', aliases: ['Jazz Minor'] },
+  ]
+  assert(matchScaleByName(fixture, 'Natural Minor')?.name, 'Natural Minor', 'exact minor scale')
+  assert(matchScaleByName(fixture, 'Aeolian')?.name, 'Natural Minor', 'alias minor scale')
+  assert(matchScaleByName(fixture, 'minor'), null, 'ambiguous substring resolves to null')
+  assert(matchScaleByName(fixture, 'harmonic')?.name, 'Harmonic Minor', 'unique substring resolves')
+
+  console.log('scaleCatalog demo OK: 8 asserts (cache, id lookup, name lookup, ambiguity)')
 }

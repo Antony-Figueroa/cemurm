@@ -6,7 +6,11 @@
 // Not implemented (later hito): transposition, chord theory/degrees, WASM,
 // MusicXML/ABC, {start_of_*}/{end_of_*} blocks.
 
-const KNOWN_META = new Set(['title', 'key', 'artist'])
+// `key` is deliberately NOT here (issue #152): KNOWN_META would route it to
+// the generic meta branch and make the sectional-key branch below
+// unreachable — first {key} sets the song key, later ones push section
+// contexts. title/artist stay generic meta.
+const KNOWN_META = new Set(['title', 'artist'])
 
 // Recognizes a directive line: {name: value} or {name}
 function parseDirective(line) {

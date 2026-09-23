@@ -62,10 +62,15 @@ function rootToDegree(tonicSemitone, scaleIntervals, chordRootSemitone) {
  * - Diminished = diminished (vii° in major)
  * - Augmented = augmented (III+ in harmonic minor)
  *
+ * Index math (0-based into `intervals`, wraparound mod len): the third sits
+ * TWO scale steps above the root (1-based degree + 2) and the fifth FOUR
+ * (1-based degree + 4) — the previous +1/+2 landed on the 2nd and 4th above
+ * the root, so no branch could ever fire and every quality came back 'power'.
+ *
  * Returns: 'major', 'minor', 'diminished', 'augmented', or 'power' (for
  * pentatonic/chromatic where tertian analysis is less meaningful).
  */
-function qualityForDegree(intervals, degree) {
+export function qualityForDegree(intervals, degree) {
   if (!intervals || degree < 1 || degree > intervals.length) return null
   const len = intervals.length
 
@@ -74,10 +79,8 @@ function qualityForDegree(intervals, degree) {
 
   // Build the triad on this degree: root, third, fifth.
   const root = intervals[degree - 1]
-  const thirdIdx = degree + 1 <= len ? degree + 1 : degree + 1 - len
-  const fifthIdx = degree + 2 <= len ? degree + 2 : degree + 2 - len
-  const third = intervals[thirdIdx - 1]
-  const fifth = intervals[fifthIdx - 1]
+  const third = intervals[(degree + 1) % len]
+  const fifth = intervals[(degree + 3) % len]
 
   const thirdInterval = ((third - root) % 12 + 12) % 12
   const fifthInterval = ((fifth - root) % 12 + 12) % 12
@@ -132,16 +135,27 @@ function formatRomanNumeral(degree, quality) {
 }
 
 /**
- * Parse a key string like "C major", "E Phrygian", "Ab" into { tonic, scaleName }.
- * If no scale is specified, defaults to "Major" (standard convention).
+ * Parse a key string like "C major", "E Phrygian", "Ab", "Am" into
+ * { tonic, scaleName }. If no scale is specified, defaults to "Major"
+ * (standard convention); the standard ChordPro minor suffix ("Am", "Em",
+ * "Bbm"…) resolves to the catalog's "Natural Minor" — an EXACT
+ * findScaleByName hit, so the cardinality-ascending substring fallback can
+ * never pick Pentatonic Minor for it (issue #152).
  */
+const MINOR_SUFFIX_RE = /^([A-G][#b]?)m$/
+
 export function parseKeyContext(keyString) {
   if (!keyString) return null
   const parts = keyString.trim().split(/\s+/)
   if (parts.length === 0) return null
 
-  const tonic = parts[0]
-  const scaleName = parts.length > 1 ? parts.slice(1).join(' ') : 'Major'
+  const minorSuffix = MINOR_SUFFIX_RE.exec(parts[0])
+  const tonic = minorSuffix ? minorSuffix[1] : parts[0]
+  let scaleName = parts.length > 1 ? parts.slice(1).join(' ') : 'Major'
+
+  // "Am" alone, or the spelled-out mode word ("C minor") → Natural Minor.
+  if (minorSuffix && parts.length === 1) scaleName = 'Natural Minor'
+  if (/^minor$/i.test(scaleName)) scaleName = 'Natural Minor'
 
   // Validate tonic is a note.
   if (noteToSemitone(tonic) === null) return null
@@ -216,10 +230,18 @@ export async function demo() {
   assert(parseKeyContext('Ab'), { tonic: 'Ab', scaleName: 'Major' }, 'parseKeyContext Ab defaults to Major')
   assert(parseKeyContext('E Phrygian dominant'), { tonic: 'E', scaleName: 'Phrygian dominant' }, 'parseKeyContext exotic')
   assert(parseKeyContext(''), null, 'parseKeyContext empty')
+  assert(parseKeyContext('Am'), { tonic: 'A', scaleName: 'Natural Minor' }, 'parseKeyContext Am minor suffix')
+  assert(parseKeyContext('Bbm'), { tonic: 'Bb', scaleName: 'Natural Minor' }, 'parseKeyContext Bbm minor suffix')
+
+  // qualityForDegree against the C major scale (issue #152: was always 'power')
+  const C_MAJOR = [0, 2, 4, 5, 7, 9, 11]
+  assert(qualityForDegree(C_MAJOR, 1), 'major', 'C major degree 1 is major')
+  assert(qualityForDegree(C_MAJOR, 2), 'minor', 'C major degree 2 is minor')
+  assert(qualityForDegree(C_MAJOR, 7), 'diminished', 'C major degree 7 is diminished')
 
   // Without Supabase, degree resolution returns null (catalog not loaded).
   const deg = await resolveDegree({ tonic: 'C', scaleName: 'Major' }, 'G')
   assert(deg, null, 'no catalog → null')
 
-  console.log('degreeResolver demo OK: 5 asserts (parseKeyContext, graceful null)')
+  console.log('degreeResolver demo OK: 10 asserts (parseKeyContext, qualityForDegree, graceful null)')
 }

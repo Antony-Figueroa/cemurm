@@ -325,40 +325,60 @@ export default function SongDetail() {
     return transposeParsed(parsed, semitones)
   }, [parsed, semitones])
 
-  // Degree map: maps concrete chord strings → roman numeral strings.
-  // Computed from the song's key context + scale catalog. Only populated
-  // when degreeView is enabled to avoid unnecessary async work.
-  const [degreeMap, setDegreeMap] = useState(null)
+  // Degree maps (issue #152): PER-SECTION { chord → roman numeral } maps so
+  // chords in a modulated section resolve against THAT section's key
+  // (parser sectionKeyContexts; music-theory.feature:110/134) instead of one
+  // song-wide map. Computed from the song's key contexts + scale catalog
+  // when degreeView is enabled only, to avoid unnecessary async work.
+  const [degreeMaps, setDegreeMaps] = useState(null)
 
   useEffect(() => {
     if (!degreeView || !parsed?.key) {
-      setDegreeMap(null)
+      setDegreeMaps(null)
       return undefined
     }
 
     let cancelled = false
 
-    async function buildDegreeMap() {
-      // Collect all unique chords from all sections.
-      const allChords = new Set()
-      for (const section of parsed.sections) {
-        for (const line of section.lines) {
-          for (const c of line.chords) {
-            allChords.add(c.chord)
-          }
+    async function buildDegreeMaps() {
+      // Effective key per section index: first {key} = song key (meta.key);
+      // every later {key} takes effect from its bound section onward (a
+      // later directive on the same section overwrites the earlier one).
+      const ctxKeyByIndex = {}
+      for (const ctx of parsed.sectionKeyContexts) {
+        ctxKeyByIndex[ctx.sectionIndex] = ctx.key
+      }
+      const keysBySection = []
+      let currentKey = parsed.key
+      for (let i = 0; i < parsed.sections.length; i++) {
+        if (ctxKeyByIndex[i] !== undefined) currentKey = ctxKeyByIndex[i]
+        keysBySection[i] = currentKey
+      }
+
+      // Collect unique chords per key so each (key, chord) resolves once.
+      const chordsByKey = {}
+      for (let i = 0; i < parsed.sections.length; i++) {
+        const key = keysBySection[i]
+        if (!chordsByKey[key]) chordsByKey[key] = new Set()
+        for (const line of parsed.sections[i].lines) {
+          for (const c of line.chords) chordsByKey[key].add(c.chord)
         }
       }
 
-      const map = {}
-      for (const chord of allChords) {
-        const numeral = await resolveDegree(parsed.key, chord)
-        if (numeral) map[chord] = numeral
+      const mapsByKey = {}
+      for (const key of Object.keys(chordsByKey)) {
+        const map = {}
+        for (const chord of chordsByKey[key]) {
+          const numeral = await resolveDegree(key, chord)
+          if (numeral) map[chord] = numeral
+        }
+        mapsByKey[key] = map
       }
 
-      if (!cancelled) setDegreeMap(map)
+      if (!cancelled) setDegreeMaps(keysBySection.map((key) => mapsByKey[key] || {}))
     }
 
-    buildDegreeMap()
+    buildDegreeMaps()
     return () => { cancelled = true }
   }, [degreeView, parsed])
 
@@ -824,7 +844,7 @@ export default function SongDetail() {
             onSectionComment={anchorToSection}
             highlightSection={highlightSection}
             degreeView={degreeView}
-            degreeMap={degreeMap}
+            degreeMaps={degreeMaps}
           />
         </div>
       ) : (
