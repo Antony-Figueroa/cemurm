@@ -250,3 +250,84 @@ create policy event_setlists_update_organizer on public.event_setlists
     and visibility in ('private', 'org', 'event', 'public')
     and private.session_owns_setlist(setlist_id)
   );
+
+-- ══════════════════════ 3. MINORS — SIGNUP DERIVATION + PROFILE LOCK (#150) ══════════════════════
+-- C3 (0017:51+131 vs src/lib/auth.js): nothing in the repo ever wrote
+-- profiles.date_of_birth (handle_new_user inserted `(id)` only), so is_minor
+-- stayed at `default false` forever → session_is_minor() was ALWAYS false:
+-- (1) a minor's consent RPC raised 'Consent is only required for minors.' —
+-- the account could never unlock; (2) the server-side publish guard
+-- (0017:227) never armed — only the client-side UI gate stood in the way.
+-- Derive is_minor at SIGNUP from auth.raw_user_meta_data->>'isMinor' —
+-- INSERT-TIME only, so a later updateUser metadata edit cannot flip an
+-- existing account. The CASE cast is deliberately total: absent or
+-- unrecognised values resolve to false (malformed metadata must never abort
+-- signup), which also keeps metadata-less adult signups false. Clients still
+-- have no is_minor column grant in any position (see section 3.3), so this
+-- trigger function is its only writer besides the dob recompute below.
+create or replace function public.handle_new_user() returns trigger
+  language plpgsql security definer set search_path = '' as $$
+begin
+  insert into public.profiles (id, is_minor)
+  values (
+    new.id,
+    case lower(coalesce(new.raw_user_meta_data->>'isMinor', 'false'))
+      when 'true' then true
+      when 't'    then true
+      when 'yes'  then true
+      when '1'    then true
+      else false
+    end
+  );
+  return new;
+end $$;
+
+-- trigger-only entry point stays locked after the replace (0006:54 re-issued).
+revoke all on function public.handle_new_user() from public, anon, authenticated;
+
+-- C3 reconciliation with the `before insert or update of date_of_birth`
+-- trigger: the OF-clause fires on THIS profile INSERT too, and the shipped
+-- body (`dob is not null and …`, 0017:51) clobbered the derived flag back to
+-- false (dob is never set at signup). New precedence: dob wins WHEN PRESENT —
+-- preserving the minor→adult consent archive (scenario 8) — otherwise keep the
+-- supplied flag so the signup derivation passes through. old is NULL on
+-- INSERT, so the archive branch stays a no-op there; on a dob UPDATE the
+-- transition logic is unchanged.
+create or replace function private.set_profile_minor_flag() returns trigger
+  language plpgsql security definer set search_path = '' as $$
+begin
+  if new.date_of_birth is not null then
+    new.is_minor := new.date_of_birth > (current_date - interval '18 years');
+  else
+    new.is_minor := coalesce(new.is_minor, false);
+  end if;
+  -- minor → adult transition (old is NULL on INSERT → no-op): archive active consents
+  if old.is_minor and not new.is_minor then
+    update public.guardian_consents
+    set status = 'archived', archived_at = now()
+    where user_id = new.id and status = 'active';
+  end if;
+  return new;
+end $$;
+
+-- trigger-only entry point stays locked after the replace (0017:62 re-issued).
+revoke all on function private.set_profile_minor_flag() from public, anon, authenticated;
+
+-- H8 (0017:71): `grant update (date_of_birth)` + the recompute trigger let the
+-- minor's own session rewrite dob in a single PATCH profiles → is_minor flips
+-- to false → active consent archived → publish guard and revocation scenario
+-- both bypassed. Re-lock and re-open only the 0006 column sets WITHOUT dob:
+--   - column grants live per-attribute (attacl), `revoke all on table` clears
+--     the table-level ACL only → the dob grant needs its own explicit revoke;
+--   - DELETE is dropped entirely: no src/ flow deletes profiles (verified),
+--     and profiles_delete_self + profile_is_minor coalescing a missing row to
+--     false would make self-delete a publish-guard bypass;
+--   - is_minor / date_of_birth are in no select/insert/update grant, so they
+--     stay server-side only (0017:68 posture preserved);
+--   - service_role keeps its full-table grant (0006:178, backend access).
+revoke all on table public.profiles from anon, authenticated;
+revoke update (date_of_birth) on table public.profiles from authenticated;
+revoke delete on table public.profiles from authenticated;
+grant select (id, username, display_name, avatar_url) on table public.profiles to authenticated;
+grant insert (id, display_name, username, instrument, avatar_url) on table public.profiles to authenticated;
+grant update (display_name, username, instrument, avatar_url) on table public.profiles to authenticated;
