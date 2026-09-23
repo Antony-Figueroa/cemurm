@@ -171,3 +171,82 @@ revoke execute on function private.event_repertoire(uuid) from public, anon;
 revoke execute on function public.event_repertoire(uuid) from public, anon;
 grant execute on function private.event_repertoire(uuid) to authenticated;
 grant execute on function public.event_repertoire(uuid) to authenticated;
+
+-- ══════════════════════ 2. EVENTS — PARTICIPANT + SETLIST SCOPING (#149) ══════════════════════
+-- event_participants.org_id is NOT NULL (0001:253) and the INSERT/UPDATE
+-- policies only checked "I organize this event" (0016:221-230, 232-241): an
+-- attacker creates their own event E, inserts (E, victim_org) — the org edge is
+-- unconstrained — then calls event_repertoire(E) and gets the victim org's
+-- entire private and branch repertoire (title/artist/genre), bypassing
+-- songs_select_org / songs_select_branch. Bind org_id to the organizer's OWN
+-- active memberships (0004:229) on both write paths.
+drop policy if exists event_participants_insert_organizer on public.event_participants;
+create policy event_participants_insert_organizer on public.event_participants
+  for insert to authenticated
+  with check (
+    (select auth.uid()) is not null
+    and exists (
+      select 1 from public.events e
+      where e.id = event_id and e.organizer_id = (select auth.uid())
+    )
+    and org_id = any(private.session_org_ids())
+  );
+
+-- UPDATE: USING stays organizer-of-the-current-row (0016:232) so the organizer
+-- can still repair or delete a row planted before this fix; the explicit WITH
+-- CHECK (an explicit WITH CHECK replaces the USING-on-new-row fallback)
+-- re-states the organizer check for the NEW event_id and bounds the NEW org_id,
+-- so neither the event edge nor the org edge can be re-pointed cross-tenant.
+drop policy if exists event_participants_update_organizer on public.event_participants;
+create policy event_participants_update_organizer on public.event_participants
+  for update to authenticated
+  using (
+    (select auth.uid()) is not null
+    and exists (
+      select 1 from public.events e
+      where e.id = event_id and e.organizer_id = (select auth.uid())
+    )
+  )
+  with check (
+    (select auth.uid()) is not null
+    and exists (
+      select 1 from public.events e
+      where e.id = event_id and e.organizer_id = (select auth.uid())
+    )
+    and org_id = any(private.session_org_ids())
+  );
+
+-- event_setlists_update_organizer: the shipped WITH CHECK (0016:319-325) only
+-- re-checked "new event not concluded" — an organizer could PATCH their row
+-- onto a DIFFERENT organizer's non-concluded event (slot hijack), or set a
+-- foreign org_id (0001:272 allows NULL or any org). The new WITH CHECK
+-- re-verifies organizer-of-the-NEW-event + not-concluded (both fall back from
+-- USING today, so they must be restated), scopes org_id to the caller's active
+-- memberships, pins visibility to the four documented values (0001:276 — the
+-- column has NO check constraint), and keeps the row pointing at a base setlist
+-- the caller owns (0002:142 session_owns_setlist, owner-only). USING stays as
+-- shipped: organizer-of-the-current-event.
+drop policy if exists event_setlists_update_organizer on public.event_setlists;
+create policy event_setlists_update_organizer on public.event_setlists
+  for update to authenticated
+  using (
+    (select auth.uid()) is not null
+    and exists (
+      select 1 from public.events e
+      where e.id = event_id and e.organizer_id = (select auth.uid())
+    )
+  )
+  with check (
+    (select auth.uid()) is not null
+    and exists (
+      select 1 from public.events e
+      where e.id = event_id and e.organizer_id = (select auth.uid())
+    )
+    and not exists (
+      select 1 from public.events e
+      where e.id = event_id and e.status = 'concluded'
+    )
+    and (org_id is null or org_id = any(private.session_org_ids()))
+    and visibility in ('private', 'org', 'event', 'public')
+    and private.session_owns_setlist(setlist_id)
+  );
