@@ -33,11 +33,23 @@ before you claim a change is done. CI also runs **no tests** — M0b adds that s
 
 ## Type checking is per-file opt-in
 
-`tsconfig.json` is `include: ["src/lib"]` with `allowJs` and **global `checkJs` deliberately OFF**. Only four files are actually checked, each via the canonical pragma:
+`tsconfig.json` has `allowJs` with **global `checkJs` deliberately OFF**. Only four files are
+actually checked, each via the canonical pragma, and the relocation moved all four:
 
-- `src/lib/transpose.js`, `src/lib/annotations.js`, `src/lib/songs.js`, `src/lib/setlists.js`
+- `src/domain/music/transpose.js`, `src/domain/music/annotations.js`
+- `src/data/repositories/songs.js`, `src/data/repositories/setlists.js`
 
-**Do not flip `checkJs` on globally.** Doing so type-checks the whole `src/lib` import graph: ~760 errors, ~530 in files that were never in scope (rationale is recorded in `tsconfig.json`). To bring a new `src/lib` module under the baseline, add `// @ts-check` to that one file — not a global flag. Baseline history: `odd/tasks/ts-checkjs-baseline.md`.
+**Do not flip `checkJs` on globally.** Doing so type-checks everything the include can reach:
+~760 errors, ~530 in files that were never in scope (rationale is recorded in `tsconfig.json`).
+To bring a new module under the baseline, add `// @ts-check` to that one file — not a global
+flag. Baseline history: `odd/tasks/ts-checkjs-baseline.md`.
+
+**After any file move, verify the baseline is still alive.** This gate fails *silently*: a
+wrong `include` leaves `tsc` checking one untyped file and still exiting 0.
+
+```bash
+npx tsc --noEmit --listFiles | grep -c 'cemurm/src/'   # must be > 1; was 1, now 41
+```
 
 TypeScript is **7.0.2** (not 5.x). Two quirks already cost time:
 - `catch` variables infer `unknown`, so `e.message` needs a `/** @type {Error} */ (e)` cast.
@@ -87,8 +99,15 @@ Schema contract: `supabase/migrations/` is authoritative; `docs/database-schema-
 
 ## Architecture notes that aren't obvious from filenames
 
-- Entrypoint is `index.html` → `src/main.jsx`; the router is `src/App.jsx`. The authed tree is wrapped by `RequireAuth` + `RequireGuardianConsent`; add new routes in `src/App.jsx`, not `main.jsx`.
-- `src/lib/` holds utilities, API clients and parsers (43 modules, incl. `chordpro/` and the offline layer). `src/pages/` route-level components, `src/components/` reusable UI, `src/hooks/` custom hooks, `src/utils/` pure functions.
+The tree is post-relocation. `src/main.jsx`, `src/App.jsx`, `src/pages/` and `src/components/`
+no longer exist — several `docs/` files and `odd/tasks/*.md` still cite them.
+
+- Entrypoint is `index.html` → **`src/app/main.jsx`**. Router: `src/app/router.jsx`. Shell
+  chrome: `src/app/AppLayout.jsx`. Providers: `src/app/providers/`.
+- `src/domain/**` is pure logic with no I/O. `src/data/repositories/` holds the impure halves
+  that talk to Supabase. `src/integrations/`, `src/offline/`, `src/ui/patterns/` are leaf
+  modules. `src/features/<feature>/` holds that feature's pages and components.
+  `src/lib/storage.js` is the one deliberate exception left in `src/lib/`.
 - RLS is the client-side gate. The service worker (`public/sw.js`) + IndexedDB layer does read-cache, an offline write queue, and a drain on reconnect.
 - The `charts` storage bucket is **private** with owner-folder RLS (first path segment must be `auth.uid()`); reads are 1-hour signed URLs only. The 10 MB PDF cap is **app-side only** — the DB deliberately accepts oversized rows.
 - Import/enrichment provider clients **never throw**: they return `{ ok: true, … }` or `{ ok: false, error: 'offline' | 'unavailable' }`, gated by `isOnline()`.
