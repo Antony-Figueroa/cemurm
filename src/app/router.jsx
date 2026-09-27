@@ -23,6 +23,7 @@ import RehearsalDetail from '../features/rehearsals/pages/RehearsalDetail.jsx'
 import Notifications from '../features/notifications/pages/Notifications.jsx'
 import StageMode from '../features/stage/pages/StageMode.jsx'
 import Overlay from '../features/stage/pages/Overlay.jsx'
+import ExternalDisplay from '../features/stage/pages/ExternalDisplay.jsx'
 import Auth from '../features/auth/pages/Auth.jsx'
 import Practice from '../features/repertoire/pages/Practice.jsx'
 import PublicLibrary from '../features/library/pages/PublicLibrary.jsx'
@@ -76,6 +77,13 @@ const router = createBrowserRouter([
       },
       { path: '*', element: <NotFound /> },
     ],
+  },
+  // Login-less clean view for a second screen or projector (Hito 5 #65).
+  // OUTSIDE AppLayout and the auth guards for the same reason as the overlay
+  // below: the second display gets no nav chrome and no session.
+  {
+    path: '/external-display',
+    element: <ExternalDisplay />,
   },
   // Public overlay URL for the OBS Browser Source (Hito 5 #66). Deliberately
   // OUTSIDE AppLayout and the auth guards: the CEF source gets no nav chrome
