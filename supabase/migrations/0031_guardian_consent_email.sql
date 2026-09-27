@@ -1,9 +1,8 @@
 -- CEMURM 0031 — Guardian consent by email: the 'pending' state, the two
 -- token-based RPCs, and the Vault-backed Resend key
 --
--- Slice: feat/auth-fail-closed-social — work unit 4 of the change
--- "Auth — fail-closed minors + social signup + guardian email"
--- (odd/tasks/auth-fail-closed-social.md, tasks T4.1–T4.2).
+-- Slice: feat/guardian-consent-db — the consent state machine and its evidence.
+-- Record: odd/tasks/minors-fail-closed-db.md.
 -- Business contract (features/minors-and-guardian-consent.feature):
 --  · signup age gate (scenario 1): UNCHANGED. A declared minor date still
 --    routes the account into the consent flow (0030), and an adult is still
