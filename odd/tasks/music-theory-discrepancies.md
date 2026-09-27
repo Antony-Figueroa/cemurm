@@ -104,17 +104,45 @@ Each is a product decision, not an implementation detail. Do not guess them.
 - [x] T2 — Land PR 1b (six ADR 0002 refactors) with the acceptance-gate deviation
       documented. PR #168.
 - [x] T3 — Write this record and its Engram mirror.
-- [ ] T4 — OpenSpec change proposal for finding A (parser sectional key).
-- [ ] T5 — OpenSpec change proposal for finding B (enharmonic spelling). Blocked on
-      design decision 1.
-- [ ] T6 — OpenSpec change proposal for finding C (OnSong `agreed_key`).
-- [ ] T7 — OpenSpec change proposal for finding D (offline tie-break). Blocked on
-      design decision 2; likely needs a migration.
-- [ ] T8 — OpenSpec change proposal for finding E (degree quality). Blocked on
-      design decision 3.
-- [ ] T9 — Triage F–J and the unspecified sharp edges: fix, defer with a recorded
-      reason, or fold into a proposal above.
-- [ ] T10 — Repair `openspec/config.yaml` context.
+- [x] T4 — Proposal for finding A (parser sectional key).
+      `openspec/changes/fix-parser-sectional-key/`
+- [x] T5 — Proposal for finding C (OnSong `agreed_key`).
+      `openspec/changes/fix-onsong-agreed-key/`
+- [x] T6 — Proposal for findings F + G (readiness lifecycle and per-version
+      tracking), paired because they are one defect seen from two sides.
+      `openspec/changes/fix-readiness-lifecycle/`
+- [x] T7 — Proposal for finding H (reconcile silent drop).
+      `openspec/changes/fix-reconcile-silent-drop/`
+- [x] T8 — Proposal for findings I + J (Spotify key parsing), paired because same
+      module and same root cause class.
+      `openspec/changes/fix-spotify-key-parsing/`
+- [ ] T9 — Proposals for findings **B**, **D** and **E**. All three are blocked on the
+      product decisions recorded above. None may be written before those are answered: a
+      delta spec that assumes the answer is worse than no spec.
+- [ ] T10 — Repair `openspec/config.yaml`. Deferred until the M0 chain merges, since it
+      must describe the post-M0a tree and the test runner that M0b adds.
+
+## Sequencing constraint
+
+**No finding may be implemented until M0b (#171) merges.** The 293-test characterization
+suite is the only regression net this repository has, and every finding here is a behaviour
+change against code the suite currently pins. Fixing a finding rewrites the assertion that
+pins the bug — legitimate, because the behaviour is intentionally changing, but it also means
+nothing can catch an *unintended* change until the suite is on `main`.
+
+## Verified file locations
+
+The proposals cite these. An earlier version of the A proposal cited `src/lib/parser.js`,
+which does not exist — the parser sits one level deeper, under `chordpro/`.
+
+| Finding | File on `main` | After M0a |
+|---|---|---|
+| A | `src/lib/chordpro/parser.js` | `src/domain/chart/parser.js` |
+| B, E | `src/lib/transpose.js`, `src/lib/degreeResolver.js` | `src/domain/music/*` |
+| C | `src/lib/exporters/onsong.js` | `src/domain/setlist/exporters/onsong.js` |
+| D, H | `src/lib/setlistCollab.js` | `src/domain/setlist/collab.js` |
+| F, G | `src/lib/readiness.js` | `src/domain/chart/readiness.js` |
+| I, J | `src/lib/spotify.js` | `src/integrations/spotify.js` |
 
 ## Acceptance criteria
 
