@@ -203,6 +203,28 @@ last — it depends on four other surfaces being stable.
 | `odd/tasks/cemurm-brand-landing.md` §14.2 | reuses the letter **E** for a different finding than §14.1's E. Fix the lettering before anyone triages by letter |
 | `feat/hito5-*` branches | **no ODD record exists** for plan-freeze, external-display, in-app-feedback or congregation-projection. Create one per slice as it merges |
 
+## 5b. PR 1b: known defects to fix before it is re-cut
+
+PR 1b (`59c1c1f`) is **not** in the sequence above, because it carries problems beyond the
+acceptance-gate deviation documented in PR #168. All three were found during review, not by
+the suite.
+
+1. **The clock injection degrades silently.** Refactors 5 and 6 removed the implicit default:
+   `relativeTime(iso, now)` and `isLockStale(lock, now)`. Neither validates. Called without
+   `now`, `isLockStale` returns `false`, and `relativeTime` falls through to its last branch
+   and returns a `YYYY-MM-DD` date for every row. No throw, no warning — just wrong output. A
+   required parameter that silently yields a plausible answer is the same class of defect as
+   the dead code this cycle exists to remove.
+2. **ADR 0002 rule 2 is false.** `src/features/stage/pages/Overlay.jsx:11` and
+   `src/features/stage/hooks/useFootPedal.js:2` import `supabase` from outside `data/`. The ADR
+   asserts a boundary the code does not hold. It is currently logged as known violations with
+   a destination, which is the right handling — but an ADR that claims more than is true is the
+   same failure as the orphaned `design-system.md`.
+3. **The refactor list skipped `applyLock`** at `collab.js:91`, which reads `Date.now()`
+   internally. That is inconsistent with refactors 5 and 6, which injected the clock precisely
+   to remove that read. Left as-is it is a flake source in the one module whose determinism the
+   product claims.
+
 ## 6. Order, and why
 
 ```
