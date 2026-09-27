@@ -10,10 +10,10 @@
 // (record_typo_fix), and a block audit (log_projection_blocked). Everything else
 // (slide building, navigation, scripture/announcement slides) is local state.
 
-import { supabase } from './supabase.js'
+import { supabase } from '../supabase.js'
 import { getService } from './services.js'
 import { getSong } from './songs.js'
-import { parseChordPro } from './chordpro/parser.js'
+import { parseChordPro } from '../../domain/chart/parser.js'
 
 /**
  * One slide in the projection deck.
