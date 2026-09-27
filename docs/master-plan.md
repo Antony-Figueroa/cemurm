@@ -70,35 +70,48 @@ All four branches exist, are pushed, and are unmerged. Verified after `git fetch
 | `feat/hito5-plan-freeze` | 3 | 5 files, +844 | **`0021`** |
 | `feat/hito5-congregation-projection` | 3 | 9 files, +1405 | **`0022`** |
 
-### 🔴 Blocker: migration numbers collide
+### ⚠️ Migration numbering: one real collision, and the rest is fine
 
-The four branches claim **0020, 0021 and 0022** — exactly the numbers `main` left as a
-deliberate gap, and numerically *below* `main`'s `0023`–`0028`. A merge as-is re-introduces
-the gap and collides with migration `0020` already applied locally from
-`fix/hito4-review-batch1`.
+**The 0020–0022 gap is not deliberate.** No ADR or decision record reserves those numbers.
+It is a numbering race between parallel branches, each of which picked the next number from
+whatever `main` looked like when it forked: `0020_feedback` (in-app-feedback),
+`0021_plan_freeze`, `0022_projection`. An earlier version of this plan called the gap
+"deliberate — do not renumber"; that was an inference from the missing files, and it was
+wrong.
 
-`0020` is claimed by **two different files**: `0020_review_batch1.sql` on
-`fix/hito4-review-batch1` and the feedback table on `feat/hito5-in-app-feedback`
-(commit `f44731c`). Whichever merges second has to reconcile, not just renumber.
+**Verified: only `0020` actually collides.** Two different files claim it —
+`0020_review_batch1.sql` on `fix/hito4-review-batch1` and `0020_feedback.sql` on
+`feat/hito5-in-app-feedback`.
 
-**Resolution:** renumber to `0029`, `0030`, `0031`, `0032` before any of these branches merges,
-and rewrite the ODD records' migration references. Do it as the **first commit on each branch**,
-or every later slice re-conflicts. The 0020–0022 gap stays a gap.
+`0021` and `0022` are **correctly positioned and can merge unchanged**:
 
-### 🔴 Second collision: `0019:184` is patched on two branches
+| Migration | Touches | Depends on 0023–0028? |
+|---|---|---|
+| `0020_feedback` | nothing from that range | no |
+| `0021_plan_freeze` | `setlist_items`, `service_change_log` (both ≤0019) | no |
+| `0022_projection` | `chart_files`, `song_versions` (0001), `service_change_log` (0019) | no |
 
-`0019_rehearsal_workflow.sql:184` creates `private.display_name_for`, and a fresh migration
-chain **aborts there** — which is why the review-batch branch had to fix it in place rather
-than in a new migration. Two branches now carry that same fix independently:
+Renumbering them to `0029+` would be **wrong**: it would run them *after* `0023`–`0028`,
+which is the opposite of the order they were authored for. In filename order they land at
+`0019 → 0021 → 0022 → 0023`, exactly where they were written.
 
-- `fix/hito4-review-batch1` → `54ce559` "make 0019 display_name_for creation idempotent"
-- `feat/hito5-in-app-feedback` → `1ee9615` "make display_name_for replaceable across
-  service+rehearsal slices"
+**Resolution for `0020`:** one of the two renumbers. Give `0020` to
+`0020_review_batch1.sql` — it carries the security fixes and should land first — and rename
+`0020_feedback.sql` to `0029_feedback.sql`, which is safe because it references nothing from
+`0023`–`0028`. This depends on the `fix/hito4-review-batch1` decision (§5): if that branch is
+never merged, `0020` is free and no renumber is needed at all.
 
-**Resolution:** pick one patch, land it first as its own commit, and drop the duplicate from
-the other branch. A fresh `db reset` that aborts at 0019 is the failure this prevents — and
-nobody will notice it until a full reset, which is exactly the workflow
-`docs/local-dev.md` tells every new contributor to run.
+### ✅ `0019:184` is not a chain-breaker — earlier concern withdrawn
+
+`0019_rehearsal_workflow.sql:184` uses `create function private.display_name_for` without
+`or replace`, and two branches carry defensive patches for it (`54ce559` on the review branch,
+`1ee9615` on in-app-feedback). Checked against current `main`: **it is the only creator.**
+`0023_substitutions` and `0021_plan_freeze` only *call* it. There is no duplicate and a fresh
+chain does not abort there.
+
+The patches were made against an older `main` (`894845a`) whose chain did have a duplicate. That
+state is gone. **No fix is required.** If the two branches merge with their patches intact,
+they are harmless no-ops; they are not worth a reconciliation commit.
 
 ### Slicing
 

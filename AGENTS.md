@@ -62,7 +62,14 @@ docker exec -i supabase_db_cemurm psql -U postgres -d postgres -X -f - < scripts
 
 **Local, not hosted.** `docs/local-dev.md` is authoritative: this project is NOT linked to a hosted Supabase project. `README.md` and `docs/technical-spec.md` still name a hosted project URL — that text is stale, ignore it.
 
-Migrations: 25 files, highest `0028_import_pipeline.sql`. **0020–0022 are a deliberate gap — do not renumber.** Filename order is the dependency order. `supabase db reset` executes *every* `.sql` in `supabase/migrations/`, so never commit an ad-hoc query script there (that's why `scripts/smoke/` is a sibling directory). Never push the seed with `supabase db push`.
+Migrations: 25 files on `main`, highest `0028_import_pipeline.sql`. **0020–0022 are absent, and
+that is a numbering race between parallel branches, not a reservation** — nothing reserves those
+numbers, and four branches already claim them. Before adding a migration, check every open
+branch for a collision: `git branch -r | xargs -I{} git ls-tree --name-only {} -- supabase/migrations/`.
+Filename order is the dependency order, so a migration that depends on tables from `0019` or
+earlier belongs at `0020`–`0022`, **not** renumbered to `0029`. `supabase db reset` executes
+*every* `.sql` in `supabase/migrations/`, so never commit an ad-hoc query script there (that's
+why `scripts/smoke/` is a sibling directory). Never push the seed with `supabase db push`.
 
 `supabase/seed.sql` is idempotent (`on conflict do nothing` everywhere) and defines the fixture every smoke test depends on. Three confirmed users, **all password `password1234`**:
 
