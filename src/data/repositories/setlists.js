@@ -25,6 +25,7 @@ import { normalizeProgram } from '../../integrations/webMidi.js'
  * @property {number} position
  * @property {string | null} version_id
  * @property {number | null} midi_program
+ * @property {string | null} agreed_key
  */
 
 /**
@@ -57,6 +58,7 @@ import { normalizeProgram } from '../../integrations/webMidi.js'
  * @property {SetlistVisibility} visibility
  * @property {string[]} itemIds
  * @property {Record<string, string>} versionIds
+ * @property {Record<string, string>} agreedKeys absent songId = nobody agreed a key
  * @property {Record<string, number | null>} midiPrograms
  * @property {string} createdAt
  * @property {string} updatedAt
@@ -177,6 +179,19 @@ function flattenSetlist(row, userId) {
     if (item.version_id) versionIds[item.song_id] = item.version_id
   }
 
+  // The agreed key per song (external-integrations.feature: "it contains the
+  // songs in order with their charts and agreed keys"). This is the value the
+  // band settled on, which is NOT the same as the chart's own key — the same
+  // song can be charted in one key and sung in another. It was never mapped
+  // across, so every consumer saw the column as absent. Entries are omitted
+  // when NULL so a song nobody agreed a key for simply has none, which is an
+  // ordinary state and not the same as an empty string.
+  /** @type {Record<string, string>} */
+  const agreedKeys = {}
+  for (const item of items) {
+    if (item.agreed_key) agreedKeys[item.song_id] = item.agreed_key
+  }
+
   // MIDI program per song (Hito 5 #56): map omits null entries so an
   // unmapped song simply has no key (Stage Mode reads ─ absent key = no send).
   /** @type {Record<string, number>} */
@@ -202,6 +217,7 @@ function flattenSetlist(row, userId) {
     visibility: row.visibility,
     itemIds,
     versionIds,
+    agreedKeys,
     midiPrograms,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
