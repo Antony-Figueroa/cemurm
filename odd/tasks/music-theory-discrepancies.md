@@ -34,15 +34,29 @@ differentiates the product is also the least trustworthy part of it.
 | # | Finding | Gherkin it violates | Status |
 |---|---|---|---|
 | A | `src/domain/chart/parser.js:9` puts `'key'` in `KNOWN_META`, so the check at `:69` matches every `{key: …}` and `continue`s. The `directive.name === 'key'` branch at `:73` is unreachable; `sectionKeyContexts` is always `[]`. The module's own self-check fails and was never run. | `music-theory.feature:106`, `:138` | Reproduced |
-| B | Enharmonic spelling is dead for every flat. `transposeKey('C', -2)` → `'A#'` instead of `'Bb'`. Arithmetic is correct; the table is sharp-only. | `music-theory.feature:149` | Reproduced |
+| B | Enharmonic spelling is decided by a hardcoded set of six major key names (`transpose.js:46`), not by the key's own spelling. A Cb major chart renders entirely in sharps, and the same key written `F minor` vs `Fm` gets opposite answers, because the set holds `F` but not `Fm`. | `music-theory.feature:149,155,159` | Reproduced by execution. Proposal: `fix-key-spelling-preference` |
 | C | The OnSong export cannot reach `agreed_key`; `flattenSetlist()` never copies it. Data exists one layer below (`supabase/seed.sql:104`). | `external-integrations.feature` | Reproduced |
 | D | No tie-break in offline conflict resolution. `features/offline-edit-conflict-policy.feature:47-51` requires the applied rule stored with the resolution. Code is strict `>`; nothing is stored. | `offline-edit-conflict-policy.feature:47-51` | Reproduced |
-| E | `qualityForDegree` returns `'power'` for 28 of 28 degrees (C major, A natural minor, E Phrygian, E harmonic minor). Four quality branches are dead code; `resolveDegree` renders `II` where the spec requires `ii°`. | `music-theory.feature:72` | Reproduced |
+| E | `qualityForDegree` is **inert**: it returns `'power'` for every degree of every heptatonic scale — **0 correct out of 49** measured across 7 scales. Its `:77-78` reads the *next two scale steps* instead of scale degrees 3 and 5, an off-by-two. The chord's own suffix is never parsed, so the "musician override wins" scenario cannot pass either. | `features/music-theory.feature:72,79` — "Degree quality derives from the scale" / "Musician override wins over derived quality" | Confirmed by execution. Proposal: `fix-degree-quality-derivation` |
 
-Pending triage (reported by the suite, not yet reproduced): F OnSong duplicates every
-directive; G `computeReadiness` only ever returns `ready`/`draft`; H readiness is not
-per-version and there is no scenario for setlist add/remove reconcile; I `spotifyKeyToLabel`
-is sharp-only; J the mode check is an exact string.
+**Lettering note.** These letters are the eight proposals', which are the artifact in review
+(#185). An earlier draft of this table used different letters for F, G and H — it split the two
+readiness findings and gave F to an unrelated OnSong item. The proposals pair the readiness
+findings as F+G (one defect from two sides) and give H to the reconcile silent drop, which is
+the more severe of the two. The split-letter draft is superseded, not merely renumbered; §14.2
+of the branch-only `cemurm-brand-landing.md` reuses `E` for a different finding than §14.1's `E`
+and should not be used as the reference lettering.
+
+Pending, reported by the suite, not yet reproduced, and **not yet lettered** because no proposal
+claims it: the OnSong exporter duplicates every directive. The `I`/`J` pair is Spotify key
+parsing and the readiness pair is `F`/`G` — neither is the OnSong duplication.
+
+Now proposed, all eight lettered: `F`+`G` readiness lifecycle and per-version tracking
+(`fix-readiness-lifecycle`); `H` the reconcile silent drop (`fix-reconcile-silent-drop`); `I`+`J`
+Spotify key labels and the mode comparison (`fix-spotify-key-parsing`). `H` is the most severe
+of the pending findings and is scoped as such — a queued op with a lost `queuedAt` becomes `0`,
+every real server timestamp beats `0`, and the op is dropped as *"superseded"*, with a notice
+indistinguishable from the one for a genuinely stale op.
 
 Sharp edges locked in by the suite, unspecified anywhere: a fractional semitone count
 yields the literal chord `"undefined"`; lowercase chord tokens pass through untransposed;
@@ -51,23 +65,38 @@ value, defeating `applySubstitution`'s own `Object.keys().length` guard; a flat-
 anchor can never match under a sharp key; `reconcileSetlistOp(null, …)` throws;
 `computeReadiness` throws on a truthy non-string key.
 
-## Open design decisions — these block implementation, not the proposal
+## Design decisions — three resolved, one still open
 
-Each is a product decision, not an implementation detail. Do not guess them.
+**These three were listed as open product decisions. They were not.** The Gherkin answers each
+one; they had to be read, not asked.
 
-1. **B — when does a flat win?** Enharmonic spelling needs a rule, not a table swap.
-   Options: prefer the key's own spelling (a `Db` major chart stays `Db` major throughout);
-   or circle-of-fifths canonical form; or explicit per-key preference passed by the caller.
-   This changes what `transposeKey` means for every call site.
-2. **D — what is the tie-break rule, and where is it stored?** The Gherkin requires the
-   applied rule be stored with the resolution "so every device reaches the same result".
-   That implies a schema change (a column or a payload field) and a defined rule
-   (server-wins? first-writer-wins? client-authoritative?). Both halves are unspecified.
-3. **E — what is the correct degree-quality algorithm?** `qualityForDegree` reads
-   consecutive scale steps as if they were a triad's root/third/fifth. Stacking real
-   thirds over a scale degree is a different computation. Needs the intended semantics
-   confirmed, plus a decision on whether a wrong-quality result is signalled or
-   best-effort rendered.
+1. **B — when does a flat win? → Resolved by `music-theory.feature:149,155,159`.** The rule is
+   the key's own spelling: a key written with a flat prefers flats throughout, one written with
+   a sharp prefers sharps, and one spelling per section. The code substituted a hardcoded set
+   of six major key names for that rule. The set is deleted; the rule is derived. Proposal:
+   `fix-key-spelling-preference`.
+2. **D — the tie-break rule → Resolved by the Gherkin's own determinism constraint.** The
+   feature file names *that* a recorded rule applies and that it is stored with the resolution
+   "so every device reaches the same result", but not *which* value breaks the tie. That
+   constraint decides it: the key must be computable from data both devices already hold, with
+   no coordination. `seq` is per-queue and therefore 0 on every device — rejected. `args[0]` is
+   the author, is different on each device, and is already present — chosen. **The key is
+   derived, not specified**, and a maintainer can overrule it on one line. The storage half is a
+   verified gap: no migration in `supabase/migrations/` has a column to put it in. Proposal:
+   `fix-offline-tie-break`, and its migration number is deliberately left open.
+3. **E — the correct degree-quality algorithm → Resolved by `music-theory.feature:72,79`.**
+   Quality derives from the scale, so stack scale degrees 1, 3, 5 — the standard tertian
+   computation. The explicit chord overrides the scale. There was never a choice to make: the
+   function is inert, wrong 0 times out of 49, and no alternative algorithm could be "correct"
+   and still contradict the feature file. Proposal: `fix-degree-quality-derivation`.
+
+**Still genuinely open — one, not three.** `F`/`G`: is `retired` a lifecycle *state* or an
+*absence*, and is readiness tracked per song or per version? `song-lifecycle.feature:34` says
+per version and the code computes per song; that is a product call, not a reading, because
+choosing per-song means amending the feature file. The two interact — per-version makes
+`retired`-as-absence nearly free, per-song makes it impossible. `fix-readiness-lifecycle`
+recommends per-version with `retired` as an absence, and says so without pretending the
+decision was made.
 
 ## Scope
 
@@ -116,9 +145,20 @@ Each is a product decision, not an implementation detail. Do not guess them.
 - [x] T8 — Proposal for findings I + J (Spotify key parsing), paired because same
       module and same root cause class.
       `openspec/changes/fix-spotify-key-parsing/`
-- [ ] T9 — Proposals for findings **B**, **D** and **E**. All three are blocked on the
-      product decisions recorded above. None may be written before those are answered: a
-      delta spec that assumes the answer is worse than no spec.
+- [x] T9 — Proposals for findings **B**, **D** and **E**. All three were listed as blocked on
+      product decisions; **none was**. The Gherkin answers each one — read, not asked. B's rule
+      is the key's own spelling, D's is forced by the feature file's own determinism
+      constraint, and E's is the standard tertian stacking the feature file already names. Only
+      `F`/`G` still holds a real product decision.
+      `openspec/changes/fix-key-spelling-preference/`,
+      `openspec/changes/fix-offline-tie-break/`,
+      `openspec/changes/fix-degree-quality-derivation/`
+- [x] T11 — Correct the findings table. B's evidence was the withdrawn `transposeKey('C', -2)`
+      example, E's was 4 scales where 7 were measured, and the letter-to-finding mapping
+      disagreed with the proposals for F, G and H. All three fixed. The `§14` lettering of the
+      branch-only `cemurm-brand-landing.md` is not used as the reference, and the eight
+      proposals' citation to it — a file that exists on no base branch — was repointed at this
+      record.
 - [ ] T10 — Repair `openspec/config.yaml`. Deferred until the M0 chain merges, since it
       must describe the post-M0a tree and the test runner that M0b adds.
 

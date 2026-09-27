@@ -1,7 +1,7 @@
 # Proposal: Setlist add/remove reconcile drops operations silently
 
 > Change: `fix-reconcile-silent-drop`
-> Findings: **H** of the 10 discrepancies (`odd/tasks/cemurm-brand-landing.md` §14.2)
+> Findings: **H** of the 10 discrepancies (`odd/tasks/music-theory-discrepancies.md`)
 > Status: proposed. Reproduced. **This is the most severe of the pending findings** — it loses
 > user work with no error anywhere.
 

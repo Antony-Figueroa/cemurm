@@ -1,7 +1,7 @@
 # Proposal: Spotify key labels cannot spell flats, and the mode check is exact-string
 
 > Change: `fix-spotify-key-parsing`
-> Findings: **I** and **J** of the 10 discrepancies (`odd/tasks/cemurm-brand-landing.md` §14.2)
+> Findings: **I** and **J** of the 10 discrepancies (`odd/tasks/music-theory-discrepancies.md`)
 > Status: proposed. Both reproduced. Paired deliberately — same module, same root cause class.
 
 ## Intent

@@ -1,7 +1,7 @@
 # Proposal: OnSong export must reach `agreed_key`
 
 > Change: `fix-onsong-agreed-key`
-> Finding: C of the 10 specification discrepancies in `odd/tasks/cemurm-brand-landing.md` §14.1
+> Finding: C of the 10 specification discrepancies in `odd/tasks/music-theory-discrepancies.md`
 > Status: proposed. Reproduced. No open product decision.
 
 ## Intent

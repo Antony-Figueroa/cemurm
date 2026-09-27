@@ -1,7 +1,7 @@
 # Proposal: Readiness lifecycle and per-version tracking
 
 > Change: `fix-readiness-lifecycle`
-> Findings: **F** and **G** of the 10 discrepancies (`odd/tasks/cemurm-brand-landing.md` §14.2).
+> Findings: **F** and **G** of the 10 discrepancies (`odd/tasks/music-theory-discrepancies.md`).
 > Status: proposed. Both reproduced. **One open product decision**, stated below.
 
 ## Intent

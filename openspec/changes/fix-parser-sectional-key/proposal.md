@@ -1,7 +1,7 @@
 # Proposal: Fix dead sectional-key context in the ChordPro parser
 
 > Change: `fix-parser-sectional-key`
-> Finding: A of the 10 specification discrepancies in `odd/tasks/cemurm-brand-landing.md` §14.1
+> Finding: A of the 10 specification discrepancies in `odd/tasks/music-theory-discrepancies.md`
 > Status: proposed. Blocks nothing else; this is the one confirmed finding with no open
 > product decision.
 >
