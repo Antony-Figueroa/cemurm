@@ -47,9 +47,16 @@ the more severe of the two. The split-letter draft is superseded, not merely ren
 of the branch-only `cemurm-brand-landing.md` reuses `E` for a different finding than §14.1's `E`
 and should not be used as the reference lettering.
 
-Pending, reported by the suite, not yet reproduced, and **not yet lettered** because no proposal
-claims it: the OnSong exporter duplicates every directive. The `I`/`J` pair is Spotify key
-parsing and the readiness pair is `F`/`G` — neither is the OnSong duplication.
+~~Pending, reported by the suite, not yet reproduced~~ — **resolved, and it is not an eleventh
+finding.** The OnSong directive duplication reproduced against the seed's own stored shape
+(`supabase/seed.sql:224-227` stores `${title: Amazing Grace}` / `{artist: John Newton}` /
+`{key: G}` inside the body, and `parser.js:9` lists `title`/`key`/`artist` as `KNOWN_META`).
+`serializeOnSong` emits its own three at `:39-41` and appends the body verbatim at `:42-43`, so
+every metadata directive appears twice and **the two `{key:}` values conflict** — the exporter
+says the agreed key, the body says the chart key, and nothing says which wins. It is **finding
+C's second half**, not a separate item: the decision of which `{key:}` survives is the same
+decision as carrying `agreed_key`, and splitting them would put two PRs on the same three lines
+in an order that cannot be made safe. `fix-onsong-agreed-key` is amended accordingly.
 
 Now proposed, all eight lettered: `F`+`G` readiness lifecycle and per-version tracking
 (`fix-readiness-lifecycle`); `H` the reconcile silent drop (`fix-reconcile-silent-drop`); `I`+`J`
@@ -58,12 +65,40 @@ of the pending findings and is scoped as such — a queued op with a lost `queue
 every real server timestamp beats `0`, and the op is dropped as *"superseded"*, with a notice
 indistinguishable from the one for a genuinely stale op.
 
-Sharp edges locked in by the suite, unspecified anywhere: a fractional semitone count
-yields the literal chord `"undefined"`; lowercase chord tokens pass through untransposed;
-`transposeKey('B♭', 2) === 'C#♭'`; `buildSubstitutionMap` creates a key for an `undefined`
-value, defeating `applySubstitution`'s own `Object.keys().length` guard; a flat-spelled
-anchor can never match under a sharp key; `reconcileSetlistOp(null, …)` throws;
-`computeReadiness` throws on a truthy non-string key.
+## The sharp edges — triaged 2026-09-27, one refuted
+
+Seven behaviours the suite recorded because no feature file specifies them. All seven were
+executed against the real modules. **Six reproduced. One is false.**
+
+| # | Behaviour | Verdict |
+|---|---|---|
+| 1 | `transposeChord('C', 2.5)` → `"undefined"` | reproduced — **garbage output, not a throw**; `transposeNote:73` indexes `NOTES_SHARP[2.5]` |
+| 2 | `transposeChord('am', 3)` → `"am"` | reproduced — `CHORD_RE` at `transpose.js:79` is case-sensitive |
+| 3 | `transposeKey('B♭', 2)` → `"C#♭"` | reproduced — U+266D is in neither note table, so it is captured as a modifier and re-appended |
+| 4 | ~~`buildSubstitutionMap` creates a key for `undefined`~~ | **REFUTED** — see below |
+| 5 | a flat-spelled anchor never matches under a sharp key | reproduced, with a mechanism |
+| 6 | `reconcileSetlistOp(null, …)` throws | reproduced — one production call site, `offlineSync.js:111` |
+| 7 | `computeReadiness` throws on a truthy non-string key | reproduced |
+
+**#4 is false and is recorded as refuted, not deferred.** `buildSubstitutionMap`
+(`annotations.js:55-64`) guards with `if (a.kind !== 'chord_substitution') continue` and then
+`if (anchor) map[anchor] = a.value`. Probed against seven malformed shapes — `undefined`, `null`,
+`{chord:null}`, `{chord:""}`, `{chord:0}`, a bare number — **all produce zero keys**; only a
+legitimate non-empty string produces one. The guard is present and correct.
+
+**#5's mechanism, which is what makes it a real bug rather than a quirk.**
+`applySubstitution` (`annotations.js:82-89`) looks up `transposeChord(token, -semitones,
+preferFlatForKey(baseKey))` — the token reverse-transposed using the **base key's** flat
+preference. So whether an anchor written `"Bb"` matches depends on whether the chart's key
+happens to be a flat key: on a C-major chart the lookup key comes out sharp-spelled, misses, and
+the function returns the token **unchanged with no signal**. Same substitution, same anchor,
+different chart key, silently inert. It needs finding B's rule as a prerequisite and B is
+necessary but **not** sufficient — `preferFlatForKey('C')` is false before and after B, so the
+C-chart case reproduces identically once B lands.
+
+**That is four claims in this record that did not survive execution:** B's
+`transposeKey('C', -2)` example, E's 4-scale measurement, the letter-to-finding mapping, and now
+#4. The pattern is the same each time — a claim copied from a suite report without being run.
 
 ## Design decisions — three resolved, one still open
 
@@ -90,13 +125,11 @@ one; they had to be read, not asked.
    function is inert, wrong 0 times out of 49, and no alternative algorithm could be "correct"
    and still contradict the feature file. Proposal: `fix-degree-quality-derivation`.
 
-**Still genuinely open — one, not three.** `F`/`G`: is `retired` a lifecycle *state* or an
-*absence*, and is readiness tracked per song or per version? `song-lifecycle.feature:34` says
-per version and the code computes per song; that is a product call, not a reading, because
-choosing per-song means amending the feature file. The two interact — per-version makes
-`retired`-as-absence nearly free, per-song makes it impossible. `fix-readiness-lifecycle`
-recommends per-version with `retired` as an absence, and says so without pretending the
-decision was made.
+**Still genuinely open — one, and it is narrower than it was.** `F`/`G` is now **decided**:
+per-version, and `retired` as an absence (2026-09-27). No migration, `is_ready` becomes
+meaningful, and the feature file is not amended. What is left open is not a product question but
+an implementation one: what makes a version *current*, for a song that has several. That is
+resolved at apply time, not here, and it is flagged in the proposal rather than assumed.
 
 ## Scope
 
@@ -153,14 +186,29 @@ decision was made.
       `openspec/changes/fix-key-spelling-preference/`,
       `openspec/changes/fix-offline-tie-break/`,
       `openspec/changes/fix-degree-quality-derivation/`
+- [ ] T10 — Repair `openspec/config.yaml`. Deferred until the M0 chain merges, since it
+      must describe the post-M0a tree and the test runner that M0b adds.
 - [x] T11 — Correct the findings table. B's evidence was the withdrawn `transposeKey('C', -2)`
       example, E's was 4 scales where 7 were measured, and the letter-to-finding mapping
       disagreed with the proposals for F, G and H. All three fixed. The `§14` lettering of the
       branch-only `cemurm-brand-landing.md` is not used as the reference, and the eight
       proposals' citation to it — a file that exists on no base branch — was repointed at this
       record.
-- [ ] T10 — Repair `openspec/config.yaml`. Deferred until the M0 chain merges, since it
-      must describe the post-M0a tree and the test runner that M0b adds.
+- [x] T12 — **F/G decided**: per-version, `retired` as an absence. `fix-readiness-lifecycle`
+      amended from "the proposal does not make this decision" to a dated decision with the
+      alternatives kept, and with the cost stated: a retired version renders *nothing* rather
+      than a distinct label, so if the product later wants retired to look different from draft,
+      this is the wrong decision and it is cheaper to reverse before call sites are touched.
+- [x] T13 — Sharp edges triaged. All seven executed; six reproduced, one **refuted** (#4). Split
+      by whether a decision is required, not by whether it throws: `fix-unspecified-crashes`
+      (three with no valid reading at all) and `fix-unspecified-silent-wrong` (three where the
+      input is plausibly valid and the right answer is arguable).
+- [x] T14 — C amended with the duplicate-directive finding. Not an eleventh finding: the
+      decision of which `{key:}` survives is C's decision. Its "emit alongside first"
+      recommendation is withdrawn and recorded as withdrawn, because alongside *is* the conflict.
+- [x] T15 — Closed the five superseded PRs (#143, #144, #145, #146, #168) with a comment naming
+      the replacement chain on each. #168 was the dangerous one: 5908 lines, unreviewable,
+      inviting an accidental merge. 21 open → 18, and all 18 are now part of a real chain.
 
 ## Sequencing constraint
 

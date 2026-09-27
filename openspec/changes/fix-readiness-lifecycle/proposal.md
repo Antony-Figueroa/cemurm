@@ -58,33 +58,42 @@ None.
 
 ## Approach
 
-The decision is genuinely a product one and the proposal does not make it.
+**Decided 2026-09-27: per-version, and `retired` as an absence rather than a fourth state.**
+The alternatives stay recorded below, because the reasoning is the deliverable and because a
+maintainer reading only the decision would not know what was traded away.
 
 **Question 1 — is `retired` a state or an absence?**
 
 - *A state*: readiness becomes a four-value enum; a retired chart reports `retired` and the UI
   can say so. Requires a `retired` marker somewhere — most naturally a `retired_at` on
   `song_versions`, which does not exist today and would mean a migration.
-- *An absence*: retiring means the version is no longer current, so readiness over the *current*
-  version is undefined and the UI shows nothing. No schema change, and it composes naturally
-  with the per-version model.
+- *An absence* — **chosen**: retiring means the version is no longer current, so readiness over
+  the *current* version is undefined and the UI shows nothing. No schema change, and it composes
+  naturally with the per-version model.
 
 **Question 2 — per version, or per song?**
 
-- *Per version* is what the feature file says, and it is the only model that makes
+- *Per version* — **chosen**. It is what the feature file says, and the only model that makes
   `song_versions.is_ready` mean anything. Cost: every call site passes a version, and the
   "current version" concept has to be defined for a song that has several.
-- *Per song* is what the code does. Keeping it means amending
+- *Per song*: what the code does. Keeping it would mean amending
   `features/song-lifecycle.feature:34`, which is a product decision, not a code one.
 
-These interact: per-version makes question 1's "absence" answer nearly free, because a retired
-version is simply not the current one. Per-song makes it impossible, because the song still has
-one readiness value.
+**What was given up, stated plainly.** A retired version now has no readiness value at all
+rather than a distinct one, so the UI cannot render "retired" as a label — it renders nothing.
+If the product later wants a retired chart to be visibly *different from* a draft one, this
+decision is the wrong one and it is cheaper to reverse now, before call sites are touched, than
+after. And per-version is a real cost, not a free correctness win: every call site changes.
 
-**Recommendation:** per-version, and `retired` as an absence rather than a fourth state. That
-needs no migration, it makes the existing `is_ready` column meaningful, and it is the reading the
-feature file already commits to. But it changes every call site, so it is worth being explicit
-that this is a real cost rather than a free correctness win.
+**Why these two together and not separately.** Per-version makes question 1's "absence" answer
+nearly free, because a retired version is simply not the current one. Per-song makes it
+impossible, because the song still has one readiness value. Choosing per-version first and
+`retired`-as-absence second is the only pairing where neither half needs a schema change.
+
+**What "current" means is the residual question this decision creates, and it is not answered
+here.** A song with several versions needs a defined current one. `song_versions` already has
+`is_current`-shaped data, but confirming which column or query establishes it is an
+implementation detail for apply time — flag it there rather than assuming it.
 
 ## Affected areas
 
