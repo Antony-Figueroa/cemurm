@@ -4,8 +4,7 @@
 import { parseChordPro } from './parser.js'
 
 /**
- * Compute readiness for a song from its key + body.
- * Returns { status: 'ready'|'draft', reason: string|null }.
+ * Readiness for ONE version.
  *
  * Readiness rules (BDD order of precedence):
  *   1. No key → "Not ready: missing base key"
@@ -16,25 +15,45 @@ import { parseChordPro } from './parser.js'
  *   4. (ChordPro) No lyric text → "Not ready: missing lyrics section"
  *   5. All present → ready
  *
- * NOTE (Hito 1): readiness is computed from the single current chart (body + key).
- * Versioned readiness is Hito 3 — no version table here.
+ * song-lifecycle.feature:34 says "Readiness is tracked per version, not per
+ * song", and `song_versions.is_ready` exists for exactly that ("readiness PER
+ * VERSION — same song, two versions, two states", 0001_init.sql:110). This
+ * function used to take a song and answer for it as a whole, which made the
+ * per-version scenario unreachable and left `is_ready` with nothing computing
+ * it. The superseded note that said "Versioned readiness is Hito 3 — no version
+ * table here" is what the per-version decision overturned.
+ *
+ * The song-level answer is the current version's answer, not a blend — a song
+ * with three versions has one readiness value and it describes the version a
+ * reader would open.
+ *
+ * `retired` is an absence rather than a fourth state, by decision: retiring a
+ * version means it is no longer current, so readiness over the *current* version
+ * is undefined and the UI shows nothing. No `retired_at` column is needed and
+ * `is_ready` finally means something. The cost, stated plainly: a retired
+ * version renders nothing rather than a distinct label, so if the product later
+ * wants retired to look different from draft, this is the wrong shape and it is
+ * cheaper to reverse before call sites move than after.
+ *
+ * @param {object} version a single song version: { key, body, hasPdfChart?, sizeBytes? }
+ * @returns {{ status: 'ready' | 'draft', reason: string | null }}
  */
-export function computeReadiness(song) {
-  if (!song || !song.key || !song.key.trim()) {
+export function computeReadiness(version) {
+  if (!version || !version.key || !version.key.trim()) {
     return { status: 'draft', reason: 'Not ready: missing base key' }
   }
 
-  if (song.hasPdfChart) {
-    return (song.sizeBytes ?? 0) > 0
+  if (version.hasPdfChart) {
+    return (version.sizeBytes ?? 0) > 0
       ? { status: 'ready', reason: null }
       : { status: 'draft', reason: 'Not ready: no PDF scan' }
   }
 
-  if (!song.body || !song.body.trim()) {
+  if (!version.body || !version.body.trim()) {
     return { status: 'draft', reason: 'Not ready: no chord chart' }
   }
 
-  const parsed = parseChordPro(song.body)
+  const parsed = parseChordPro(version.body)
   const lyricsSections = parsed.sections.filter((s) => s.type === 'lyrics')
 
   // At least one chord line
