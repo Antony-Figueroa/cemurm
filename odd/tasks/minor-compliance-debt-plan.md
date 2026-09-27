@@ -15,27 +15,41 @@ closed on assertion.
 ## Sequencing — what blocks what
 
 ```
-F-1  minor lockout after merge          ── BLOCKS merge of #201 (and #200)
+F-1a consent page no longer lies      ── DONE (1ed6b83, PR #201)
+F-1b /guardian/confirm + /revoke      ── OPEN. The emailed link 404s, so a
+                                         minor is still locked out — truthfully,
+                                         but locked out. Blocks the feature.
       │
-      ├──► F-2  PR #194 conflict + duplicate guardian design
-      │         blocks: any client-side guardian work, including F-1's page work
-      │
-F-3  dead projection.js                 ── independent, no blocker
-F-4  retired user_metadata claim        ── independent, comment-only
-F-5  issues #149/#150 unlabelled        ── blocked by F-1 (cannot claim closure)
-F-6  no review receipt (upstream)       ── unblockable locally
-F-7  email never proven end-to-end      ── independent
+      └──► F-2  PR #194 conflict + duplicate guardian design
+              blocks: all client-side guardian work, F-1b included
+
+F-3  dead projection.js                ── independent, no blocker
+F-4  retired user_metadata claim       ── independent, comment-only
+F-5  issues #149/#150 unlabelled       ── blocked by F-1b (cannot claim closure)
+F-6  no review receipt (upstream)      ── unblockable locally
+F-7  email never proven end-to-end     ── independent; the trigger decision is
+                                         resolved (app-invoked), the real-key
+                                         run is still owed
 F-8  OAuth — forward constraint, not debt
 ```
 
-**F-1 is the only item that makes shipped work wrong.** Everything else is
-cleanup, a missing decision, or missing evidence.
+**The one thing that would make this stack shippable** is F-1b, and F-1b is
+blocked on F-2. Everything else is cleanup, a missing label, or missing evidence.
 
 ---
 
 ## F-1 — After the stack merges, a minor is locked out by a page that says they are not
 
-**Severity: blocker. This is a regression introduced by the stack, not inherited debt.**
+**Severity: was a blocker. Unit (a) is now fixed on `feat/guardian-consent-db`;
+unit (b) is still open and still blocks the feature working end to end.**
+
+> **Update — unit (a) shipped as `1ed6b83` on PR #201.**
+> The page no longer claims an unlock, the app now invokes the edge function,
+> and the status contract is wired to the function's real returns. The lie is
+> gone. **The lockout is not**: `/guardian/confirm` still does not exist, so
+> the guardian's emailed link leads to a 404 and a minor still cannot get out.
+> Unit (b) below is therefore still required, and the flow is still not shippable
+> as a feature.
 
 ### What happens
 
@@ -93,39 +107,43 @@ was written to close.
 
 ### Action
 
-Two units, and **(a) must land with or before PR #201**:
+**(a) Unblock — DONE, `1ed6b83` on PR #201.** The page was rewritten so it:
+- states the account stays locked until the guardian confirms; the
+  "your account is now unlocked" claim is gone and nothing rendered claims it;
+- separates *request recorded* from *email sent*, with an explicit `no_email`
+  state that says plainly nobody was reached;
+- drops the form once a request exists (0031's `guardian_consents_one_open`
+  would reject a second one) and offers resend plus an explicit re-check;
+- calls `request_guardian_consent` — the honest name — instead of the
+  deprecated alias, and `sendGuardianConsentEmail` invokes the edge function.
 
-**(a) Unblock — required before merge.** Rewrite `GuardianConsentRequired.jsx` so
-it:
-- states the account stays locked until the guardian confirms, and removes the
-  "your account is now unlocked" claim entirely;
-- shows a waiting-for-guardian state instead of re-rendering the form on success;
-- surfaces the one-shot resend affordance or its absence;
-- does not call `onSuccess()` expecting an unlock.
-
-**(b) Close the loop — the already-deferred client work.** `/guardian/confirm` and
-`/guardian/revoke` pages calling `confirm_guardian_consent_by_token` and
+**(b) Close the loop — STILL OPEN, and still required.** `/guardian/confirm`
+and `/guardian/revoke` pages calling `confirm_guardian_consent_by_token` and
 0017's `revoke_guardian_consent`. Blocked on **F-2** (route and token model).
+Until (b) lands, the emailed link 404s and the minor stays locked — now
+truthfully, but locked.
 
-### Decision needed (a real product fork, not an implementation detail)
+### Decision — resolved 2026-09-27
 
-**Who triggers the Resend send?**
-
-- **App-invoked** — the client calls the `send-guardian-consent` edge function
-  after the request succeeds. Needs the URL and anon key reachable from the
-  browser, which is already true for Supabase functions.
-- **Operator-triggered** — the request row is created and a human or a scheduled
-  job sends the mail. No new client surface, but the minor waits on a human.
-
-This is F-7's blocker as much as F-1's. It is unresolved and **not** inferable
-from the code.
+**The app invokes the edge function.** The client calls
+`send-guardian-consent` as soon as the request is recorded, so the minor does
+not wait on an operator. The function derives both links itself from
+`SITE_URL` and the row's `revocation_token`, so the browser sends nothing but
+its session bearer. `verify_jwt = true`, so the function authenticates as the
+minor and re-checks the row is theirs. The operator-triggered alternative was
+rejected: a pending row nobody was told about reaches no guardian, and the
+`no_open_request` / `unavailable` paths would have made an operator a hard
+dependency in the only flow that can unlock a minor.
 
 ### Closure test
 
-- A minor records a request → the UI says *waiting for guardian*, not *unlocked*.
-- The account is still locked.
-- The guardian email arrives, the link is clicked once, and the account unlocks.
-  (Requires F-7's real-key run; see F-1's closure note below.)
+- ✅ A minor records a request → the UI says the account stays locked, not
+  *unlocked*. (`1ed6b83`; proved by grepping rendered copy with comments
+  stripped, and by breaking the new export to fail the build.)
+- ⬜ The account is still locked. *(True by `AuthGuards.jsx:111`; not observed
+  in a real session — there is no test coverage for `src/features/**`.)*
+- ⬜ The guardian email arrives, the link is clicked once, and the account
+  unlocks. **Blocked on (b) and on F-7's real-key run.**
 
 ---
 
@@ -336,11 +354,16 @@ One manual end-to-end run on a configured environment, recorded in an
 click the link, observe the unlock. Add the "guardian never receives the mail"
 negative case, since fail-closed there is the property that matters.
 
-Blocked on the F-1 decision — there is no send to test until the trigger is chosen.
+The trigger question is **resolved** — the app invokes the edge function
+(`1ed6b83`), so the run exercises the real production path rather than a
+manual step. What is still owed is the run itself. Note the honest ordering: the
+run cannot complete until F-1b exists, because the link the email carries has
+nowhere to land.
 
 ### Closure test
 
-A recorded run with a real key, both the success and the fail-closed case.
+A recorded run with a real key, covering the success case, the fail-closed case,
+and one link reused after confirmation.
 
 ---
 
