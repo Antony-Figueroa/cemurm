@@ -11,21 +11,30 @@ pnpm dev         # Vite dev server → localhost:5173
 pnpm build       # production build to dist/
 pnpm preview     # serve dist/
 pnpm lint        # ESLint — --max-warnings 0, --report-unused-disable-directives
+pnpm test        # Vitest run — characterization tests, node environment
+pnpm test:watch  # Vitest watch mode
 pnpm typecheck   # tsc --noEmit  (see "Type checking" below)
 ```
 
 `pnpm-workspace.yaml` holds `allowBuilds: { esbuild: true }`; postinstall scripts are blocked by default.
 
-**There is no test framework and no test runner on `main`.** M0b in `docs/master-plan.md` adds
-Vitest and a characterization suite; until it lands, "verification" for JS work =
-`pnpm typecheck && pnpm lint && pnpm build`.
+Vitest is the only test dependency (no jsdom, no testing-library), running in the `node`
+environment — which is Vitest's **default**: `vite.config.js` has no `test` block and configures
+nothing. Tests are colocated as `<module>.test.js` beside the module under test, and
+**characterization tests now guard the domain layer** (`src/domain/**`,
+`src/integrations/spotify.js`): they assert what the code does *today*, so a failure is a
+finding to report, never a reason to edit the source or weaken the assertion. "Verification"
+for JS work = `pnpm test && pnpm typecheck && pnpm lint && pnpm build`.
+
+**Vitest is pinned to 3.2.7 deliberately.** Vitest 5 declares `vite ^6.4||^7||^8` as a peer and
+fails hard against Vite 5.4.21. Do not bump it without moving Vite first.
 
 ## CI does not run typecheck
 
 `.github/workflows/ci.yml` (push to `main` + every PR) runs pnpm 11 / Node 22:
 
 ```
-pnpm install --frozen-lockfile → pnpm lint → pnpm build
+pnpm install --frozen-lockfile → pnpm lint → pnpm test → pnpm build
 ```
 
 **`pnpm typecheck` is absent from CI.** Type errors ship with a green check. Run it locally
