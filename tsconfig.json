@@ -2,15 +2,26 @@
   // JSDoc + checkJs type baseline (odd/tasks/ts-checkjs-baseline.md).
   //
   // NOTE (deliberate deviation): global checkJs is OFF. With
-  // checkJs:true + include:["src/lib"] tsc type-checks ALL ~31 modules in
-  // src/lib at once (~760 errors, ~530 of them in out-of-scope files such as
+  // checkJs:true over this include, tsc type-checks EVERY module it can
+  // reach at once (~760 errors, ~530 of them in out-of-scope files such as
   // gigs.js, rehearsals.js, services.js, comments.js, bandmates.js,
   // announcements.js, search.js, offlineCache.js, readiness.js, duration.js,
   // chordpro/parser.js). The ODD scopes the baseline to exactly four domain
   // libs, so they opt in individually with the canonical per-file
   // `// @ts-check` pragma — identical checking semantics for the opt-in
-  // files, exact checked surface. The remaining libs stay unchecked until a
-  // later pass; do NOT flip checkJs on globally before then.
+  // files, exact checked surface. The remaining modules stay unchecked until
+  // a later pass; do NOT flip checkJs on globally before then.
+  //
+  // PATHS (updated by M0a): the four opt-in files moved when the tree was
+  // relocated into the ADR 0002 boundaries. The old include was ["src/lib"],
+  // which now holds only storage.js — tsc exited 0 while checking ONE
+  // untyped file, and the whole baseline was silently dead. These two globs
+  // are what actually admit the four pragma'd files:
+  //   src/domain/music/{transpose,annotations}.js
+  //   src/data/repositories/{songs,setlists}.js
+  // VERIFY AFTER ANY MOVE: `npx tsc --noEmit --listFiles | grep -c 'cemurm/src/'`
+  // must stay > 1. A count of 1 means the baseline is dead again and the
+  // green exit is meaningless.
   "compilerOptions": {
     "allowJs": true,
     "noEmit": true,
@@ -23,5 +34,5 @@
     "isolatedModules": true,
     "types": ["vite/client"]
   },
-  "include": ["src/lib"]
+  "include": ["src/domain", "src/data/repositories", "src/lib"]
 }
