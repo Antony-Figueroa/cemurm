@@ -6,7 +6,11 @@
 // Not implemented (later hito): transposition, chord theory/degrees, WASM,
 // MusicXML/ABC, {start_of_*}/{end_of_*} blocks.
 
-const KNOWN_META = new Set(['title', 'key', 'artist'])
+// 'key' is deliberately NOT in here. It is handled by the sectional-key branch
+// below, which must tell the first {key} — the song's own — from a later one,
+// which is a modulation. Listing it here made that branch unreachable and let a
+// mid-chart {key} overwrite the song's key.
+const KNOWN_META = new Set(['title', 'artist'])
 
 // Recognizes a directive line: {name: value} or {name}
 function parseDirective(line) {
@@ -76,13 +80,19 @@ export function parseChordPro(text) {
         // subsequent {key} within a section is a sectional override.
         if (meta.key === undefined) {
           meta.key = directive.value
-        } else {
-          ensureSection('lyrics')
+        } else if (currentSectionIndex >= 0) {
+          // Recorded against the section already open. This used to call
+          // ensureSection('lyrics') first, which both invented an empty
+          // section and made currentSectionIndex point at that new one rather
+          // than at the section the modulation actually belongs to.
           sectionKeyContexts.push({
             sectionIndex: currentSectionIndex,
             key: directive.value,
           })
         }
+        // A {key} after the song key but before any section opened is a
+        // duplicate declaration, not a modulation. Recorded nowhere, which is
+        // the same treatment an unknown directive gets minus the comment line.
         continue
       }
       if (directive.name === 'section' || directive.name === 'comment') {
