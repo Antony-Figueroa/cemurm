@@ -1,13 +1,14 @@
 # Proposal: Fix dead sectional-key context in the ChordPro parser
 
 > Change: `fix-parser-sectional-key`
-> Finding: A of the 10 specification discrepancies in `odd/tasks/cemurm-brand-landing.md` §14.1
+> Finding: A of the 10 specification discrepancies in `odd/tasks/music-theory-discrepancies.md`
 > Status: proposed. Blocks nothing else; this is the one confirmed finding with no open
 > product decision.
 >
-> **Path note:** this document uses the post-relocation paths (`src/domain/chart/parser.js`).
-> Until M0a merges, the same file is `src/lib/parser.js` on `main`. The line numbers match in
-> both. The finding is unaffected either way.
+> **Path note:** on `main` today the file is **`src/lib/chordpro/parser.js`**. After M0a merges it
+> becomes `src/domain/chart/parser.js`. An earlier version of this note said
+> `src/lib/parser.js`, which does not exist — the parser sits one level deeper, under
+> `chordpro/`. Line numbers are the same in both layouts.
 
 ## Intent
 

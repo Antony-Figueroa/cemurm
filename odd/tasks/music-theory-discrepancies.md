@@ -34,40 +34,102 @@ differentiates the product is also the least trustworthy part of it.
 | # | Finding | Gherkin it violates | Status |
 |---|---|---|---|
 | A | `src/domain/chart/parser.js:9` puts `'key'` in `KNOWN_META`, so the check at `:69` matches every `{key: …}` and `continue`s. The `directive.name === 'key'` branch at `:73` is unreachable; `sectionKeyContexts` is always `[]`. The module's own self-check fails and was never run. | `music-theory.feature:106`, `:138` | Reproduced |
-| B | Enharmonic spelling is dead for every flat. `transposeKey('C', -2)` → `'A#'` instead of `'Bb'`. Arithmetic is correct; the table is sharp-only. | `music-theory.feature:149` | Reproduced |
+| B | Enharmonic spelling is decided by a hardcoded set of six major key names (`transpose.js:46`), not by the key's own spelling. A Cb major chart renders entirely in sharps, and the same key written `F minor` vs `Fm` gets opposite answers, because the set holds `F` but not `Fm`. | `music-theory.feature:149,155,159` | Reproduced by execution. Proposal: `fix-key-spelling-preference` |
 | C | The OnSong export cannot reach `agreed_key`; `flattenSetlist()` never copies it. Data exists one layer below (`supabase/seed.sql:104`). | `external-integrations.feature` | Reproduced |
 | D | No tie-break in offline conflict resolution. `features/offline-edit-conflict-policy.feature:47-51` requires the applied rule stored with the resolution. Code is strict `>`; nothing is stored. | `offline-edit-conflict-policy.feature:47-51` | Reproduced |
-| E | `qualityForDegree` returns `'power'` for 28 of 28 degrees (C major, A natural minor, E Phrygian, E harmonic minor). Four quality branches are dead code; `resolveDegree` renders `II` where the spec requires `ii°`. | `music-theory.feature:72` | Reproduced |
+| E | `qualityForDegree` is **inert**: it returns `'power'` for every degree of every heptatonic scale — **0 correct out of 49** measured across 7 scales. Its `:77-78` reads the *next two scale steps* instead of scale degrees 3 and 5, an off-by-two. The chord's own suffix is never parsed, so the "musician override wins" scenario cannot pass either. | `features/music-theory.feature:72,79` — "Degree quality derives from the scale" / "Musician override wins over derived quality" | Confirmed by execution. Proposal: `fix-degree-quality-derivation` |
 
-Pending triage (reported by the suite, not yet reproduced): F OnSong duplicates every
-directive; G `computeReadiness` only ever returns `ready`/`draft`; H readiness is not
-per-version and there is no scenario for setlist add/remove reconcile; I `spotifyKeyToLabel`
-is sharp-only; J the mode check is an exact string.
+**Lettering note.** These letters are the eight proposals', which are the artifact in review
+(#185). An earlier draft of this table used different letters for F, G and H — it split the two
+readiness findings and gave F to an unrelated OnSong item. The proposals pair the readiness
+findings as F+G (one defect from two sides) and give H to the reconcile silent drop, which is
+the more severe of the two. The split-letter draft is superseded, not merely renumbered; §14.2
+of the branch-only `cemurm-brand-landing.md` reuses `E` for a different finding than §14.1's `E`
+and should not be used as the reference lettering.
 
-Sharp edges locked in by the suite, unspecified anywhere: a fractional semitone count
-yields the literal chord `"undefined"`; lowercase chord tokens pass through untransposed;
-`transposeKey('B♭', 2) === 'C#♭'`; `buildSubstitutionMap` creates a key for an `undefined`
-value, defeating `applySubstitution`'s own `Object.keys().length` guard; a flat-spelled
-anchor can never match under a sharp key; `reconcileSetlistOp(null, …)` throws;
-`computeReadiness` throws on a truthy non-string key.
+~~Pending, reported by the suite, not yet reproduced~~ — **resolved, and it is not an eleventh
+finding.** The OnSong directive duplication reproduced against the seed's own stored shape
+(`supabase/seed.sql:224-227` stores `${title: Amazing Grace}` / `{artist: John Newton}` /
+`{key: G}` inside the body, and `parser.js:9` lists `title`/`key`/`artist` as `KNOWN_META`).
+`serializeOnSong` emits its own three at `:39-41` and appends the body verbatim at `:42-43`, so
+every metadata directive appears twice and **the two `{key:}` values conflict** — the exporter
+says the agreed key, the body says the chart key, and nothing says which wins. It is **finding
+C's second half**, not a separate item: the decision of which `{key:}` survives is the same
+decision as carrying `agreed_key`, and splitting them would put two PRs on the same three lines
+in an order that cannot be made safe. `fix-onsong-agreed-key` is amended accordingly.
 
-## Open design decisions — these block implementation, not the proposal
+Now proposed, all eight lettered: `F`+`G` readiness lifecycle and per-version tracking
+(`fix-readiness-lifecycle`); `H` the reconcile silent drop (`fix-reconcile-silent-drop`); `I`+`J`
+Spotify key labels and the mode comparison (`fix-spotify-key-parsing`). `H` is the most severe
+of the pending findings and is scoped as such — a queued op with a lost `queuedAt` becomes `0`,
+every real server timestamp beats `0`, and the op is dropped as *"superseded"*, with a notice
+indistinguishable from the one for a genuinely stale op.
 
-Each is a product decision, not an implementation detail. Do not guess them.
+## The sharp edges — triaged 2026-09-27, one refuted
 
-1. **B — when does a flat win?** Enharmonic spelling needs a rule, not a table swap.
-   Options: prefer the key's own spelling (a `Db` major chart stays `Db` major throughout);
-   or circle-of-fifths canonical form; or explicit per-key preference passed by the caller.
-   This changes what `transposeKey` means for every call site.
-2. **D — what is the tie-break rule, and where is it stored?** The Gherkin requires the
-   applied rule be stored with the resolution "so every device reaches the same result".
-   That implies a schema change (a column or a payload field) and a defined rule
-   (server-wins? first-writer-wins? client-authoritative?). Both halves are unspecified.
-3. **E — what is the correct degree-quality algorithm?** `qualityForDegree` reads
-   consecutive scale steps as if they were a triad's root/third/fifth. Stacking real
-   thirds over a scale degree is a different computation. Needs the intended semantics
-   confirmed, plus a decision on whether a wrong-quality result is signalled or
-   best-effort rendered.
+Seven behaviours the suite recorded because no feature file specifies them. All seven were
+executed against the real modules. **Six reproduced. One is false.**
+
+| # | Behaviour | Verdict |
+|---|---|---|
+| 1 | `transposeChord('C', 2.5)` → `"undefined"` | reproduced — **garbage output, not a throw**; `transposeNote:73` indexes `NOTES_SHARP[2.5]` |
+| 2 | `transposeChord('am', 3)` → `"am"` | reproduced — `CHORD_RE` at `transpose.js:79` is case-sensitive |
+| 3 | `transposeKey('B♭', 2)` → `"C#♭"` | reproduced — U+266D is in neither note table, so it is captured as a modifier and re-appended |
+| 4 | ~~`buildSubstitutionMap` creates a key for `undefined`~~ | **REFUTED** — see below |
+| 5 | a flat-spelled anchor never matches under a sharp key | reproduced, with a mechanism |
+| 6 | `reconcileSetlistOp(null, …)` throws | reproduced — one production call site, `offlineSync.js:111` |
+| 7 | `computeReadiness` throws on a truthy non-string key | reproduced |
+
+**#4 is false and is recorded as refuted, not deferred.** `buildSubstitutionMap`
+(`annotations.js:55-64`) guards with `if (a.kind !== 'chord_substitution') continue` and then
+`if (anchor) map[anchor] = a.value`. Probed against seven malformed shapes — `undefined`, `null`,
+`{chord:null}`, `{chord:""}`, `{chord:0}`, a bare number — **all produce zero keys**; only a
+legitimate non-empty string produces one. The guard is present and correct.
+
+**#5's mechanism, which is what makes it a real bug rather than a quirk.**
+`applySubstitution` (`annotations.js:82-89`) looks up `transposeChord(token, -semitones,
+preferFlatForKey(baseKey))` — the token reverse-transposed using the **base key's** flat
+preference. So whether an anchor written `"Bb"` matches depends on whether the chart's key
+happens to be a flat key: on a C-major chart the lookup key comes out sharp-spelled, misses, and
+the function returns the token **unchanged with no signal**. Same substitution, same anchor,
+different chart key, silently inert. It needs finding B's rule as a prerequisite and B is
+necessary but **not** sufficient — `preferFlatForKey('C')` is false before and after B, so the
+C-chart case reproduces identically once B lands.
+
+**That is four claims in this record that did not survive execution:** B's
+`transposeKey('C', -2)` example, E's 4-scale measurement, the letter-to-finding mapping, and now
+#4. The pattern is the same each time — a claim copied from a suite report without being run.
+
+## Design decisions — three resolved, one still open
+
+**These three were listed as open product decisions. They were not.** The Gherkin answers each
+one; they had to be read, not asked.
+
+1. **B — when does a flat win? → Resolved by `music-theory.feature:149,155,159`.** The rule is
+   the key's own spelling: a key written with a flat prefers flats throughout, one written with
+   a sharp prefers sharps, and one spelling per section. The code substituted a hardcoded set
+   of six major key names for that rule. The set is deleted; the rule is derived. Proposal:
+   `fix-key-spelling-preference`.
+2. **D — the tie-break rule → Resolved by the Gherkin's own determinism constraint.** The
+   feature file names *that* a recorded rule applies and that it is stored with the resolution
+   "so every device reaches the same result", but not *which* value breaks the tie. That
+   constraint decides it: the key must be computable from data both devices already hold, with
+   no coordination. `seq` is per-queue and therefore 0 on every device — rejected. `args[0]` is
+   the author, is different on each device, and is already present — chosen. **The key is
+   derived, not specified**, and a maintainer can overrule it on one line. The storage half is a
+   verified gap: no migration in `supabase/migrations/` has a column to put it in. Proposal:
+   `fix-offline-tie-break`, and its migration number is deliberately left open.
+3. **E — the correct degree-quality algorithm → Resolved by `music-theory.feature:72,79`.**
+   Quality derives from the scale, so stack scale degrees 1, 3, 5 — the standard tertian
+   computation. The explicit chord overrides the scale. There was never a choice to make: the
+   function is inert, wrong 0 times out of 49, and no alternative algorithm could be "correct"
+   and still contradict the feature file. Proposal: `fix-degree-quality-derivation`.
+
+**Still genuinely open — one, and it is narrower than it was.** `F`/`G` is now **decided**:
+per-version, and `retired` as an absence (2026-09-27). No migration, `is_ready` becomes
+meaningful, and the feature file is not amended. What is left open is not a product question but
+an implementation one: what makes a version *current*, for a song that has several. That is
+resolved at apply time, not here, and it is flagged in the proposal rather than assumed.
 
 ## Scope
 
@@ -104,17 +166,71 @@ Each is a product decision, not an implementation detail. Do not guess them.
 - [x] T2 — Land PR 1b (six ADR 0002 refactors) with the acceptance-gate deviation
       documented. PR #168.
 - [x] T3 — Write this record and its Engram mirror.
-- [ ] T4 — OpenSpec change proposal for finding A (parser sectional key).
-- [ ] T5 — OpenSpec change proposal for finding B (enharmonic spelling). Blocked on
-      design decision 1.
-- [ ] T6 — OpenSpec change proposal for finding C (OnSong `agreed_key`).
-- [ ] T7 — OpenSpec change proposal for finding D (offline tie-break). Blocked on
-      design decision 2; likely needs a migration.
-- [ ] T8 — OpenSpec change proposal for finding E (degree quality). Blocked on
-      design decision 3.
-- [ ] T9 — Triage F–J and the unspecified sharp edges: fix, defer with a recorded
-      reason, or fold into a proposal above.
-- [ ] T10 — Repair `openspec/config.yaml` context.
+- [x] T4 — Proposal for finding A (parser sectional key).
+      `openspec/changes/fix-parser-sectional-key/`
+- [x] T5 — Proposal for finding C (OnSong `agreed_key`).
+      `openspec/changes/fix-onsong-agreed-key/`
+- [x] T6 — Proposal for findings F + G (readiness lifecycle and per-version
+      tracking), paired because they are one defect seen from two sides.
+      `openspec/changes/fix-readiness-lifecycle/`
+- [x] T7 — Proposal for finding H (reconcile silent drop).
+      `openspec/changes/fix-reconcile-silent-drop/`
+- [x] T8 — Proposal for findings I + J (Spotify key parsing), paired because same
+      module and same root cause class.
+      `openspec/changes/fix-spotify-key-parsing/`
+- [x] T9 — Proposals for findings **B**, **D** and **E**. All three were listed as blocked on
+      product decisions; **none was**. The Gherkin answers each one — read, not asked. B's rule
+      is the key's own spelling, D's is forced by the feature file's own determinism
+      constraint, and E's is the standard tertian stacking the feature file already names. Only
+      `F`/`G` still holds a real product decision.
+      `openspec/changes/fix-key-spelling-preference/`,
+      `openspec/changes/fix-offline-tie-break/`,
+      `openspec/changes/fix-degree-quality-derivation/`
+- [ ] T10 — Repair `openspec/config.yaml`. Deferred until the M0 chain merges, since it
+      must describe the post-M0a tree and the test runner that M0b adds.
+- [x] T11 — Correct the findings table. B's evidence was the withdrawn `transposeKey('C', -2)`
+      example, E's was 4 scales where 7 were measured, and the letter-to-finding mapping
+      disagreed with the proposals for F, G and H. All three fixed. The `§14` lettering of the
+      branch-only `cemurm-brand-landing.md` is not used as the reference, and the eight
+      proposals' citation to it — a file that exists on no base branch — was repointed at this
+      record.
+- [x] T12 — **F/G decided**: per-version, `retired` as an absence. `fix-readiness-lifecycle`
+      amended from "the proposal does not make this decision" to a dated decision with the
+      alternatives kept, and with the cost stated: a retired version renders *nothing* rather
+      than a distinct label, so if the product later wants retired to look different from draft,
+      this is the wrong decision and it is cheaper to reverse before call sites are touched.
+- [x] T13 — Sharp edges triaged. All seven executed; six reproduced, one **refuted** (#4). Split
+      by whether a decision is required, not by whether it throws: `fix-unspecified-crashes`
+      (three with no valid reading at all) and `fix-unspecified-silent-wrong` (three where the
+      input is plausibly valid and the right answer is arguable).
+- [x] T14 — C amended with the duplicate-directive finding. Not an eleventh finding: the
+      decision of which `{key:}` survives is C's decision. Its "emit alongside first"
+      recommendation is withdrawn and recorded as withdrawn, because alongside *is* the conflict.
+- [x] T15 — Closed the five superseded PRs (#143, #144, #145, #146, #168) with a comment naming
+      the replacement chain on each. #168 was the dangerous one: 5908 lines, unreviewable,
+      inviting an accidental merge. 21 open → 18, and all 18 are now part of a real chain.
+
+## Sequencing constraint
+
+**No finding may be implemented until M0b (#171) merges.** The 293-test characterization
+suite is the only regression net this repository has, and every finding here is a behaviour
+change against code the suite currently pins. Fixing a finding rewrites the assertion that
+pins the bug — legitimate, because the behaviour is intentionally changing, but it also means
+nothing can catch an *unintended* change until the suite is on `main`.
+
+## Verified file locations
+
+The proposals cite these. An earlier version of the A proposal cited `src/lib/parser.js`,
+which does not exist — the parser sits one level deeper, under `chordpro/`.
+
+| Finding | File on `main` | After M0a |
+|---|---|---|
+| A | `src/lib/chordpro/parser.js` | `src/domain/chart/parser.js` |
+| B, E | `src/lib/transpose.js`, `src/lib/degreeResolver.js` | `src/domain/music/*` |
+| C | `src/lib/exporters/onsong.js` | `src/domain/setlist/exporters/onsong.js` |
+| D, H | `src/lib/setlistCollab.js` | `src/domain/setlist/collab.js` |
+| F, G | `src/lib/readiness.js` | `src/domain/chart/readiness.js` |
+| I, J | `src/lib/spotify.js` | `src/integrations/spotify.js` |
 
 ## Acceptance criteria
 
