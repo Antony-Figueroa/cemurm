@@ -6,8 +6,13 @@
 // returns the only two facts the UI needs (dob_known, is_minor) and the
 // database decides. user_metadata.isMinor survives as a signup-time UX hint
 // only; it is user-editable through GoTrue updateUser(), so nothing gates on it.
-// Public surface: getAgeStatus, setDateOfBirth, getConsentStatus, recordConsent,
-// approvePublicSharing.
+// Since 0031 consent is a two-step handshake and BOTH steps are client-driven:
+// requestGuardianConsent opens a 'pending' row (it does NOT unlock anything),
+// and sendGuardianConsentEmail asks the send-guardian-consent edge function to
+// mail the guardian the one-shot link. Neither step may be skipped: a request
+// with no email reaches no guardian, so the minor stays locked forever.
+// Public surface: getAgeStatus, setDateOfBirth, getConsentStatus,
+// requestGuardianConsent, sendGuardianConsentEmail, approvePublicSharing.
 // Scenario coverage: features/minors-and-guardian-consent.feature
 // (signup age gate, account activation, consent record, public-sharing gate).
 
@@ -78,13 +83,20 @@ export function getConsentStatus(userId) {
 }
 
 /**
- * Record guardian consent on the caller's own account (RPC only). The exact
- * consent text the guardian saw is stored verbatim (scenario 3). Returns the
- * new consent row id.
+ * OPEN a consent request on the caller's own account (RPC only).
+ *
+ * This does not grant consent. Since 0031 the row is created 'pending' and the
+ * account stays locked until the GUARDIAN clicks the emailed link — the server
+ * owns that transition, so `record` would have been a lie. It therefore calls
+ * `request_guardian_consent`, not 0031's deprecated `record_guardian_consent`
+ * alias, which is kept only so pre-0031 bundles keep working.
+ *
+ * The exact consent text the guardian will see is stored verbatim (scenario 3).
+ * Returns the new pending row id. Follow it with sendGuardianConsentEmail().
  */
-export function recordConsent({ userId, guardianName, guardianEmail, consentText }) {
+export function requestGuardianConsent({ userId, guardianName, guardianEmail, consentText }) {
   return withErrorMapping(async () => {
-    const { data, error } = await supabase.rpc('record_guardian_consent', {
+    const { data, error } = await supabase.rpc('request_guardian_consent', {
       p_user_id: userId,
       p_guardian_name: guardianName,
       p_guardian_email: guardianEmail,
@@ -93,6 +105,37 @@ export function recordConsent({ userId, guardianName, guardianEmail, consentText
     if (error) throw error
     return data
   })
+}
+
+/**
+ * Ask the send-guardian-consent edge function to mail the guardian the
+ * one-shot confirm/revoke link for the caller's open request.
+ *
+ * The function reads the pending row itself and derives both links from
+ * SITE_URL + the row's 128-bit revocation_token, so the only thing the browser
+ * sends is the session bearer. verify_jwt is on, so the function authenticates
+ * as the minor and re-checks that the row is theirs.
+ *
+ * NEVER throws for a delivery failure: a mail that did not go out is a normal
+ * outcome the UI has to be able to state honestly, not an exception. Returns
+ * one of:
+ *   'sent'            — Resend accepted the message
+ *   'already_active'  — consent was confirmed while this page was open
+ *   'no_open_request' — no pending row to send for (stale page)
+ *   'unavailable'     — the call could not complete (offline, 5xx, bad config)
+ */
+export async function sendGuardianConsentEmail() {
+  let result
+  try {
+    result = await supabase.functions.invoke('send-guardian-consent', { body: {} })
+  } catch {
+    return 'unavailable'
+  }
+  if (result.error) return 'unavailable'
+  const status = result.data?.status
+  return status === 'sent' || status === 'already_active' || status === 'no_open_request'
+    ? status
+    : 'unavailable'
 }
 
 /**
