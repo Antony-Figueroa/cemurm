@@ -101,17 +101,77 @@ which is the opposite of the order they were authored for. In filename order the
 `0023`–`0028`. This depends on the `fix/hito4-review-batch1` decision (§5): if that branch is
 never merged, `0020` is free and no renumber is needed at all.
 
-### ✅ `0019:184` is not a chain-breaker — earlier concern withdrawn
+### 🔴 `0019:184` IS a chain-breaker — an earlier revision of this plan was wrong
 
-`0019_rehearsal_workflow.sql:184` uses `create function private.display_name_for` without
-`or replace`, and two branches carry defensive patches for it (`54ce559` on the review branch,
-`1ee9615` on in-app-feedback). Checked against current `main`: **it is the only creator.**
-`0023_substitutions` and `0021_plan_freeze` only *call* it. There is no duplicate and a fresh
-chain does not abort there.
+**Correction, 2026-09-27.** This section previously said the fix was unnecessary and withdrew
+it. **That conclusion was wrong, and the reason it was wrong is worth recording.**
 
-The patches were made against an older `main` (`894845a`) whose chain did have a duplicate. That
-state is gone. **No fix is required.** If the two branches merge with their patches intact,
-they are harmless no-ops; they are not worth a reconciliation commit.
+The check that produced it grepped only `0023`–`0028` and the feature branches. It never looked
+at `0002`–`0018`. Two migrations create the same function with a plain `create function`:
+
+```
+0018_service_planning.sql:344   create function private.display_name_for(...)
+0019_rehearsal_workflow.sql:184 create function private.display_name_for(...)
+```
+
+A fresh chain applies `0018`, creates the function, reaches `0019` and aborts:
+
+```
+ERROR:  function "display_name_for" already exists with same argument types
+```
+
+Verified both ways on a clean database:
+
+| Chain | Result |
+|---|---|
+| `main` migrations only | ❌ aborts at `0019` |
+| with #172's `d31888b` (`create or replace`) | ✅ `0001`–`0028`, 0 errors |
+
+**`#172` is therefore a hard prerequisite for any slice that adds a migration**, and for any
+fresh `db reset` on `main` as it stands. `0021_plan_freeze` (#179) is stacked on it for that
+reason. The `1ee9615` patch on `feat/hito5-in-app-feedback` guards the same line and is a no-op
+once #172 lands.
+
+**The lesson:** a negative finding ("there is no duplicate") is only as good as the range that
+was searched. Grepping the recently-added files and concluding the older ones were clean is how
+a real chain-breaker survives review.
+
+### 🔴 A hand-rolled reset that drops only `public` leaves `profiles` empty
+
+Discovered while verifying #179. It breaks login-dependent behaviour with **no error anywhere**.
+
+`public.profiles` rows are created by the `0006` trigger `on_auth_user_created`, which fires on
+`INSERT` into `auth.users`. The seed inserts users with `on conflict do nothing` and then
+`UPDATE`s their profiles. So:
+
+1. `drop schema public cascade` — profiles gone, `auth.users` untouched
+2. re-apply the chain — the trigger exists again
+3. `seed.sql` — `insert … on conflict do nothing` is a **no-op** because the users are still
+   there, so **the trigger never fires**
+4. the seed's `update profiles set display_name = …` matches zero rows, silently
+
+Result: `public.profiles` has **0 rows** while `auth.users` has 5. Every name resolves through
+`private.display_name_for` to the `'Unknown'` fallback. In #179 this surfaced as smoke `T7`
+failing with `published_by_name = 'Unknown'` instead of `'Demo User'` — a failure that looked
+like a migration defect and was not one.
+
+**Correct order** if you must reset without the Supabase CLI:
+
+```sql
+-- 1. drop and recreate
+drop schema if exists private cascade;
+drop schema public cascade;
+create schema public;
+grant all on schema public to postgres, anon, authenticated, service_role;
+delete from supabase_migrations.schema_migrations;
+-- 2. THEN clear the users — in this order, or the delete fails on FKs from songs
+delete from auth.users;
+-- 3. re-apply every migration in filename order
+-- 4. seed.sql
+```
+
+`supabase db reset` does all of this correctly, which is why the bug only appears when the reset
+is hand-rolled. `docs/local-dev.md` should say so explicitly.
 
 ### Slicing
 
