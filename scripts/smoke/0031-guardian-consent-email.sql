@@ -46,6 +46,17 @@
 -- every fixture is deleted as postgres — a claimless `authenticated` role sees
 -- zero rows, so a `= 0` tidy-up assertion run as a client would pass vacuously.
 --
+-- ⚠ BASE-SUPERSESSION. 0020_review_batch1.sql dropped
+-- public.approve_guardian_public_sharing(uuid) — the "guardian approved, the
+-- minor records it" model — and replaced it with
+-- public.approve_guardian_sharing(user_id, guardian_email, token), a one-shot
+-- capability link. Three assertions below therefore target the new symbol. The
+-- model moved; the property did not: private.approve_guardian_sharing still
+-- requires `and status = 'active'`, so a pending consent is still refused. An
+-- assertion is re-pointed at the replacement when the property it checks
+-- survives, and DELETED when the property is gone — never deleted to turn a
+-- suite green.
+--
 -- ⚠ Read the ERROR count, not the PASS count. psql does not stop on error, so an
 -- assertion that dies on `permission denied` disappears from the output while the
 -- run still prints a green FAIL tally. Two POST-CONDITION checks did exactly that
@@ -338,11 +349,26 @@ select tmp_expect_error(
 );
 
 -- "STILL LOCKED" — arm 3: the sharing-approval RPC cannot even find a row,
--- because it matches on status = 'active' (0017 line 340).
+-- because it matches on status = 'active'.
+--
+-- Re-pointed at main's replacement. 0020_review_batch1.sql:399 dropped
+-- public.approve_guardian_public_sharing(uuid) and introduced
+-- public.approve_guardian_sharing(user, email, token), where the guardian
+-- approves through a link carrying their own capability token. The MODEL
+-- changed; the property did not — private.approve_guardian_sharing still
+-- requires `and status = 'active'`, so a pending row is still refused. The
+-- assertion follows the property, not the old symbol.
 select tmp_expect_error(
   '0031 LOCKED while pending: public-sharing approval is refused (no active row)',
-  $$select public.approve_guardian_public_sharing('10000000-0000-0000-0000-0000000000c1')$$,
-  '%Consent not found or not active.%'
+  $$select public.approve_guardian_sharing(
+     '10000000-0000-0000-0000-0000000000c1',
+     (select guardian_email from public.guardian_consents
+       where user_id = '10000000-0000-0000-0000-0000000000c1' and status = 'pending'
+       limit 1),
+     (select sharing_approval_token from public.guardian_consents
+       where user_id = '10000000-0000-0000-0000-0000000000c1' and status = 'pending'
+       limit 1))$$,
+  '%Consent not found or already finalized%'
 );
 
 -- One open row per account. This is also the only brake on repeated requests,
@@ -619,10 +645,20 @@ select tmp_expect_error(
 );
 
 -- The sharing approval now finds the active row (the same account, back in the
--- minor's own session — the guardian is still not signed in anywhere).
+-- minor's own session — the guardian is still not signed in anywhere). The
+-- token is read from the row rather than hardcoded, because 0020 mints it with
+-- `default gen_random_uuid()`: a literal here would be a guess, and a guess
+-- that fails to match is indistinguishable from a gate that is working.
 select tmp_expect_ok(
   '0031 the minor can now record the public-sharing approval',
-  $$select public.approve_guardian_public_sharing('10000000-0000-0000-0000-0000000000c1')$$
+  $$select public.approve_guardian_sharing(
+     '10000000-0000-0000-0000-0000000000c1',
+     (select guardian_email from public.guardian_consents
+       where user_id = '10000000-0000-0000-0000-0000000000c1' and status = 'active'
+       limit 1),
+     (select sharing_approval_token from public.guardian_consents
+       where user_id = '10000000-0000-0000-0000-0000000000c1' and status = 'active'
+       limit 1))$$
 );
 
 select tmp_expect_ok(
