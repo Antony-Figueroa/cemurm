@@ -24,6 +24,7 @@ import Notifications from '../features/notifications/pages/Notifications.jsx'
 import StageMode from '../features/stage/pages/StageMode.jsx'
 import Overlay from '../features/stage/pages/Overlay.jsx'
 import Auth from '../features/auth/pages/Auth.jsx'
+import GuardianApprove from '../features/auth/pages/GuardianApprove.jsx'
 import Practice from '../features/repertoire/pages/Practice.jsx'
 import PublicLibrary from '../features/library/pages/PublicLibrary.jsx'
 import Profile from '../features/library/pages/Profile.jsx'
@@ -70,6 +71,12 @@ const router = createBrowserRouter([
           },
         ],
       },
+      // H10 (0020): the guardian's capability link — public on purpose, it
+      // must work WITHOUT a session (outside RequireAuth/RequireGuardianConsent).
+      // Still inside AppLayout, so it keeps the nav chrome; AppLayout renders
+      // its logged-out state without redirecting (navigate('/') is only in the
+      // sign-out handler).
+      { path: '/guardian-approve', element: <GuardianApprove /> },
       {
         element: <RedirectIfAuthed />,
         children: [{ path: '/auth', element: <Auth /> }],
