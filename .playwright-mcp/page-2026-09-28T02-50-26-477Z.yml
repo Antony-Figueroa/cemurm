@@ -1,0 +1,1685 @@
+- generic [ref=f36e2]:
+  - link "Skip Navigation" [ref=f36e3] [cursor=pointer]:
+    - /url: /design/human-interface-guidelines/color#app-main
+  - generic [ref=f36e5]:
+    - link "Ver en español" [ref=f36e6] [cursor=pointer]:
+      - /url: /la/design/human-interface-guidelines/color
+    - button "Continue viewing in English" [ref=f36e10] [cursor=pointer]
+  - navigation "Global" [ref=f36e13]:
+    - list [ref=f36e15]:
+      - listitem [ref=f36e16]:
+        - link "Apple Developer" [ref=f36e17] [cursor=pointer]:
+          - /url: /
+      - listitem [ref=f36e18]:
+        - generic [ref=f36e20]:
+          - list [ref=f36e22]:
+            - listitem [ref=f36e23]:
+              - link "Get Started" [ref=f36e24] [cursor=pointer]:
+                - /url: /get-started/
+            - listitem:
+              - button "Get Started menu"
+          - list [ref=f36e27]:
+            - listitem [ref=f36e28]:
+              - link "Platforms" [ref=f36e29] [cursor=pointer]:
+                - /url: /platforms/
+            - listitem:
+              - button "Platforms menu"
+          - list [ref=f36e32]:
+            - listitem [ref=f36e33]:
+              - link "Technologies" [ref=f36e34] [cursor=pointer]:
+                - /url: /technologies/
+            - listitem:
+              - button "Technologies menu"
+          - list [ref=f36e37]:
+            - listitem [ref=f36e38]:
+              - link "Community" [ref=f36e39] [cursor=pointer]:
+                - /url: /community/
+            - listitem:
+              - button "Community menu"
+          - list [ref=f36e42]:
+            - listitem [ref=f36e43]:
+              - link "Documentation" [ref=f36e44] [cursor=pointer]:
+                - /url: /documentation/
+            - listitem:
+              - button "Documentation menu"
+          - list [ref=f36e47]:
+            - listitem [ref=f36e48]:
+              - link "Downloads" [ref=f36e49] [cursor=pointer]:
+                - /url: /download/
+            - listitem:
+              - button "Downloads menu"
+          - list [ref=f36e52]:
+            - listitem [ref=f36e53]:
+              - link "Support" [ref=f36e54] [cursor=pointer]:
+                - /url: /support/
+            - listitem:
+              - button "Support menu"
+      - listitem [ref=f36e56]:
+        - button "Search" [ref=f36e57] [cursor=pointer]
+      - listitem [ref=f36e58]:
+        - link "Sign in" [ref=f36e60] [cursor=pointer]:
+          - /url: /login/?return=%2Fdesign%2Fhuman-interface-guidelines%2Fcolor
+  - generic [ref=f36e61]:
+    - navigation [ref=f36e62]:
+      - generic [ref=f36e65]:
+        - button "Open Documentation Navigator" [ref=f36e68] [cursor=pointer]
+        - link "Design" [ref=f36e74] [cursor=pointer]:
+          - /url: /design/
+        - list [ref=f36e77]:
+          - listitem [ref=f36e78]:
+            - link "Overview" [ref=f36e79] [cursor=pointer]:
+              - /url: https://developer.apple.com/design/
+          - listitem [ref=f36e80]:
+            - link "What’s New" [ref=f36e81] [cursor=pointer]:
+              - /url: https://developer.apple.com/design/whats-new/
+          - listitem [ref=f36e82]:
+            - link "Get Started" [ref=f36e83] [cursor=pointer]:
+              - /url: https://developer.apple.com/design/get-started/
+          - listitem [ref=f36e84]:
+            - link "Guidelines" [ref=f36e85] [cursor=pointer]:
+              - /url: /design/human-interface-guidelines
+          - listitem [ref=f36e86]:
+            - link "Resources" [ref=f36e87] [cursor=pointer]:
+              - /url: https://developer.apple.com/design/resources/
+    - generic [ref=f36e88]:
+      - generic [ref=f36e89]:
+        - navigation [ref=f36e91]:
+          - button "Close Documentation Navigator" [ref=f36e97] [cursor=pointer]
+          - generic [ref=f36e120]: Navigator is loading
+        - generic [ref=f36e122]:
+          - main [ref=f36e123]:
+            - generic [ref=f36e126]:
+              - heading "Color" [level=1] [ref=f36e128]
+              - generic [ref=f36e129]: Judicious use of color can enhance communication, evoke your brand, provide visual continuity, communicate status and feedback, and help people understand information.
+            - generic [ref=f36e134]:
+              - paragraph:
+                - generic:
+                  - img "A sketch of a paint palette, suggesting the use of color. The image is overlaid with rectangular and circular grid lines and is tinted yellow to subtly reflect the yellow in the original six-color Apple logo."
+              - paragraph [ref=f36e135]: The system defines colors that look good on various backgrounds and appearance modes, and can automatically adapt to vibrancy and accessibility settings. Using system colors is a convenient way to make your experience feel at home on the device.
+              - paragraph [ref=f36e136]: You may also want to use custom colors to enhance the visual experience of your app or game and express its unique personality. The following guidelines can help you use color in ways that people appreciate, regardless of whether you use system-defined or custom colors.
+              - heading [level=2] [ref=f36e137]:
+                - link "Best practices in page link" [ref=f36e138] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/color#Best-practices
+              - paragraph [ref=f36e139]:
+                - strong [ref=f36e140]: Avoid using the same color to mean different things.
+                - text: Use color consistently throughout your interface, especially when you use it to help communicate information like status or interactivity. For example, if you use your brand color to indicate that a borderless button is interactive, using the same or similar color to stylize noninteractive text is confusing.
+              - paragraph [ref=f36e141]:
+                - strong [ref=f36e142]: Make sure all your app’s colors work well in light, dark, and increased contrast contexts.
+                - text: iOS, iPadOS, macOS, and tvOS offer both light and
+                - link "dark" [ref=f36e143] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/dark-mode
+                - text: appearance settings.
+                - link "System colors" [ref=f36e144] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/color#System-colors
+                - text: vary subtly depending on the system appearance, adjusting to ensure proper color differentiation and contrast for text, symbols, and other elements. With the Increase Contrast setting turned on, the color differences become far more apparent. When possible, use system colors, which already define variants for all these contexts. If you define a custom color, make sure to supply light and dark variants, and an increased contrast option for each variant that provides a significantly higher amount of visual differentiation. Even if your app ships in a single appearance mode, provide both light and dark colors to support Liquid Glass adaptivity in these contexts.
+              - generic [ref=f36e145]:
+                - paragraph [ref=f36e147]:
+                  - figure "Default (light)" [ref=f36e148]:
+                    - img "A screenshot of the Notes app in iOS with the light system appearance and default contrast. The Notes app is open to a note with the text 'Note'. The text is selected, which shows a yellow selection highlight and text editing menu. The Done button appears in the upper-right corner. The Liquid Glass background of the button is yellow, and its label, which shows a checkmark, is white. The shade of yellow is vibrant." [ref=f36e152]
+                - paragraph [ref=f36e155]:
+                  - figure "Increased contrast (light)" [ref=f36e156]:
+                    - img "A screenshot of the Notes app in iOS with the light system appearance and increased contrast. The Notes app is open to a note with the text 'Note'. The text is selected, which shows a yellow selection highlight and text editing menu. The Done button appears in the upper-right corner. The Liquid Glass background of the button is yellow, and its label, which shows a checkmark, is black. The shade of yellow is darker to provide more contrast and differentiation against the note's white background." [ref=f36e160]
+                - paragraph [ref=f36e163]:
+                  - figure "Default (dark)" [ref=f36e164]:
+                    - img "A screenshot of the Notes app in iOS with the dark system appearance and default contrast. The Notes app is open to a note with the text 'Note'. The text is selected, which shows a yellow selection highlight and text editing menu. The Done button appears in the upper-right corner. The Liquid Glass background of the button is yellow, and its label, which shows a checkmark, is white." [ref=f36e168]
+                - paragraph [ref=f36e171]:
+                  - figure "Increased contrast (dark)" [ref=f36e172]:
+                    - img "A screenshot of the Notes app in iOS with the dark system appearance and increased contrast. The Notes app is open to a note with the text 'Note'. The text is selected, which shows a yellow selection highlight and text editing menu. The Done button appears in the upper-right corner. The Liquid Glass background of the button is yellow, and its label, which shows a checkmark, is black." [ref=f36e176]
+              - paragraph [ref=f36e178]:
+                - strong [ref=f36e179]: Test your app’s color scheme under a variety of lighting conditions.
+                - text: Colors can look different when you view your app outside on a sunny day or in dim light. In bright surroundings, colors look darker and more muted. In dark environments, colors appear bright and saturated. In visionOS, colors can look different depending on the colors of a wall or object in a person’s physical surroundings and how it reflects light. Adjust app colors to provide an optimal viewing experience in the majority of use cases.
+              - paragraph [ref=f36e180]:
+                - strong [ref=f36e181]: Test your app on different devices.
+                - text: For example, the True Tone display — available on certain iPhone, iPad, and Mac models — uses ambient light sensors to automatically adjust the white point of the display to adapt to the lighting conditions of the current environment. Apps that primarily support reading, photos, video, and gaming can strengthen or weaken this effect by specifying a white point adaptivity style (for developer guidance, see
+                - link [ref=f36e182] [cursor=pointer]:
+                  - /url: /documentation/bundleresources/information-property-list/uiwhitepointadaptivitystyle
+                  - code [ref=f36e183]: UIWhitePointAdaptivityStyle
+                - text: ). Test tvOS apps on multiple brands of HD and 4K TVs, and with different display settings. You can also test the appearance of your app using different color profiles on a Mac — such as P3 and Standard RGB (sRGB) — by choosing a profile in System Settings > Displays. For guidance, see
+                - link "Color management" [ref=f36e184] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/color#Color-management
+                - text: .
+              - paragraph [ref=f36e185]:
+                - strong [ref=f36e186]: Consider how artwork and translucency affect nearby colors.
+                - text: Variations in artwork sometimes warrant changes to nearby colors to maintain visual continuity and prevent interface elements from becoming overpowering or underwhelming. Maps, for example, displays a light color scheme when in map mode but switches to a dark color scheme when in satellite mode. Colors can also appear different when placed behind or applied to a translucent element like a toolbar.
+              - paragraph [ref=f36e187]:
+                - strong [ref=f36e188]: If your app lets people choose colors, prefer system-provided color controls where available.
+                - text: Using built-in color pickers provides a consistent user experience, in addition to letting people save a set of colors they can access from any app. For developer guidance, see
+                - link [ref=f36e189] [cursor=pointer]:
+                  - /url: /documentation/swiftui/colorpicker
+                  - code [ref=f36e190]: ColorPicker
+                - text: .
+              - heading [level=2] [ref=f36e191]:
+                - link "Inclusive color in page link" [ref=f36e192] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/color#Inclusive-color
+              - paragraph [ref=f36e193]:
+                - strong [ref=f36e194]: Avoid relying solely on color to differentiate between objects, indicate interactivity, or communicate essential information.
+                - text: When you use color to convey information, be sure to provide the same information in alternative ways so people with color blindness or other visual disabilities can understand it. For example, you can use text labels or glyph shapes to identify objects or states.
+              - paragraph [ref=f36e195]:
+                - strong [ref=f36e196]: Avoid using colors that make it hard to perceive content in your app.
+                - text: For example, insufficient contrast can cause icons and text to blend with the background and make content hard to read, and people who are color blind might not be able to distinguish some color combinations. For guidance, see
+                - link "Accessibility" [ref=f36e197] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/accessibility
+                - text: .
+              - paragraph [ref=f36e198]:
+                - strong [ref=f36e199]: Consider how the colors you use might be perceived in other countries and cultures.
+                - text: For example, red communicates danger in some cultures, but has positive connotations in other cultures. Make sure the colors in your app send the message you intend.
+              - generic [ref=f36e200]:
+                - paragraph [ref=f36e202]:
+                  - figure "Green indicates a positive trend in the Stocks app in English." [ref=f36e203]:
+                    - generic:
+                      - img "An illustration of an upward-trending stock chart in the Stocks app in English. The line of the graph is green to indicate the rising value of the stock during the selected time period."
+                - paragraph [ref=f36e206]:
+                  - figure "Red indicates a positive trend in the Stocks app in Chinese." [ref=f36e207]:
+                    - generic:
+                      - img "An illustration of an upward-trending stock chart in the Stocks app in Chinese. The line of the graph is red to indicate the rising value of the stock during the selected time period."
+              - heading [level=2] [ref=f36e209]:
+                - link "System colors in page link" [ref=f36e210] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/color#System-colors
+              - paragraph [ref=f36e211]:
+                - strong [ref=f36e212]: Avoid hard-coding system color values in your app.
+                - text: Documented color values are for your reference during the app design process. The actual color values may fluctuate from release to release, based on a variety of environmental variables. Use APIs like
+                - link [ref=f36e213] [cursor=pointer]:
+                  - /url: /documentation/swiftui/color
+                  - code [ref=f36e214]: Color
+                - text: to apply system colors.
+              - paragraph [ref=f36e215]:
+                - text: iOS, iPadOS, macOS, and visionOS also define sets of
+                - emphasis [ref=f36e216]: dynamic system colors
+                - text: that match the color schemes of standard UI components and automatically adapt to both light and dark contexts. Each dynamic color is semantically defined by its purpose, rather than its appearance or color values. For example, some colors represent view backgrounds at different levels of hierarchy and other colors represent foreground content, such as labels, links, and separators.
+              - paragraph [ref=f36e217]:
+                - strong [ref=f36e218]: Avoid redefining the semantic meanings of dynamic system colors.
+                - text: To ensure a consistent experience and ensure your interface looks great when the appearance of the platform changes, use dynamic system colors as intended. For example, don’t use the
+                - link "separator" [ref=f36e219] [cursor=pointer]:
+                  - /url: https://developer.apple.com/documentation/uikit/uicolor/separator
+                - text: color as a text color, or
+                - link "secondary text label" [ref=f36e220] [cursor=pointer]:
+                  - /url: https://developer.apple.com/documentation/uikit/uicolor/secondarylabel
+                - text: color as a background color.
+              - heading [level=2] [ref=f36e221]:
+                - link "Liquid Glass color in page link" [ref=f36e222] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/color#Liquid-Glass-color
+              - paragraph [ref=f36e223]:
+                - text: By default,
+                - link "Liquid Glass" [ref=f36e224] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/materials#Liquid-Glass
+                - text: has no inherent color, and instead takes on colors from the content directly behind it. You can apply color to some Liquid Glass elements, giving them the appearance of colored or stained glass. This is useful for drawing emphasis to a specific control, like a primary call to action, and is the approach the system uses for prominent button styling. Symbols or text labels on Liquid Glass controls can also have color.
+              - generic [ref=f36e225]:
+                - paragraph [ref=f36e227]:
+                  - figure "Controls can use color in the Liquid Glass background, like in a primary action button." [ref=f36e228]:
+                    - generic:
+                      - img "A screenshot of the Done button in iOS, which appears as a checkmark on a blue Liquid Glass background."
+                - paragraph [ref=f36e231]:
+                  - figure "Symbols and text that appear on Liquid Glass can have color, like in a selected tab bar item." [ref=f36e232]:
+                    - generic:
+                      - img "A screenshot of a tab bar in iOS, with the first tab selected. The symbol and text label of the selected tab bar item are blue."
+                - paragraph [ref=f36e235]:
+                  - figure "By default, Liquid Glass picks up the color from the content layer behind it." [ref=f36e236]:
+                    - generic:
+                      - img "A screenshot of the Share button in iOS over a colorful image. The colors from the background image infuse the Liquid Glass in the button, affecting its color."
+              - paragraph [ref=f36e238]: For smaller elements like toolbars and tab bars, the system can adapt Liquid Glass between a light and dark appearance in response to the underlying content. By default, symbols and text on these elements follow a monochromatic color scheme, becoming darker when the underlying content is light, and lighter when it’s dark. Liquid Glass appears more opaque in larger elements like sidebars to preserve legibility over complex backgrounds and accommodate richer content on the material’s surface.
+              - paragraph [ref=f36e239]:
+                - strong [ref=f36e240]: Apply color sparingly to the Liquid Glass material, and to symbols or text on the material.
+                - text: If you apply color, reserve it for elements that truly benefit from emphasis, such as status indicators or primary actions. To emphasize primary actions, apply color to the background rather than to symbols or text. For example, the system applies the app accent color to the background in prominent buttons — such as the Done button — to draw attention and elevate their visual prominence. Refrain from adding color to the background of multiple controls.
+              - generic [ref=f36e241]:
+                - generic [ref=f36e242]:
+                  - paragraph [ref=f36e243]:
+                    - img "A screenshot of the top half of an iPhone app that shows a toolbar with several buttons. All of the buttons in the toolbar use a blue accent color for their Liquid Glass background." [ref=f36e247]
+                  - paragraph:
+                    - generic:
+                      - img "An X in a circle to indicate incorrect usage."
+                - generic [ref=f36e248]:
+                  - paragraph [ref=f36e249]:
+                    - img "A screenshot of the top half of an iPhone app that shows a toolbar with several buttons. Only the Done button in the toolbar uses a blue accent color for its Liquid Glass background." [ref=f36e253]
+                  - paragraph:
+                    - generic:
+                      - img "A checkmark in a circle to indicate correct usage."
+              - paragraph [ref=f36e254]:
+                - strong [ref=f36e255]: Avoid using similar colors in control labels if your app has a colorful background.
+                - text: While color can make apps more visually appealing, playful, or reflective of your brand, too much color can be overwhelming and make control labels more difficult to read. If your app features colorful backgrounds or visually rich content, prefer a monochromatic appearance for toolbars and tab bars, or choose an accent color with sufficient visual differentiation. By contrast, in apps with primarily monochromatic content or backgrounds, choosing your brand color as the app accent color can be an effective way to tailor your app experience and reflect your company’s identity.
+              - paragraph [ref=f36e256]:
+                - strong [ref=f36e257]: Be aware of the placement of color in the content layer.
+                - text: Make sure your interface maintains sufficient contrast by avoiding overlap of similar colors in the content layer and controls when possible. Although colorful content might intermittently scroll underneath controls, make sure its default or resting state — like the top of a screen of scrollable content — maintains clear legibility.
+              - heading [level=2] [ref=f36e258]:
+                - link "Color management in page link" [ref=f36e259] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/color#Color-management
+              - paragraph [ref=f36e260]:
+                - text: A
+                - emphasis [ref=f36e261]: color space
+                - text: represents the colors in a
+                - emphasis [ref=f36e262]: color model
+                - text: like RGB or CMYK. Common color spaces — sometimes called
+                - emphasis [ref=f36e263]: gamuts
+                - text: — are sRGB and Display P3.
+              - paragraph:
+                - generic:
+                  - img "Diagram showing the colors included in the sRGB space, compared to the larger number of colors included in the P3 color space."
+              - paragraph [ref=f36e264]:
+                - text: A
+                - emphasis [ref=f36e265]: color profile
+                - text: describes the colors in a color space using, for example, mathematical formulas or tables of data that map colors to numerical representations. An image embeds its color profile so that a device can interpret the image’s colors correctly and reproduce them on a display.
+              - paragraph [ref=f36e266]:
+                - strong [ref=f36e267]: Apply color profiles to your images.
+                - text: Color profiles help ensure that your app’s colors appear as intended on different displays. The sRGB color space produces accurate colors on most displays.
+              - paragraph [ref=f36e268]:
+                - strong [ref=f36e269]: Use wide color to enhance the visual experience on compatible displays.
+                - text: Wide color displays support a P3 color space, which can produce richer, more saturated colors than sRGB. As a result, photos and videos that use wide color are more lifelike, and visual data and status indicators that use wide color can be more meaningful. When appropriate, use the Display P3 color profile at 16 bits per pixel (per channel) and export images in PNG format. Note that you need to use a wide color display to design wide color images and select P3 colors.
+              - paragraph [ref=f36e270]:
+                - strong [ref=f36e271]: Provide color space–specific image and color variations if necessary.
+                - text: In general, P3 colors and images appear fine on sRGB displays. Occasionally, it may be hard to distinguish two very similar P3 colors when viewing them on an sRGB display. Gradients that use P3 colors can also sometimes appear clipped on sRGB displays. To avoid these issues and to ensure visual fidelity on both wide color and sRGB displays, you can use the asset catalog of your Xcode project to provide different versions of images and colors for each color space.
+              - heading [level=2] [ref=f36e272]:
+                - link "Platform considerations in page link" [ref=f36e273] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/color#Platform-considerations
+              - heading [level=3] [ref=f36e274]:
+                - link "iOS, iPadOS in page link" [ref=f36e275] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/color#iOS-iPadOS
+              - paragraph [ref=f36e276]:
+                - text: iOS defines two sets of dynamic background colors —
+                - emphasis [ref=f36e277]: system
+                - text: and
+                - emphasis [ref=f36e278]: grouped
+                - text: — each of which contains primary, secondary, and tertiary variants that help you convey a hierarchy of information. In general, use the grouped background colors (
+                - link [ref=f36e279] [cursor=pointer]:
+                  - /url: /documentation/uikit/uicolor/systemgroupedbackground
+                  - code [ref=f36e280]: systemGroupedBackground
+                - text: ","
+                - link [ref=f36e281] [cursor=pointer]:
+                  - /url: /documentation/uikit/uicolor/secondarysystemgroupedbackground
+                  - code [ref=f36e282]: secondarySystemGroupedBackground
+                - text: ", and"
+                - link [ref=f36e283] [cursor=pointer]:
+                  - /url: /documentation/uikit/uicolor/tertiarysystemgroupedbackground
+                  - code [ref=f36e284]: tertiarySystemGroupedBackground
+                - text: ) when you have a grouped table view; otherwise, use the system set of background colors (
+                - link [ref=f36e285] [cursor=pointer]:
+                  - /url: /documentation/uikit/uicolor/systembackground
+                  - code [ref=f36e286]: systemBackground
+                - text: ","
+                - link [ref=f36e287] [cursor=pointer]:
+                  - /url: /documentation/uikit/uicolor/secondarysystembackground
+                  - code [ref=f36e288]: secondarySystemBackground
+                - text: ", and"
+                - link [ref=f36e289] [cursor=pointer]:
+                  - /url: /documentation/uikit/uicolor/tertiarysystembackground
+                  - code [ref=f36e290]: tertiarySystemBackground
+                - text: ).
+              - paragraph [ref=f36e291]: "With both sets of background colors, you generally use the variants to indicate hierarchy in the following ways:"
+              - list [ref=f36e292]:
+                - listitem [ref=f36e293]:
+                  - paragraph [ref=f36e294]: Primary for the overall view
+                - listitem [ref=f36e295]:
+                  - paragraph [ref=f36e296]: Secondary for grouping content or elements within the overall view
+                - listitem [ref=f36e297]:
+                  - paragraph [ref=f36e298]: Tertiary for grouping content or elements within secondary elements
+              - paragraph [ref=f36e299]: "For foreground content, iOS defines the following dynamic colors:"
+              - table [ref=f36e301]:
+                - rowgroup [ref=f36e302]:
+                  - row [ref=f36e303]:
+                    - columnheader [ref=f36e304]:
+                      - paragraph [ref=f36e305]: Color
+                    - columnheader [ref=f36e306]:
+                      - paragraph [ref=f36e307]: Use for…
+                    - columnheader [ref=f36e308]:
+                      - paragraph [ref=f36e309]: UIKit API
+                - rowgroup [ref=f36e310]:
+                  - row [ref=f36e311]:
+                    - cell [ref=f36e312]:
+                      - paragraph [ref=f36e313]: Label
+                    - cell [ref=f36e314]:
+                      - paragraph [ref=f36e315]: A text label that contains primary content.
+                    - cell [ref=f36e316]:
+                      - paragraph [ref=f36e317]:
+                        - link [ref=f36e318] [cursor=pointer]:
+                          - /url: /documentation/uikit/uicolor/label
+                          - code [ref=f36e319]: label
+                  - row [ref=f36e320]:
+                    - cell [ref=f36e321]:
+                      - paragraph [ref=f36e322]: Secondary label
+                    - cell [ref=f36e323]:
+                      - paragraph [ref=f36e324]: A text label that contains secondary content.
+                    - cell [ref=f36e325]:
+                      - paragraph [ref=f36e326]:
+                        - link [ref=f36e327] [cursor=pointer]:
+                          - /url: /documentation/uikit/uicolor/secondarylabel
+                          - code [ref=f36e328]: secondaryLabel
+                  - row [ref=f36e329]:
+                    - cell [ref=f36e330]:
+                      - paragraph [ref=f36e331]: Tertiary label
+                    - cell [ref=f36e332]:
+                      - paragraph [ref=f36e333]: A text label that contains tertiary content.
+                    - cell [ref=f36e334]:
+                      - paragraph [ref=f36e335]:
+                        - link [ref=f36e336] [cursor=pointer]:
+                          - /url: /documentation/uikit/uicolor/tertiarylabel
+                          - code [ref=f36e337]: tertiaryLabel
+                  - row [ref=f36e338]:
+                    - cell [ref=f36e339]:
+                      - paragraph [ref=f36e340]: Quaternary label
+                    - cell [ref=f36e341]:
+                      - paragraph [ref=f36e342]: A text label that contains quaternary content.
+                    - cell [ref=f36e343]:
+                      - paragraph [ref=f36e344]:
+                        - link [ref=f36e345] [cursor=pointer]:
+                          - /url: /documentation/uikit/uicolor/quaternarylabel
+                          - code [ref=f36e346]: quaternaryLabel
+                  - row [ref=f36e347]:
+                    - cell [ref=f36e348]:
+                      - paragraph [ref=f36e349]: Placeholder text
+                    - cell [ref=f36e350]:
+                      - paragraph [ref=f36e351]: Placeholder text in controls or text views.
+                    - cell [ref=f36e352]:
+                      - paragraph [ref=f36e353]:
+                        - link [ref=f36e354] [cursor=pointer]:
+                          - /url: /documentation/uikit/uicolor/placeholdertext
+                          - code [ref=f36e355]: placeholderText
+                  - row [ref=f36e356]:
+                    - cell [ref=f36e357]:
+                      - paragraph [ref=f36e358]: Separator
+                    - cell [ref=f36e359]:
+                      - paragraph [ref=f36e360]: A separator that allows some underlying content to be visible.
+                    - cell [ref=f36e361]:
+                      - paragraph [ref=f36e362]:
+                        - link [ref=f36e363] [cursor=pointer]:
+                          - /url: /documentation/uikit/uicolor/separator
+                          - code [ref=f36e364]: separator
+                  - row [ref=f36e365]:
+                    - cell [ref=f36e366]:
+                      - paragraph [ref=f36e367]: Opaque separator
+                    - cell [ref=f36e368]:
+                      - paragraph [ref=f36e369]: A separator that doesn’t allow any underlying content to be visible.
+                    - cell [ref=f36e370]:
+                      - paragraph [ref=f36e371]:
+                        - link [ref=f36e372] [cursor=pointer]:
+                          - /url: /documentation/uikit/uicolor/opaqueseparator
+                          - code [ref=f36e373]: opaqueSeparator
+                  - row [ref=f36e374]:
+                    - cell [ref=f36e375]:
+                      - paragraph [ref=f36e376]: Link
+                    - cell [ref=f36e377]:
+                      - paragraph [ref=f36e378]: Text that functions as a link.
+                    - cell [ref=f36e379]:
+                      - paragraph [ref=f36e380]:
+                        - link [ref=f36e381] [cursor=pointer]:
+                          - /url: /documentation/uikit/uicolor/link
+                          - code [ref=f36e382]: link
+              - heading [level=3] [ref=f36e383]:
+                - link "macOS in page link" [ref=f36e384] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/color#macOS
+              - paragraph [ref=f36e385]: "macOS defines the following dynamic system colors (you can also view them in the Developer palette of the standard Color panel):"
+              - table [ref=f36e387]:
+                - rowgroup [ref=f36e388]:
+                  - row [ref=f36e389]:
+                    - columnheader [ref=f36e390]:
+                      - paragraph [ref=f36e391]: Color
+                    - columnheader [ref=f36e392]:
+                      - paragraph [ref=f36e393]: Use for…
+                    - columnheader [ref=f36e394]:
+                      - paragraph [ref=f36e395]: AppKit API
+                - rowgroup [ref=f36e396]:
+                  - row [ref=f36e397]:
+                    - cell [ref=f36e398]:
+                      - paragraph [ref=f36e399]: Alternate selected control text color
+                    - cell [ref=f36e400]:
+                      - paragraph [ref=f36e401]: The text on a selected surface in a list or table.
+                    - cell [ref=f36e402]:
+                      - paragraph [ref=f36e403]:
+                        - link [ref=f36e404] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/alternateselectedcontroltextcolor
+                          - code [ref=f36e405]: alternateSelectedControlTextColor
+                  - row [ref=f36e406]:
+                    - cell [ref=f36e407]:
+                      - paragraph [ref=f36e408]: Alternating content background colors
+                    - cell [ref=f36e409]:
+                      - paragraph [ref=f36e410]: The backgrounds of alternating rows or columns in a list, table, or collection view.
+                    - cell [ref=f36e411]:
+                      - paragraph [ref=f36e412]:
+                        - link [ref=f36e413] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/alternatingcontentbackgroundcolors
+                          - code [ref=f36e414]: alternatingContentBackgroundColors
+                  - row [ref=f36e415]:
+                    - cell [ref=f36e416]:
+                      - paragraph [ref=f36e417]: Control accent
+                    - cell [ref=f36e418]:
+                      - paragraph [ref=f36e419]: The accent color people select in System Settings.
+                    - cell [ref=f36e420]:
+                      - paragraph [ref=f36e421]:
+                        - link [ref=f36e422] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/controlaccentcolor
+                          - code [ref=f36e423]: controlAccentColor
+                  - row [ref=f36e424]:
+                    - cell [ref=f36e425]:
+                      - paragraph [ref=f36e426]: Control background color
+                    - cell [ref=f36e427]:
+                      - paragraph [ref=f36e428]: The background of a large interface element, such as a browser or table.
+                    - cell [ref=f36e429]:
+                      - paragraph [ref=f36e430]:
+                        - link [ref=f36e431] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/controlbackgroundcolor
+                          - code [ref=f36e432]: controlBackgroundColor
+                  - row [ref=f36e433]:
+                    - cell [ref=f36e434]:
+                      - paragraph [ref=f36e435]: Control color
+                    - cell [ref=f36e436]:
+                      - paragraph [ref=f36e437]: The surface of a control.
+                    - cell [ref=f36e438]:
+                      - paragraph [ref=f36e439]:
+                        - link [ref=f36e440] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/controlcolor
+                          - code [ref=f36e441]: controlColor
+                  - row [ref=f36e442]:
+                    - cell [ref=f36e443]:
+                      - paragraph [ref=f36e444]: Control text color
+                    - cell [ref=f36e445]:
+                      - paragraph [ref=f36e446]: The text of a control that is available.
+                    - cell [ref=f36e447]:
+                      - paragraph [ref=f36e448]:
+                        - link [ref=f36e449] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/controltextcolor
+                          - code [ref=f36e450]: controlTextColor
+                  - row [ref=f36e451]:
+                    - cell [ref=f36e452]:
+                      - paragraph [ref=f36e453]: Current control tint
+                    - cell [ref=f36e454]:
+                      - paragraph [ref=f36e455]: The system-defined control tint.
+                    - cell [ref=f36e456]:
+                      - paragraph [ref=f36e457]:
+                        - link [ref=f36e458] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/currentcontroltint
+                          - code [ref=f36e459]: currentControlTint
+                  - row [ref=f36e460]:
+                    - cell [ref=f36e461]:
+                      - paragraph [ref=f36e462]: Unavailable control text color
+                    - cell [ref=f36e463]:
+                      - paragraph [ref=f36e464]: The text of a control that’s unavailable.
+                    - cell [ref=f36e465]:
+                      - paragraph [ref=f36e466]:
+                        - link [ref=f36e467] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/disabledcontroltextcolor
+                          - code [ref=f36e468]: disabledControlTextColor
+                  - row [ref=f36e469]:
+                    - cell [ref=f36e470]:
+                      - paragraph [ref=f36e471]: Find highlight color
+                    - cell [ref=f36e472]:
+                      - paragraph [ref=f36e473]: The color of a find indicator.
+                    - cell [ref=f36e474]:
+                      - paragraph [ref=f36e475]:
+                        - link [ref=f36e476] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/findhighlightcolor
+                          - code [ref=f36e477]: findHighlightColor
+                  - row [ref=f36e478]:
+                    - cell [ref=f36e479]:
+                      - paragraph [ref=f36e480]: Grid color
+                    - cell [ref=f36e481]:
+                      - paragraph [ref=f36e482]: The gridlines of an interface element, such as a table.
+                    - cell [ref=f36e483]:
+                      - paragraph [ref=f36e484]:
+                        - link [ref=f36e485] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/gridcolor
+                          - code [ref=f36e486]: gridColor
+                  - row [ref=f36e487]:
+                    - cell [ref=f36e488]:
+                      - paragraph [ref=f36e489]: Header text color
+                    - cell [ref=f36e490]:
+                      - paragraph [ref=f36e491]: The text of a header cell in a table.
+                    - cell [ref=f36e492]:
+                      - paragraph [ref=f36e493]:
+                        - link [ref=f36e494] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/headertextcolor
+                          - code [ref=f36e495]: headerTextColor
+                  - row [ref=f36e496]:
+                    - cell [ref=f36e497]:
+                      - paragraph [ref=f36e498]: Highlight color
+                    - cell [ref=f36e499]:
+                      - paragraph [ref=f36e500]: The virtual light source onscreen.
+                    - cell [ref=f36e501]:
+                      - paragraph [ref=f36e502]:
+                        - link [ref=f36e503] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/highlightcolor
+                          - code [ref=f36e504]: highlightColor
+                  - row [ref=f36e505]:
+                    - cell [ref=f36e506]:
+                      - paragraph [ref=f36e507]: Keyboard focus indicator color
+                    - cell [ref=f36e508]:
+                      - paragraph [ref=f36e509]: The ring that appears around the currently focused control when using the keyboard for interface navigation.
+                    - cell [ref=f36e510]:
+                      - paragraph [ref=f36e511]:
+                        - link [ref=f36e512] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/keyboardfocusindicatorcolor
+                          - code [ref=f36e513]: keyboardFocusIndicatorColor
+                  - row [ref=f36e514]:
+                    - cell [ref=f36e515]:
+                      - paragraph [ref=f36e516]: Label color
+                    - cell [ref=f36e517]:
+                      - paragraph [ref=f36e518]: The text of a label containing primary content.
+                    - cell [ref=f36e519]:
+                      - paragraph [ref=f36e520]:
+                        - link [ref=f36e521] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/labelcolor
+                          - code [ref=f36e522]: labelColor
+                  - row [ref=f36e523]:
+                    - cell [ref=f36e524]:
+                      - paragraph [ref=f36e525]: Link color
+                    - cell [ref=f36e526]:
+                      - paragraph [ref=f36e527]: A link to other content.
+                    - cell [ref=f36e528]:
+                      - paragraph [ref=f36e529]:
+                        - link [ref=f36e530] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/linkcolor
+                          - code [ref=f36e531]: linkColor
+                  - row [ref=f36e532]:
+                    - cell [ref=f36e533]:
+                      - paragraph [ref=f36e534]: Placeholder text color
+                    - cell [ref=f36e535]:
+                      - paragraph [ref=f36e536]: A placeholder string in a control or text view.
+                    - cell [ref=f36e537]:
+                      - paragraph [ref=f36e538]:
+                        - link [ref=f36e539] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/placeholdertextcolor
+                          - code [ref=f36e540]: placeholderTextColor
+                  - row [ref=f36e541]:
+                    - cell [ref=f36e542]:
+                      - paragraph [ref=f36e543]: Quaternary label color
+                    - cell [ref=f36e544]:
+                      - paragraph [ref=f36e545]: The text of a label of lesser importance than a tertiary label, such as watermark text.
+                    - cell [ref=f36e546]:
+                      - paragraph [ref=f36e547]:
+                        - link [ref=f36e548] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/quaternarylabelcolor
+                          - code [ref=f36e549]: quaternaryLabelColor
+                  - row [ref=f36e550]:
+                    - cell [ref=f36e551]:
+                      - paragraph [ref=f36e552]: Secondary label color
+                    - cell [ref=f36e553]:
+                      - paragraph [ref=f36e554]: The text of a label of lesser importance than a primary label, such as a label used to represent a subheading or additional information.
+                    - cell [ref=f36e555]:
+                      - paragraph [ref=f36e556]:
+                        - link [ref=f36e557] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/secondarylabelcolor
+                          - code [ref=f36e558]: secondaryLabelColor
+                  - row [ref=f36e559]:
+                    - cell [ref=f36e560]:
+                      - paragraph [ref=f36e561]: Selected content background color
+                    - cell [ref=f36e562]:
+                      - paragraph [ref=f36e563]: The background for selected content in a key window or view.
+                    - cell [ref=f36e564]:
+                      - paragraph [ref=f36e565]:
+                        - link [ref=f36e566] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/selectedcontentbackgroundcolor
+                          - code [ref=f36e567]: selectedContentBackgroundColor
+                  - row [ref=f36e568]:
+                    - cell [ref=f36e569]:
+                      - paragraph [ref=f36e570]: Selected control color
+                    - cell [ref=f36e571]:
+                      - paragraph [ref=f36e572]: The surface of a selected control.
+                    - cell [ref=f36e573]:
+                      - paragraph [ref=f36e574]:
+                        - link [ref=f36e575] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/selectedcontrolcolor
+                          - code [ref=f36e576]: selectedControlColor
+                  - row [ref=f36e577]:
+                    - cell [ref=f36e578]:
+                      - paragraph [ref=f36e579]: Selected control text color
+                    - cell [ref=f36e580]:
+                      - paragraph [ref=f36e581]: The text of a selected control.
+                    - cell [ref=f36e582]:
+                      - paragraph [ref=f36e583]:
+                        - link [ref=f36e584] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/selectedcontroltextcolor
+                          - code [ref=f36e585]: selectedControlTextColor
+                  - row [ref=f36e586]:
+                    - cell [ref=f36e587]:
+                      - paragraph [ref=f36e588]: Selected menu item text color
+                    - cell [ref=f36e589]:
+                      - paragraph [ref=f36e590]: The text of a selected menu.
+                    - cell [ref=f36e591]:
+                      - paragraph [ref=f36e592]:
+                        - link [ref=f36e593] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/selectedmenuitemtextcolor
+                          - code [ref=f36e594]: selectedMenuItemTextColor
+                  - row [ref=f36e595]:
+                    - cell [ref=f36e596]:
+                      - paragraph [ref=f36e597]: Selected text background color
+                    - cell [ref=f36e598]:
+                      - paragraph [ref=f36e599]: The background of selected text.
+                    - cell [ref=f36e600]:
+                      - paragraph [ref=f36e601]:
+                        - link [ref=f36e602] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/selectedtextbackgroundcolor
+                          - code [ref=f36e603]: selectedTextBackgroundColor
+                  - row [ref=f36e604]:
+                    - cell [ref=f36e605]:
+                      - paragraph [ref=f36e606]: Selected text color
+                    - cell [ref=f36e607]:
+                      - paragraph [ref=f36e608]: The color for selected text.
+                    - cell [ref=f36e609]:
+                      - paragraph [ref=f36e610]:
+                        - link [ref=f36e611] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/selectedtextcolor
+                          - code [ref=f36e612]: selectedTextColor
+                  - row [ref=f36e613]:
+                    - cell [ref=f36e614]:
+                      - paragraph [ref=f36e615]: Separator color
+                    - cell [ref=f36e616]:
+                      - paragraph [ref=f36e617]: A separator between different sections of content.
+                    - cell [ref=f36e618]:
+                      - paragraph [ref=f36e619]:
+                        - link [ref=f36e620] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/separatorcolor
+                          - code [ref=f36e621]: separatorColor
+                  - row [ref=f36e622]:
+                    - cell [ref=f36e623]:
+                      - paragraph [ref=f36e624]: Shadow color
+                    - cell [ref=f36e625]:
+                      - paragraph [ref=f36e626]: The virtual shadow cast by a raised object onscreen.
+                    - cell [ref=f36e627]:
+                      - paragraph [ref=f36e628]:
+                        - link [ref=f36e629] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/shadowcolor
+                          - code [ref=f36e630]: shadowColor
+                  - row [ref=f36e631]:
+                    - cell [ref=f36e632]:
+                      - paragraph [ref=f36e633]: Tertiary label color
+                    - cell [ref=f36e634]:
+                      - paragraph [ref=f36e635]: The text of a label of lesser importance than a secondary label.
+                    - cell [ref=f36e636]:
+                      - paragraph [ref=f36e637]:
+                        - link [ref=f36e638] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/tertiarylabelcolor
+                          - code [ref=f36e639]: tertiaryLabelColor
+                  - row [ref=f36e640]:
+                    - cell [ref=f36e641]:
+                      - paragraph [ref=f36e642]: Text background color
+                    - cell [ref=f36e643]:
+                      - paragraph [ref=f36e644]: The background color behind text.
+                    - cell [ref=f36e645]:
+                      - paragraph [ref=f36e646]:
+                        - link [ref=f36e647] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/textbackgroundcolor
+                          - code [ref=f36e648]: textBackgroundColor
+                  - row [ref=f36e649]:
+                    - cell [ref=f36e650]:
+                      - paragraph [ref=f36e651]: Text color
+                    - cell [ref=f36e652]:
+                      - paragraph [ref=f36e653]: The text in a document.
+                    - cell [ref=f36e654]:
+                      - paragraph [ref=f36e655]:
+                        - link [ref=f36e656] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/textcolor
+                          - code [ref=f36e657]: textColor
+                  - row [ref=f36e658]:
+                    - cell [ref=f36e659]:
+                      - paragraph [ref=f36e660]: Under page background color
+                    - cell [ref=f36e661]:
+                      - paragraph [ref=f36e662]: The background behind a document’s content.
+                    - cell [ref=f36e663]:
+                      - paragraph [ref=f36e664]:
+                        - link [ref=f36e665] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/underpagebackgroundcolor
+                          - code [ref=f36e666]: underPageBackgroundColor
+                  - row [ref=f36e667]:
+                    - cell [ref=f36e668]:
+                      - paragraph [ref=f36e669]: Unemphasized selected content background color
+                    - cell [ref=f36e670]:
+                      - paragraph [ref=f36e671]: The selected content in a non-key window or view.
+                    - cell [ref=f36e672]:
+                      - paragraph [ref=f36e673]:
+                        - link [ref=f36e674] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/unemphasizedselectedcontentbackgroundcolor
+                          - code [ref=f36e675]: unemphasizedSelectedContentBackgroundColor
+                  - row [ref=f36e676]:
+                    - cell [ref=f36e677]:
+                      - paragraph [ref=f36e678]: Unemphasized selected text background color
+                    - cell [ref=f36e679]:
+                      - paragraph [ref=f36e680]: A background for selected text in a non-key window or view.
+                    - cell [ref=f36e681]:
+                      - paragraph [ref=f36e682]:
+                        - link [ref=f36e683] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/unemphasizedselectedtextbackgroundcolor
+                          - code [ref=f36e684]: unemphasizedSelectedTextBackgroundColor
+                  - row [ref=f36e685]:
+                    - cell [ref=f36e686]:
+                      - paragraph [ref=f36e687]: Unemphasized selected text color
+                    - cell [ref=f36e688]:
+                      - paragraph [ref=f36e689]: Selected text in a non-key window or view.
+                    - cell [ref=f36e690]:
+                      - paragraph [ref=f36e691]:
+                        - link [ref=f36e692] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/unemphasizedselectedtextcolor
+                          - code [ref=f36e693]: unemphasizedSelectedTextColor
+                  - row [ref=f36e694]:
+                    - cell [ref=f36e695]:
+                      - paragraph [ref=f36e696]: Window background color
+                    - cell [ref=f36e697]:
+                      - paragraph [ref=f36e698]: The background of a window.
+                    - cell [ref=f36e699]:
+                      - paragraph [ref=f36e700]:
+                        - link [ref=f36e701] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/windowbackgroundcolor
+                          - code [ref=f36e702]: windowBackgroundColor
+                  - row [ref=f36e703]:
+                    - cell [ref=f36e704]:
+                      - paragraph [ref=f36e705]: Window frame text color
+                    - cell [ref=f36e706]:
+                      - paragraph [ref=f36e707]: The text in the window’s title bar area.
+                    - cell [ref=f36e708]:
+                      - paragraph [ref=f36e709]:
+                        - link [ref=f36e710] [cursor=pointer]:
+                          - /url: /documentation/appkit/nscolor/windowframetextcolor
+                          - code [ref=f36e711]: windowFrameTextColor
+              - heading [level=4] [ref=f36e712]:
+                - link "App accent colors in page link" [ref=f36e713] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/color#App-accent-colors
+              - paragraph [ref=f36e714]:
+                - text: Beginning in macOS 11, you can specify an
+                - emphasis [ref=f36e715]: accent color
+                - text: to customize the appearance of your app’s buttons, selection highlighting, and sidebar icons. The system applies your accent color when the current value in General > Accent color settings is
+                - emphasis [ref=f36e716]: multicolor
+                - text: .
+              - paragraph:
+                - generic:
+                  - img "A screenshot of the accent color picker in the System Settings app."
+              - paragraph [ref=f36e717]:
+                - text: If people set their accent color setting to a value other than multicolor, the system applies their chosen color to the relevant items throughout your app, replacing your accent color. The exception is a sidebar icon that uses a fixed color you specify. Because a fixed-color sidebar icon uses a specific color to provide meaning, the system doesn’t override its color when people change the value of accent color settings. For guidance, see
+                - link "Sidebars" [ref=f36e718] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/sidebars
+                - text: .
+              - heading [level=3] [ref=f36e719]:
+                - link "tvOS in page link" [ref=f36e720] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/color#tvOS
+              - paragraph [ref=f36e721]:
+                - strong [ref=f36e722]: Consider choosing a limited color palette that coordinates with your app logo.
+                - text: Subtle use of color can help you communicate your brand while deferring to the content.
+              - paragraph [ref=f36e723]:
+                - strong [ref=f36e724]: Avoid using only color to indicate focus.
+                - text: Subtle scaling and responsive animation are the primary ways to denote interactivity when an element is in focus.
+              - heading [level=3] [ref=f36e725]:
+                - link "visionOS in page link" [ref=f36e726] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/color#visionOS
+              - paragraph [ref=f36e727]:
+                - strong [ref=f36e728]: Use color sparingly, especially on glass.
+                - text: Standard visionOS windows typically use the system-defined glass
+                - link "material" [ref=f36e729] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/materials
+                - text: ", which lets light and objects from people’s physical surroundings and their space show through. Because the colors in these physical and virtual objects are visible through the glass, they can affect the legibility of colorful app content in the window. Prefer using color in places where it can help call attention to important information or show the relationship between parts of the interface."
+              - paragraph [ref=f36e730]:
+                - strong [ref=f36e731]: Prefer using color in bold text and large areas.
+                - text: Color in lightweight text or small areas can make them harder to see and understand.
+              - paragraph [ref=f36e732]:
+                - strong [ref=f36e733]: In a fully immersive experience, help people maintain visual comfort by keeping brightness levels balanced.
+                - text: Although using high contrast can help direct people’s attention to important content, it can also cause visual discomfort if people’s eyes have adjusted to low light or darkness. Consider making content fully bright only when the rest of the visual context is also bright. For example, avoid displaying a bright object on a very dark or black background, especially if the object flashes or moves.
+              - heading [level=3] [ref=f36e734]:
+                - link "watchOS in page link" [ref=f36e735] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/color#watchOS
+              - paragraph [ref=f36e736]:
+                - strong [ref=f36e737]: Use background color to support existing content or supply additional information.
+                - text: Background color can establish a sense of place and help people recognize key content. For example, in Activity, each infographic view for the Move, Exercise, and Stand Activity rings has a background that matches the color of the ring. Use background color when you have something to communicate, rather than as a solely visual flourish. Avoid using full-screen background color in views that are likely to remain onscreen for long periods of time, such as in a workout or audio-playing app.
+              - paragraph [ref=f36e738]:
+                - strong [ref=f36e739]: Recognize that people might prefer graphic complications to use tinted mode instead of full color.
+                - text: The system can use a single color that’s based on the wearer’s selected color in a graphic complication’s images, gauges, and text. For guidance, see
+                - link "Complications" [ref=f36e740] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/complications
+                - text: .
+              - heading [level=2] [ref=f36e741]:
+                - link "Specifications in page link" [ref=f36e742] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/color#Specifications
+              - heading [level=3] [ref=f36e743]:
+                - link "System colors in page link" [ref=f36e744] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/color#System-colors
+              - table [ref=f36e746]:
+                - rowgroup [ref=f36e747]:
+                  - row [ref=f36e748]:
+                    - columnheader [ref=f36e749]:
+                      - paragraph [ref=f36e750]: Name
+                    - columnheader [ref=f36e751]:
+                      - paragraph [ref=f36e752]: SwiftUI API
+                    - columnheader [ref=f36e753]:
+                      - paragraph [ref=f36e754]: Default (light)
+                    - columnheader [ref=f36e755]:
+                      - paragraph [ref=f36e756]: Default (dark)
+                    - columnheader [ref=f36e757]:
+                      - paragraph [ref=f36e758]: Increased contrast (light)
+                    - columnheader [ref=f36e759]:
+                      - paragraph [ref=f36e760]: Increased contrast (dark)
+                - rowgroup [ref=f36e761]:
+                  - row [ref=f36e762]:
+                    - cell [ref=f36e763]:
+                      - paragraph [ref=f36e764]: Red
+                    - cell [ref=f36e765]:
+                      - paragraph [ref=f36e766]:
+                        - link [ref=f36e767] [cursor=pointer]:
+                          - /url: /documentation/swiftui/color/red
+                          - code [ref=f36e768]: red
+                    - cell [ref=f36e769]:
+                      - paragraph [ref=f36e770]:
+                        - generic [ref=f36e771]:
+                          - img "R-255,G-56,B-60"
+                    - cell [ref=f36e772]:
+                      - paragraph [ref=f36e773]:
+                        - generic [ref=f36e774]:
+                          - img "R-255,G-66,B-69"
+                    - cell [ref=f36e775]:
+                      - paragraph [ref=f36e776]:
+                        - generic [ref=f36e777]:
+                          - img "R-233,G-21,B-45"
+                    - cell [ref=f36e778]:
+                      - paragraph [ref=f36e779]:
+                        - generic [ref=f36e780]:
+                          - img "R-255,G-97,B-101"
+                  - row [ref=f36e781]:
+                    - cell [ref=f36e782]:
+                      - paragraph [ref=f36e783]: Orange
+                    - cell [ref=f36e784]:
+                      - paragraph [ref=f36e785]:
+                        - link [ref=f36e786] [cursor=pointer]:
+                          - /url: /documentation/swiftui/color/orange
+                          - code [ref=f36e787]: orange
+                    - cell [ref=f36e788]:
+                      - paragraph [ref=f36e789]:
+                        - generic [ref=f36e790]:
+                          - img "R-255,G-141,B-40"
+                    - cell [ref=f36e791]:
+                      - paragraph [ref=f36e792]:
+                        - generic [ref=f36e793]:
+                          - img "R-255,G-146,B-48"
+                    - cell [ref=f36e794]:
+                      - paragraph [ref=f36e795]:
+                        - generic [ref=f36e796]:
+                          - img "R-197,G-83,B-0"
+                    - cell [ref=f36e797]:
+                      - paragraph [ref=f36e798]:
+                        - generic [ref=f36e799]:
+                          - img "R-255,G-160,B-86"
+                  - row [ref=f36e800]:
+                    - cell [ref=f36e801]:
+                      - paragraph [ref=f36e802]: Yellow
+                    - cell [ref=f36e803]:
+                      - paragraph [ref=f36e804]:
+                        - link [ref=f36e805] [cursor=pointer]:
+                          - /url: /documentation/swiftui/color/yellow
+                          - code [ref=f36e806]: yellow
+                    - cell [ref=f36e807]:
+                      - paragraph [ref=f36e808]:
+                        - generic [ref=f36e809]:
+                          - img "R-255,G-204,B-0"
+                    - cell [ref=f36e810]:
+                      - paragraph [ref=f36e811]:
+                        - generic [ref=f36e812]:
+                          - img "R-255,G-214,B-0"
+                    - cell [ref=f36e813]:
+                      - paragraph [ref=f36e814]:
+                        - generic [ref=f36e815]:
+                          - img "R-161,G-106,B-0"
+                    - cell [ref=f36e816]:
+                      - paragraph [ref=f36e817]:
+                        - generic [ref=f36e818]:
+                          - img "R-254,G-223,B-67"
+                  - row [ref=f36e819]:
+                    - cell [ref=f36e820]:
+                      - paragraph [ref=f36e821]: Green
+                    - cell [ref=f36e822]:
+                      - paragraph [ref=f36e823]:
+                        - link [ref=f36e824] [cursor=pointer]:
+                          - /url: /documentation/swiftui/color/green
+                          - code [ref=f36e825]: green
+                    - cell [ref=f36e826]:
+                      - paragraph [ref=f36e827]:
+                        - generic [ref=f36e828]:
+                          - img "R-52,G-199,B-89"
+                    - cell [ref=f36e829]:
+                      - paragraph [ref=f36e830]:
+                        - generic [ref=f36e831]:
+                          - img "R-48,G-209,B-88"
+                    - cell [ref=f36e832]:
+                      - paragraph [ref=f36e833]:
+                        - generic [ref=f36e834]:
+                          - img "R-0,G-137,B-50"
+                    - cell [ref=f36e835]:
+                      - paragraph [ref=f36e836]:
+                        - generic [ref=f36e837]:
+                          - img "R-74,G-217,B-104"
+                  - row [ref=f36e838]:
+                    - cell [ref=f36e839]:
+                      - paragraph [ref=f36e840]: Mint
+                    - cell [ref=f36e841]:
+                      - paragraph [ref=f36e842]:
+                        - link [ref=f36e843] [cursor=pointer]:
+                          - /url: /documentation/swiftui/color/mint
+                          - code [ref=f36e844]: mint
+                    - cell [ref=f36e845]:
+                      - paragraph [ref=f36e846]:
+                        - generic [ref=f36e847]:
+                          - img "R-0,G-200,B-179"
+                    - cell [ref=f36e848]:
+                      - paragraph [ref=f36e849]:
+                        - generic [ref=f36e850]:
+                          - img "R-0,G-218,B-195"
+                    - cell [ref=f36e851]:
+                      - paragraph [ref=f36e852]:
+                        - generic [ref=f36e853]:
+                          - img "R-0,G-133,B-117"
+                    - cell [ref=f36e854]:
+                      - paragraph [ref=f36e855]:
+                        - generic [ref=f36e856]:
+                          - img "R-84,G-223,B-203"
+                  - row [ref=f36e857]:
+                    - cell [ref=f36e858]:
+                      - paragraph [ref=f36e859]: Teal
+                    - cell [ref=f36e860]:
+                      - paragraph [ref=f36e861]:
+                        - link [ref=f36e862] [cursor=pointer]:
+                          - /url: /documentation/swiftui/color/teal
+                          - code [ref=f36e863]: teal
+                    - cell [ref=f36e864]:
+                      - paragraph [ref=f36e865]:
+                        - generic [ref=f36e866]:
+                          - img "R-0,G-195,B-208"
+                    - cell [ref=f36e867]:
+                      - paragraph [ref=f36e868]:
+                        - generic [ref=f36e869]:
+                          - img "R-0,G-210,B-224"
+                    - cell [ref=f36e870]:
+                      - paragraph [ref=f36e871]:
+                        - generic [ref=f36e872]:
+                          - img "R-0,G-129,B-152"
+                    - cell [ref=f36e873]:
+                      - paragraph [ref=f36e874]:
+                        - generic [ref=f36e875]:
+                          - img "R-59,G-221,B-236"
+                  - row [ref=f36e876]:
+                    - cell [ref=f36e877]:
+                      - paragraph [ref=f36e878]: Cyan
+                    - cell [ref=f36e879]:
+                      - paragraph [ref=f36e880]:
+                        - link [ref=f36e881] [cursor=pointer]:
+                          - /url: /documentation/swiftui/color/cyan
+                          - code [ref=f36e882]: cyan
+                    - cell [ref=f36e883]:
+                      - paragraph [ref=f36e884]:
+                        - generic [ref=f36e885]:
+                          - img "R-0,G-192,B-232"
+                    - cell [ref=f36e886]:
+                      - paragraph [ref=f36e887]:
+                        - generic [ref=f36e888]:
+                          - img "R-60,G-211,B-254"
+                    - cell [ref=f36e889]:
+                      - paragraph [ref=f36e890]:
+                        - generic [ref=f36e891]:
+                          - img "R-0,G-126,B-174"
+                    - cell [ref=f36e892]:
+                      - paragraph [ref=f36e893]:
+                        - generic [ref=f36e894]:
+                          - img "R-109,G-217,B-255"
+                  - row [ref=f36e895]:
+                    - cell [ref=f36e896]:
+                      - paragraph [ref=f36e897]: Blue
+                    - cell [ref=f36e898]:
+                      - paragraph [ref=f36e899]:
+                        - link [ref=f36e900] [cursor=pointer]:
+                          - /url: /documentation/swiftui/color/blue
+                          - code [ref=f36e901]: blue
+                    - cell [ref=f36e902]:
+                      - paragraph [ref=f36e903]:
+                        - generic [ref=f36e904]:
+                          - img "R-0,G-136,B-255"
+                    - cell [ref=f36e905]:
+                      - paragraph [ref=f36e906]:
+                        - generic [ref=f36e907]:
+                          - img "R-0,G-145,B-255"
+                    - cell [ref=f36e908]:
+                      - paragraph [ref=f36e909]:
+                        - generic [ref=f36e910]:
+                          - img "R-30,G-110,B-244"
+                    - cell [ref=f36e911]:
+                      - paragraph [ref=f36e912]:
+                        - generic [ref=f36e913]:
+                          - img "R-92,G-184,B-255"
+                  - row [ref=f36e914]:
+                    - cell [ref=f36e915]:
+                      - paragraph [ref=f36e916]: Indigo
+                    - cell [ref=f36e917]:
+                      - paragraph [ref=f36e918]:
+                        - link [ref=f36e919] [cursor=pointer]:
+                          - /url: /documentation/swiftui/color/indigo
+                          - code [ref=f36e920]: indigo
+                    - cell [ref=f36e921]:
+                      - paragraph [ref=f36e922]:
+                        - generic [ref=f36e923]:
+                          - img "R-97,G-85,B-245"
+                    - cell [ref=f36e924]:
+                      - paragraph [ref=f36e925]:
+                        - generic [ref=f36e926]:
+                          - img "R-109,G-124,B-255"
+                    - cell [ref=f36e927]:
+                      - paragraph [ref=f36e928]:
+                        - generic [ref=f36e929]:
+                          - img "R-86,G-74,B-222"
+                    - cell [ref=f36e930]:
+                      - paragraph [ref=f36e931]:
+                        - generic [ref=f36e932]:
+                          - img "R-167,G-170,B-255"
+                  - row [ref=f36e933]:
+                    - cell [ref=f36e934]:
+                      - paragraph [ref=f36e935]: Purple
+                    - cell [ref=f36e936]:
+                      - paragraph [ref=f36e937]:
+                        - link [ref=f36e938] [cursor=pointer]:
+                          - /url: /documentation/swiftui/color/purple
+                          - code [ref=f36e939]: purple
+                    - cell [ref=f36e940]:
+                      - paragraph [ref=f36e941]:
+                        - generic [ref=f36e942]:
+                          - img "R-203,G-48,B-224"
+                    - cell [ref=f36e943]:
+                      - paragraph [ref=f36e944]:
+                        - generic [ref=f36e945]:
+                          - img "R-219,G-52,B-242"
+                    - cell [ref=f36e946]:
+                      - paragraph [ref=f36e947]:
+                        - generic [ref=f36e948]:
+                          - img "R-176,G-47,B-194"
+                    - cell [ref=f36e949]:
+                      - paragraph [ref=f36e950]:
+                        - generic [ref=f36e951]:
+                          - img "R-234,G-141,B-255"
+                  - row [ref=f36e952]:
+                    - cell [ref=f36e953]:
+                      - paragraph [ref=f36e954]: Pink
+                    - cell [ref=f36e955]:
+                      - paragraph [ref=f36e956]:
+                        - link [ref=f36e957] [cursor=pointer]:
+                          - /url: /documentation/swiftui/color/pink
+                          - code [ref=f36e958]: pink
+                    - cell [ref=f36e959]:
+                      - paragraph [ref=f36e960]:
+                        - generic [ref=f36e961]:
+                          - img "R-255,G-45,B-85"
+                    - cell [ref=f36e962]:
+                      - paragraph [ref=f36e963]:
+                        - generic [ref=f36e964]:
+                          - img "R-255,G-55,B-95"
+                    - cell [ref=f36e965]:
+                      - paragraph [ref=f36e966]:
+                        - generic [ref=f36e967]:
+                          - img "R-231,G-18,B-77"
+                    - cell [ref=f36e968]:
+                      - paragraph [ref=f36e969]:
+                        - generic [ref=f36e970]:
+                          - img "R-255,G-138,B-196"
+                  - row [ref=f36e971]:
+                    - cell [ref=f36e972]:
+                      - paragraph [ref=f36e973]: Brown
+                    - cell [ref=f36e974]:
+                      - paragraph [ref=f36e975]:
+                        - link [ref=f36e976] [cursor=pointer]:
+                          - /url: /documentation/swiftui/color/brown
+                          - code [ref=f36e977]: brown
+                    - cell [ref=f36e978]:
+                      - paragraph [ref=f36e979]:
+                        - generic [ref=f36e980]:
+                          - img "R-172,G-127,B-94"
+                    - cell [ref=f36e981]:
+                      - paragraph [ref=f36e982]:
+                        - generic [ref=f36e983]:
+                          - img "R-183,G-138,B-102"
+                    - cell [ref=f36e984]:
+                      - paragraph [ref=f36e985]:
+                        - generic [ref=f36e986]:
+                          - img "R-149,G-109,B-81"
+                    - cell [ref=f36e987]:
+                      - paragraph [ref=f36e988]:
+                        - generic [ref=f36e989]:
+                          - img "R-219,G-166,B-121"
+              - paragraph [ref=f36e990]: visionOS system colors use the default dark color values.
+              - heading [level=3] [ref=f36e991]:
+                - link "iOS, iPadOS system gray colors in page link" [ref=f36e992] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/color#iOS-iPadOS-system-gray-colors
+              - table [ref=f36e994]:
+                - rowgroup [ref=f36e995]:
+                  - row [ref=f36e996]:
+                    - columnheader [ref=f36e997]:
+                      - paragraph [ref=f36e998]: Name
+                    - columnheader [ref=f36e999]:
+                      - paragraph [ref=f36e1000]: UIKit API
+                    - columnheader [ref=f36e1001]:
+                      - paragraph [ref=f36e1002]: Default (light)
+                    - columnheader [ref=f36e1003]:
+                      - paragraph [ref=f36e1004]: Default (dark)
+                    - columnheader [ref=f36e1005]:
+                      - paragraph [ref=f36e1006]: Increased contrast (light)
+                    - columnheader [ref=f36e1007]:
+                      - paragraph [ref=f36e1008]: Increased contrast (dark)
+                - rowgroup [ref=f36e1009]:
+                  - row [ref=f36e1010]:
+                    - cell [ref=f36e1011]:
+                      - paragraph [ref=f36e1012]: Gray
+                    - cell [ref=f36e1013]:
+                      - paragraph [ref=f36e1014]:
+                        - link [ref=f36e1015] [cursor=pointer]:
+                          - /url: /documentation/uikit/uicolor/systemgray
+                          - code [ref=f36e1016]: systemGray
+                    - cell [ref=f36e1017]:
+                      - paragraph [ref=f36e1018]:
+                        - generic [ref=f36e1019]:
+                          - img "R-142,G-142,B-147"
+                    - cell [ref=f36e1020]:
+                      - paragraph [ref=f36e1021]:
+                        - generic [ref=f36e1022]:
+                          - img "R-142,G-142,B-147"
+                    - cell [ref=f36e1023]:
+                      - paragraph [ref=f36e1024]:
+                        - generic [ref=f36e1025]:
+                          - img "R-108,G-108,B-112"
+                    - cell [ref=f36e1026]:
+                      - paragraph [ref=f36e1027]:
+                        - generic [ref=f36e1028]:
+                          - img "R-174,G-174,B-178"
+                  - row [ref=f36e1029]:
+                    - cell [ref=f36e1030]:
+                      - paragraph [ref=f36e1031]: Gray (2)
+                    - cell [ref=f36e1032]:
+                      - paragraph [ref=f36e1033]:
+                        - link [ref=f36e1034] [cursor=pointer]:
+                          - /url: /documentation/uikit/uicolor/systemgray2
+                          - code [ref=f36e1035]: systemGray2
+                    - cell [ref=f36e1036]:
+                      - paragraph [ref=f36e1037]:
+                        - generic [ref=f36e1038]:
+                          - img "R-174,G-174,B-178"
+                    - cell [ref=f36e1039]:
+                      - paragraph [ref=f36e1040]:
+                        - generic [ref=f36e1041]:
+                          - img "R-99,G-99,B-102"
+                    - cell [ref=f36e1042]:
+                      - paragraph [ref=f36e1043]:
+                        - generic [ref=f36e1044]:
+                          - img "R-142,G-142,B-147"
+                    - cell [ref=f36e1045]:
+                      - paragraph [ref=f36e1046]:
+                        - generic [ref=f36e1047]:
+                          - img "R-124,G-124,B-128"
+                  - row [ref=f36e1048]:
+                    - cell [ref=f36e1049]:
+                      - paragraph [ref=f36e1050]: Gray (3)
+                    - cell [ref=f36e1051]:
+                      - paragraph [ref=f36e1052]:
+                        - link [ref=f36e1053] [cursor=pointer]:
+                          - /url: /documentation/uikit/uicolor/systemgray3
+                          - code [ref=f36e1054]: systemGray3
+                    - cell [ref=f36e1055]:
+                      - paragraph [ref=f36e1056]:
+                        - generic [ref=f36e1057]:
+                          - img "R-199,G-199,B-204"
+                    - cell [ref=f36e1058]:
+                      - paragraph [ref=f36e1059]:
+                        - generic [ref=f36e1060]:
+                          - img "R-72,G-72,B-74"
+                    - cell [ref=f36e1061]:
+                      - paragraph [ref=f36e1062]:
+                        - generic [ref=f36e1063]:
+                          - img "R-174,G-174,B-178"
+                    - cell [ref=f36e1064]:
+                      - paragraph [ref=f36e1065]:
+                        - generic [ref=f36e1066]:
+                          - img "R-84,G-84,B-86"
+                  - row [ref=f36e1067]:
+                    - cell [ref=f36e1068]:
+                      - paragraph [ref=f36e1069]: Gray (4)
+                    - cell [ref=f36e1070]:
+                      - paragraph [ref=f36e1071]:
+                        - link [ref=f36e1072] [cursor=pointer]:
+                          - /url: /documentation/uikit/uicolor/systemgray4
+                          - code [ref=f36e1073]: systemGray4
+                    - cell [ref=f36e1074]:
+                      - paragraph [ref=f36e1075]:
+                        - generic [ref=f36e1076]:
+                          - img "R-209,G-209,B-214"
+                    - cell [ref=f36e1077]:
+                      - paragraph [ref=f36e1078]:
+                        - generic [ref=f36e1079]:
+                          - img "R-58,G-58,B-60"
+                    - cell [ref=f36e1080]:
+                      - paragraph [ref=f36e1081]:
+                        - generic [ref=f36e1082]:
+                          - img "R-188,G-188,B-192"
+                    - cell [ref=f36e1083]:
+                      - paragraph [ref=f36e1084]:
+                        - generic [ref=f36e1085]:
+                          - img "R-68,G-68,B-70"
+                  - row [ref=f36e1086]:
+                    - cell [ref=f36e1087]:
+                      - paragraph [ref=f36e1088]: Gray (5)
+                    - cell [ref=f36e1089]:
+                      - paragraph [ref=f36e1090]:
+                        - link [ref=f36e1091] [cursor=pointer]:
+                          - /url: /documentation/uikit/uicolor/systemgray5
+                          - code [ref=f36e1092]: systemGray5
+                    - cell [ref=f36e1093]:
+                      - paragraph [ref=f36e1094]:
+                        - generic [ref=f36e1095]:
+                          - img "R-229,G-229,B-234"
+                    - cell [ref=f36e1096]:
+                      - paragraph [ref=f36e1097]:
+                        - generic [ref=f36e1098]:
+                          - img "R-44,G-44,B-46"
+                    - cell [ref=f36e1099]:
+                      - paragraph [ref=f36e1100]:
+                        - generic [ref=f36e1101]:
+                          - img "R-216,G-216,B-220"
+                    - cell [ref=f36e1102]:
+                      - paragraph [ref=f36e1103]:
+                        - generic [ref=f36e1104]:
+                          - img "R-54,G-54,B-56"
+                  - row [ref=f36e1105]:
+                    - cell [ref=f36e1106]:
+                      - paragraph [ref=f36e1107]: Gray (6)
+                    - cell [ref=f36e1108]:
+                      - paragraph [ref=f36e1109]:
+                        - link [ref=f36e1110] [cursor=pointer]:
+                          - /url: /documentation/uikit/uicolor/systemgray6
+                          - code [ref=f36e1111]: systemGray6
+                    - cell [ref=f36e1112]:
+                      - paragraph [ref=f36e1113]:
+                        - generic [ref=f36e1114]:
+                          - img "R-242,G-242,B-247"
+                    - cell [ref=f36e1115]:
+                      - paragraph [ref=f36e1116]:
+                        - generic [ref=f36e1117]:
+                          - img "R-28,G-28,B-30"
+                    - cell [ref=f36e1118]:
+                      - paragraph [ref=f36e1119]:
+                        - generic [ref=f36e1120]:
+                          - img "R-235,G-235,B-240"
+                    - cell [ref=f36e1121]:
+                      - paragraph [ref=f36e1122]:
+                        - generic [ref=f36e1123]:
+                          - img "R-36,G-36,B-38"
+              - paragraph [ref=f36e1124]:
+                - text: In SwiftUI, the equivalent of
+                - code [ref=f36e1125]: systemGray
+                - text: is
+                - link [ref=f36e1126] [cursor=pointer]:
+                  - /url: /documentation/swiftui/color/gray
+                  - code [ref=f36e1127]: gray
+                - text: .
+              - heading [level=2] [ref=f36e1128]:
+                - link "Resources in page link" [ref=f36e1129] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/color#Resources
+              - heading [level=4] [ref=f36e1130]:
+                - link "Related in page link" [ref=f36e1131] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/color#Related
+              - paragraph [ref=f36e1132]:
+                - link "Dark Mode" [ref=f36e1133] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/dark-mode
+              - paragraph [ref=f36e1134]:
+                - link "Accessibility" [ref=f36e1135] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/accessibility
+              - paragraph [ref=f36e1136]:
+                - link "Materials" [ref=f36e1137] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/materials
+              - paragraph [ref=f36e1138]:
+                - link "Apple Design Resources" [ref=f36e1139] [cursor=pointer]:
+                  - /url: https://developer.apple.com/design/resources/
+              - heading [level=4] [ref=f36e1140]:
+                - link "Developer documentation in page link" [ref=f36e1141] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/color#Developer-documentation
+              - paragraph [ref=f36e1142]:
+                - link [ref=f36e1143] [cursor=pointer]:
+                  - /url: /documentation/swiftui/color
+                  - code [ref=f36e1144]: Color
+                - text: — SwiftUI
+              - paragraph [ref=f36e1145]:
+                - link [ref=f36e1146] [cursor=pointer]:
+                  - /url: /documentation/uikit/uicolor
+                  - code [ref=f36e1147]: UIColor
+                - text: — UIKit
+              - paragraph [ref=f36e1148]:
+                - link "Color" [ref=f36e1149] [cursor=pointer]:
+                  - /url: /documentation/appkit/color
+                - text: — AppKit
+              - heading [level=4] [ref=f36e1150]:
+                - link "Videos in page link" [ref=f36e1151] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/color#Videos
+              - region "grid of links" [ref=f36e1152]:
+                - link "Meet Liquid Glass" [ref=f36e1155] [cursor=pointer]:
+                  - /url: https://developer.apple.com/videos/play/wwdc2025/219
+                  - generic [ref=f36e1160]: Meet Liquid Glass
+              - heading [level=2] [ref=f36e1161]:
+                - link "Change log in page link" [ref=f36e1162] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/color#Change-log
+              - table [ref=f36e1164]:
+                - rowgroup [ref=f36e1165]:
+                  - row [ref=f36e1166]:
+                    - columnheader [ref=f36e1167]:
+                      - paragraph [ref=f36e1168]: Date
+                    - columnheader [ref=f36e1169]:
+                      - paragraph [ref=f36e1170]: Changes
+                - rowgroup [ref=f36e1171]:
+                  - row [ref=f36e1172]:
+                    - cell [ref=f36e1173]:
+                      - paragraph [ref=f36e1174]: December 16, 2025
+                    - cell [ref=f36e1175]:
+                      - paragraph [ref=f36e1176]: Updated guidance for Liquid Glass.
+                  - row [ref=f36e1177]:
+                    - cell [ref=f36e1178]:
+                      - paragraph [ref=f36e1179]: June 9, 2025
+                    - cell [ref=f36e1180]:
+                      - paragraph [ref=f36e1181]: Updated system color values, and added guidance for Liquid Glass.
+                  - row [ref=f36e1182]:
+                    - cell [ref=f36e1183]:
+                      - paragraph [ref=f36e1184]: February 2, 2024
+                    - cell [ref=f36e1185]:
+                      - paragraph [ref=f36e1186]: Distinguished UIKit and SwiftUI gray colors in iOS and iPadOS, and added guidance for balancing brightness levels in visionOS apps.
+                  - row [ref=f36e1187]:
+                    - cell [ref=f36e1188]:
+                      - paragraph [ref=f36e1189]: September 12, 2023
+                    - cell [ref=f36e1190]:
+                      - paragraph [ref=f36e1191]: Enhanced guidance for using background color in watchOS views, and added color swatches for tvOS.
+                  - row [ref=f36e1192]:
+                    - cell [ref=f36e1193]:
+                      - paragraph [ref=f36e1194]: June 21, 2023
+                    - cell [ref=f36e1195]:
+                      - paragraph [ref=f36e1196]: Updated to include guidance for visionOS.
+                  - row [ref=f36e1197]:
+                    - cell [ref=f36e1198]:
+                      - paragraph [ref=f36e1199]: June 5, 2023
+                    - cell [ref=f36e1200]:
+                      - paragraph [ref=f36e1201]: Updated guidance for using background color in watchOS.
+                  - row [ref=f36e1202]:
+                    - cell [ref=f36e1203]:
+                      - paragraph [ref=f36e1204]: December 19, 2022
+                    - cell [ref=f36e1205]:
+                      - paragraph [ref=f36e1206]: Corrected RGB values for system mint color (Dark Mode) in iOS and iPadOS.
+          - generic [ref=f36e1207]: Current page is Color
+      - generic [ref=f36e1208]:
+        - generic [ref=f36e1209]:
+          - heading "Supported platforms" [level=5] [ref=f36e1210]
+          - list [ref=f36e1211]:
+            - listitem [ref=f36e1212]
+            - listitem [ref=f36e1215]
+            - listitem [ref=f36e1218]
+            - listitem [ref=f36e1221]
+            - listitem [ref=f36e1224]
+            - listitem [ref=f36e1227]
+        - list [ref=f36e1231]:
+          - listitem [ref=f36e1232]:
+            - link "Color" [ref=f36e1233] [cursor=pointer]:
+              - /url: /design/human-interface-guidelines/color#app-top
+          - listitem [ref=f36e1234]:
+            - link "Best practices" [ref=f36e1235] [cursor=pointer]:
+              - /url: /design/human-interface-guidelines/color#Best-practices
+          - listitem [ref=f36e1236]:
+            - link "Inclusive color" [ref=f36e1237] [cursor=pointer]:
+              - /url: /design/human-interface-guidelines/color#Inclusive-color
+          - listitem [ref=f36e1238]:
+            - link "System colors" [ref=f36e1239] [cursor=pointer]:
+              - /url: /design/human-interface-guidelines/color#System-colors
+          - listitem [ref=f36e1240]:
+            - link "Liquid Glass color" [ref=f36e1241] [cursor=pointer]:
+              - /url: /design/human-interface-guidelines/color#Liquid-Glass-color
+          - listitem [ref=f36e1242]:
+            - link "Color management" [ref=f36e1243] [cursor=pointer]:
+              - /url: /design/human-interface-guidelines/color#Color-management
+          - listitem [ref=f36e1244]:
+            - link "Platform considerations" [ref=f36e1245] [cursor=pointer]:
+              - /url: /design/human-interface-guidelines/color#Platform-considerations
+          - listitem [ref=f36e1246]:
+            - link "Specifications" [ref=f36e1247] [cursor=pointer]:
+              - /url: /design/human-interface-guidelines/color#Specifications
+          - listitem [ref=f36e1248]:
+            - link "Resources" [ref=f36e1249] [cursor=pointer]:
+              - /url: /design/human-interface-guidelines/color#Resources
+          - listitem [ref=f36e1250]:
+            - link "Change log" [ref=f36e1251] [cursor=pointer]:
+              - /url: /design/human-interface-guidelines/color#Change-log
+  - contentinfo [ref=f36e1253]:
+    - navigation [ref=f36e1254]:
+      - link "Apple" [ref=f36e1255] [cursor=pointer]:
+        - /url: https://www.apple.com
+        - text: 
+      - list [ref=f36e1258]:
+        - listitem [ref=f36e1259]:
+          - link "Developer" [ref=f36e1260] [cursor=pointer]:
+            - /url: /
+        - listitem [ref=f36e1261]:
+          - link "Documentation" [ref=f36e1262] [cursor=pointer]:
+            - /url: /documentation/
+      - generic [ref=f36e1263]:
+        - generic [ref=f36e1264]:
+          - generic [ref=f36e1265]:
+            - heading "Platforms" [level=3] [ref=f36e1266]
+            - list [ref=f36e1267]:
+              - listitem [ref=f36e1268]:
+                - link "iOS" [ref=f36e1269] [cursor=pointer]:
+                  - /url: /ios/
+              - listitem [ref=f36e1270]:
+                - link "iPadOS" [ref=f36e1271] [cursor=pointer]:
+                  - /url: /ipados/
+              - listitem [ref=f36e1272]:
+                - link "macOS" [ref=f36e1273] [cursor=pointer]:
+                  - /url: /macos/
+              - listitem [ref=f36e1274]:
+                - link "tvOS" [ref=f36e1275] [cursor=pointer]:
+                  - /url: /tvos/
+              - listitem [ref=f36e1276]:
+                - link "visionOS" [ref=f36e1277] [cursor=pointer]:
+                  - /url: /visionos/
+              - listitem [ref=f36e1278]:
+                - link "watchOS" [ref=f36e1279] [cursor=pointer]:
+                  - /url: /watchos/
+          - generic [ref=f36e1280]:
+            - heading "Tools" [level=3] [ref=f36e1281]
+            - list [ref=f36e1282]:
+              - listitem [ref=f36e1283]:
+                - link "Swift" [ref=f36e1284] [cursor=pointer]:
+                  - /url: /swift/
+              - listitem [ref=f36e1285]:
+                - link "SwiftUI" [ref=f36e1286] [cursor=pointer]:
+                  - /url: /swiftui/
+              - listitem [ref=f36e1287]:
+                - link "Swift Playground" [ref=f36e1288] [cursor=pointer]:
+                  - /url: /swift-playground/
+              - listitem [ref=f36e1289]:
+                - link "TestFlight" [ref=f36e1290] [cursor=pointer]:
+                  - /url: /testflight/
+              - listitem [ref=f36e1291]:
+                - link "Xcode" [ref=f36e1292] [cursor=pointer]:
+                  - /url: /xcode/
+              - listitem [ref=f36e1293]:
+                - link "Xcode Cloud" [ref=f36e1294] [cursor=pointer]:
+                  - /url: /xcode-cloud/
+              - listitem [ref=f36e1295]:
+                - link "SF Symbols" [ref=f36e1296] [cursor=pointer]:
+                  - /url: /sf-symbols/
+        - generic [ref=f36e1298]:
+          - heading "Topics & Technologies" [level=3] [ref=f36e1299]
+          - list [ref=f36e1300]:
+            - listitem [ref=f36e1301]:
+              - link "Accessibility" [ref=f36e1302] [cursor=pointer]:
+                - /url: /accessibility/
+            - listitem [ref=f36e1303]:
+              - link "Accessories" [ref=f36e1304] [cursor=pointer]:
+                - /url: /accessories/
+            - listitem [ref=f36e1305]:
+              - link "App Extension" [ref=f36e1306] [cursor=pointer]:
+                - /url: /app-extensions/
+            - listitem [ref=f36e1307]:
+              - link "App Store" [ref=f36e1308] [cursor=pointer]:
+                - /url: /app-store/
+            - listitem [ref=f36e1309]:
+              - link "Audio & Video" [ref=f36e1310] [cursor=pointer]:
+                - /url: /audio/
+            - listitem [ref=f36e1311]:
+              - link "Augmented Reality" [ref=f36e1312] [cursor=pointer]:
+                - /url: /augmented-reality/
+            - listitem [ref=f36e1313]:
+              - link "Design" [ref=f36e1314] [cursor=pointer]:
+                - /url: /design/
+            - listitem [ref=f36e1315]:
+              - link "Distribution" [ref=f36e1316] [cursor=pointer]:
+                - /url: /distribute/
+            - listitem [ref=f36e1317]:
+              - link "Education" [ref=f36e1318] [cursor=pointer]:
+                - /url: /education/
+            - listitem [ref=f36e1319]:
+              - link "Fonts" [ref=f36e1320] [cursor=pointer]:
+                - /url: /fonts/
+            - listitem [ref=f36e1321]:
+              - link "Games" [ref=f36e1322] [cursor=pointer]:
+                - /url: /games/
+            - listitem [ref=f36e1323]:
+              - link "Health & Fitness" [ref=f36e1324] [cursor=pointer]:
+                - /url: /health-fitness/
+            - listitem [ref=f36e1325]:
+              - link "In-App Purchase" [ref=f36e1326] [cursor=pointer]:
+                - /url: /in-app-purchase/
+            - listitem [ref=f36e1327]:
+              - link "Localization" [ref=f36e1328] [cursor=pointer]:
+                - /url: /localization/
+            - listitem [ref=f36e1329]:
+              - link "Maps & Location" [ref=f36e1330] [cursor=pointer]:
+                - /url: /maps/
+            - listitem [ref=f36e1331]:
+              - link "Machine Learning & AI" [ref=f36e1332] [cursor=pointer]:
+                - /url: /machine-learning/
+            - listitem [ref=f36e1333]:
+              - link "Open Source" [ref=f36e1334] [cursor=pointer]:
+                - /url: https://opensource.apple.com/
+            - listitem [ref=f36e1335]:
+              - link "Security" [ref=f36e1336] [cursor=pointer]:
+                - /url: /security/
+            - listitem [ref=f36e1337]:
+              - link "Safari & Web" [ref=f36e1338] [cursor=pointer]:
+                - /url: /safari/
+        - generic [ref=f36e1339]:
+          - generic [ref=f36e1340]:
+            - heading "Resources" [level=3] [ref=f36e1341]
+            - list [ref=f36e1342]:
+              - listitem
+              - listitem [ref=f36e1343]:
+                - link "Documentation" [ref=f36e1344] [cursor=pointer]:
+                  - /url: /documentation/
+              - listitem [ref=f36e1345]:
+                - link "Tutorials" [ref=f36e1346] [cursor=pointer]:
+                  - /url: /learn/
+              - listitem [ref=f36e1347]:
+                - link "Downloads" [ref=f36e1348] [cursor=pointer]:
+                  - /url: /download/
+              - listitem [ref=f36e1349]:
+                - link "Forums" [ref=f36e1350] [cursor=pointer]:
+                  - /url: /forums/
+              - listitem [ref=f36e1351]:
+                - link "Videos" [ref=f36e1352] [cursor=pointer]:
+                  - /url: /videos/
+          - generic [ref=f36e1353]:
+            - heading "Support" [level=3] [ref=f36e1354]
+            - list [ref=f36e1355]:
+              - listitem [ref=f36e1356]:
+                - link "Support Articles" [ref=f36e1357] [cursor=pointer]:
+                  - /url: /support/articles/
+              - listitem [ref=f36e1358]:
+                - link "Contact Us" [ref=f36e1359] [cursor=pointer]:
+                  - /url: /contact/
+              - listitem [ref=f36e1360]:
+                - link "Bug Reporting" [ref=f36e1361] [cursor=pointer]:
+                  - /url: /bug-reporting/
+              - listitem [ref=f36e1362]:
+                - link "System Status" [ref=f36e1363] [cursor=pointer]:
+                  - /url: /system-status/
+          - generic [ref=f36e1364]:
+            - heading "Account" [level=3] [ref=f36e1365]
+            - list [ref=f36e1366]:
+              - listitem [ref=f36e1367]:
+                - link "Apple Developer" [ref=f36e1368] [cursor=pointer]:
+                  - /url: /account/
+              - listitem [ref=f36e1369]:
+                - link "App Store Connect" [ref=f36e1370] [cursor=pointer]:
+                  - /url: https://appstoreconnect.apple.com/
+              - listitem [ref=f36e1371]:
+                - link "Certificates, IDs, & Profiles" [ref=f36e1372] [cursor=pointer]:
+                  - /url: /account/ios/certificate/
+              - listitem [ref=f36e1373]:
+                - link "Feedback Assistant" [ref=f36e1374] [cursor=pointer]:
+                  - /url: https://feedbackassistant.apple.com/
+        - generic [ref=f36e1375]:
+          - generic [ref=f36e1376]:
+            - heading "Programs" [level=3] [ref=f36e1377]
+            - list [ref=f36e1378]:
+              - listitem [ref=f36e1379]:
+                - link "Apple Developer Program" [ref=f36e1380] [cursor=pointer]:
+                  - /url: /programs/
+              - listitem [ref=f36e1381]:
+                - link "Apple Developer Enterprise Program" [ref=f36e1382] [cursor=pointer]:
+                  - /url: /programs/enterprise/
+              - listitem [ref=f36e1383]:
+                - link "App Store Small Business Program" [ref=f36e1384] [cursor=pointer]:
+                  - /url: /app-store/small-business-program/
+              - listitem [ref=f36e1385]:
+                - link "MFi Program" [ref=f36e1386] [cursor=pointer]:
+                  - /url: https://mfi.apple.com/
+              - listitem [ref=f36e1387]:
+                - link "News Partner Program" [ref=f36e1388] [cursor=pointer]:
+                  - /url: /programs/news-partner/
+              - listitem [ref=f36e1389]:
+                - link "Video Partner Program" [ref=f36e1390] [cursor=pointer]:
+                  - /url: /programs/video-partner/
+              - listitem [ref=f36e1391]:
+                - link "Security Bounty Program" [ref=f36e1392] [cursor=pointer]:
+                  - /url: /security-bounty/
+              - listitem [ref=f36e1393]:
+                - link "Security Research Device Program" [ref=f36e1394] [cursor=pointer]:
+                  - /url: /programs/security-research-device/
+          - generic [ref=f36e1395]:
+            - heading "Events" [level=3] [ref=f36e1396]
+            - list [ref=f36e1397]:
+              - listitem [ref=f36e1398]:
+                - link "Meet with Apple" [ref=f36e1399] [cursor=pointer]:
+                  - /url: /events/
+              - listitem [ref=f36e1400]:
+                - link "Apple Developer Centers" [ref=f36e1401] [cursor=pointer]:
+                  - /url: /events/developer-centers/
+              - listitem [ref=f36e1402]:
+                - link "App Store Awards" [ref=f36e1403] [cursor=pointer]:
+                  - /url: /app-store/app-store-awards/
+              - listitem [ref=f36e1404]:
+                - link "Apple Design Awards" [ref=f36e1405] [cursor=pointer]:
+                  - /url: /design/awards/
+              - listitem [ref=f36e1406]:
+                - link "Apple Developer Academies" [ref=f36e1407] [cursor=pointer]:
+                  - /url: /academies/
+              - listitem [ref=f36e1408]:
+                - link "WWDC" [ref=f36e1409] [cursor=pointer]:
+                  - /url: /wwdc/
+    - generic [ref=f36e1410]:
+      - generic [ref=f36e1411]:
+        - generic [ref=f36e1412]:
+          - text: To submit feedback on documentation, visit
+          - link "Feedback Assistant" [ref=f36e1413] [cursor=pointer]:
+            - /url: applefeedback://new?form_identifier=developertools.fba&answers%5B%3Aarea%5D=seedADC%3Adevpubs&answers%5B%3Adoc_type_req%5D=Technology%20Documentation&answers%5B%3Adocumentation_link_req%5D=https%3A%2F%2Fdeveloper.apple.com%2Fdesign%2Fhuman-interface-guidelines%2Fcolor
+          - text: .
+        - radiogroup "Select a color scheme preference" [ref=f36e1415]:
+          - generic [ref=f36e1417]:
+            - radio "Light" [ref=f36e1418]
+            - generic [ref=f36e1419]: Light
+          - generic [ref=f36e1420]:
+            - radio "Dark" [ref=f36e1421]
+            - generic [ref=f36e1422]: Dark
+          - generic [ref=f36e1423]:
+            - radio "Auto" [checked] [ref=f36e1424]
+            - generic [ref=f36e1425]: Auto
+      - combobox "Select the language for this page" [ref=f36e1427] [cursor=pointer]:
+        - option "English" [selected]
+        - option "简体中文"
+        - option "日本語"
+        - option "한국어"
+      - generic [ref=f36e1430]:
+        - generic [ref=f36e1431]:
+          - text: Copyright © 2026
+          - link "Apple Inc." [ref=f36e1432] [cursor=pointer]:
+            - /url: https://www.apple.com
+          - text: All rights reserved.
+        - generic [ref=f36e1433]:
+          - link "Terms of Use" [ref=f36e1434] [cursor=pointer]:
+            - /url: https://www.apple.com/legal/internet-services/terms/site.html
+          - link "Privacy Policy" [ref=f36e1435] [cursor=pointer]:
+            - /url: https://www.apple.com/legal/privacy/
+          - link "Agreements and Guidelines" [ref=f36e1436] [cursor=pointer]:
+            - /url: /support/terms/

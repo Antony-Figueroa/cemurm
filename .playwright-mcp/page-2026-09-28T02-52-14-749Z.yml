@@ -1,0 +1,975 @@
+- generic [ref=f54e2]:
+  - link "Skip Navigation" [ref=f54e3] [cursor=pointer]:
+    - /url: /design/human-interface-guidelines/accessibility#app-main
+  - generic [ref=f54e5]:
+    - link "Ver en español" [ref=f54e6] [cursor=pointer]:
+      - /url: /la/design/human-interface-guidelines/accessibility
+    - button "Continue viewing in English" [ref=f54e10] [cursor=pointer]
+  - navigation "Global" [ref=f54e13]:
+    - list [ref=f54e15]:
+      - listitem [ref=f54e16]:
+        - link "Apple Developer" [ref=f54e17] [cursor=pointer]:
+          - /url: /
+      - listitem [ref=f54e18]:
+        - generic [ref=f54e20]:
+          - list [ref=f54e22]:
+            - listitem [ref=f54e23]:
+              - link "Get Started" [ref=f54e24] [cursor=pointer]:
+                - /url: /get-started/
+            - listitem:
+              - button "Get Started menu"
+          - list [ref=f54e27]:
+            - listitem [ref=f54e28]:
+              - link "Platforms" [ref=f54e29] [cursor=pointer]:
+                - /url: /platforms/
+            - listitem:
+              - button "Platforms menu"
+          - list [ref=f54e32]:
+            - listitem [ref=f54e33]:
+              - link "Technologies" [ref=f54e34] [cursor=pointer]:
+                - /url: /technologies/
+            - listitem:
+              - button "Technologies menu"
+          - list [ref=f54e37]:
+            - listitem [ref=f54e38]:
+              - link "Community" [ref=f54e39] [cursor=pointer]:
+                - /url: /community/
+            - listitem:
+              - button "Community menu"
+          - list [ref=f54e42]:
+            - listitem [ref=f54e43]:
+              - link "Documentation" [ref=f54e44] [cursor=pointer]:
+                - /url: /documentation/
+            - listitem:
+              - button "Documentation menu"
+          - list [ref=f54e47]:
+            - listitem [ref=f54e48]:
+              - link "Downloads" [ref=f54e49] [cursor=pointer]:
+                - /url: /download/
+            - listitem:
+              - button "Downloads menu"
+          - list [ref=f54e52]:
+            - listitem [ref=f54e53]:
+              - link "Support" [ref=f54e54] [cursor=pointer]:
+                - /url: /support/
+            - listitem:
+              - button "Support menu"
+      - listitem [ref=f54e56]:
+        - button "Search" [ref=f54e57] [cursor=pointer]
+      - listitem [ref=f54e58]:
+        - link "Sign in" [ref=f54e60] [cursor=pointer]:
+          - /url: /login/?return=%2Fdesign%2Fhuman-interface-guidelines%2Faccessibility
+  - generic [ref=f54e61]:
+    - navigation [ref=f54e62]:
+      - generic [ref=f54e65]:
+        - button "Open Documentation Navigator" [ref=f54e68] [cursor=pointer]
+        - link "Design" [ref=f54e74] [cursor=pointer]:
+          - /url: /design/
+        - list [ref=f54e77]:
+          - listitem [ref=f54e78]:
+            - link "Overview" [ref=f54e79] [cursor=pointer]:
+              - /url: https://developer.apple.com/design/
+          - listitem [ref=f54e80]:
+            - link "What’s New" [ref=f54e81] [cursor=pointer]:
+              - /url: https://developer.apple.com/design/whats-new/
+          - listitem [ref=f54e82]:
+            - link "Get Started" [ref=f54e83] [cursor=pointer]:
+              - /url: https://developer.apple.com/design/get-started/
+          - listitem [ref=f54e84]:
+            - link "Guidelines" [ref=f54e85] [cursor=pointer]:
+              - /url: /design/human-interface-guidelines
+          - listitem [ref=f54e86]:
+            - link "Resources" [ref=f54e87] [cursor=pointer]:
+              - /url: https://developer.apple.com/design/resources/
+    - generic [ref=f54e88]:
+      - generic [ref=f54e89]:
+        - navigation [ref=f54e91]:
+          - button "Close Documentation Navigator" [ref=f54e97] [cursor=pointer]
+          - generic [ref=f54e120]: Navigator is loading
+        - generic [ref=f54e122]:
+          - main [ref=f54e123]:
+            - generic [ref=f54e126]:
+              - heading "Accessibility" [level=1] [ref=f54e128]
+              - generic [ref=f54e129]: Accessible user interfaces empower everyone to have a great experience with your app or game.
+            - generic [ref=f54e134]:
+              - paragraph [ref=f54e135]:
+                - img "A sketch of the Accessibility icon. The image is overlaid with rectangular and circular grid lines and is tinted yellow to subtly reflect the yellow in the original six-color Apple logo." [ref=f54e137]
+              - paragraph [ref=f54e138]: "When you design for accessibility, you reach a larger audience and create a more inclusive experience. An accessible interface allows people to experience your app or game regardless of their capabilities or how they use their devices. Accessibility makes information and interactions available to everyone. An accessible interface is:"
+              - list [ref=f54e139]:
+                - listitem [ref=f54e140]:
+                  - paragraph [ref=f54e141]:
+                    - strong [ref=f54e142]: Intuitive.
+                    - text: Your interface uses familiar and consistent interactions that make tasks straightforward to perform.
+                - listitem [ref=f54e143]:
+                  - paragraph [ref=f54e144]:
+                    - strong [ref=f54e145]: Perceivable.
+                    - text: Your interface doesn’t rely on any single method to convey information. People can access and interact with your content, whether they use sight, hearing, speech, or touch.
+                - listitem [ref=f54e146]:
+                  - paragraph [ref=f54e147]:
+                    - strong [ref=f54e148]: Adaptable.
+                    - text: Your interface adapts to how people want to use their device, whether by supporting system accessibility features or letting people personalize settings.
+              - paragraph [ref=f54e149]:
+                - text: As you design your app, audit the accessibility of your interface. Use
+                - link "Accessibility Inspector" [ref=f54e150] [cursor=pointer]:
+                  - /url: /documentation/accessibility/accessibility-inspector
+                - text: to highlight accessibility issues with your interface and to understand how your app represents itself to people using system accessibility features. You can also communicate how accessible your app is on the App Store using Accessibility Nutrition Labels. To learn more about how to evaluate and indicate accessibility feature support, see
+                - link "Accessibility Nutrition Labels" [ref=f54e151] [cursor=pointer]:
+                  - /url: https://developer.apple.com/help/app-store-connect/manage-app-accessibility/overview-of-accessibility-nutrition-labels
+                - text: in App Store Connect help.
+              - heading [level=2] [ref=f54e152]:
+                - link "Vision in page link" [ref=f54e153] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/accessibility#Vision
+              - paragraph [ref=f54e154]:
+                - img "An illustration containing five symbols associated with the topic of vision, including symbols representing text size, magnification, VoiceOver, and spoken dialogue." [ref=f54e156]
+              - paragraph [ref=f54e157]: The people who use your interface may be blind, color blind, or have low vision or light sensitivity. They may also be in situations where lighting conditions and screen brightness affect their ability to interact with your interface.
+              - paragraph [ref=f54e158]:
+                - strong [ref=f54e159]: Support larger text sizes.
+                - text: Make sure people can adjust the size of your text or icons to make them more legible, visible, and comfortable to read. Ideally, give people the option to enlarge text by at least 200 percent (or 140 percent in watchOS apps). Your interface can support font size enlargement either through custom UI, or by adopting Dynamic Type. Dynamic Type is a systemwide setting that lets people adjust the size of text for comfort and legibility. For more guidance, see
+                - link "Supporting Dynamic Type" [ref=f54e160] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/typography#Supporting-Dynamic-Type
+                - text: .
+              - paragraph [ref=f54e161]:
+                - strong [ref=f54e162]: Use recommended defaults for custom type sizes.
+                - text: Each platform has different default and minimum sizes for system-defined type styles to promote readability. If you’re using custom type styles, follow the recommended defaults.
+              - table [ref=f54e164]:
+                - rowgroup [ref=f54e165]:
+                  - row [ref=f54e166]:
+                    - columnheader [ref=f54e167]:
+                      - paragraph [ref=f54e168]: Platform
+                    - columnheader [ref=f54e169]:
+                      - paragraph [ref=f54e170]: Default size
+                    - columnheader [ref=f54e171]:
+                      - paragraph [ref=f54e172]: Minimum size
+                - rowgroup [ref=f54e173]:
+                  - row [ref=f54e174]:
+                    - cell [ref=f54e175]:
+                      - paragraph [ref=f54e176]: iOS, iPadOS
+                    - cell [ref=f54e177]:
+                      - paragraph [ref=f54e178]: 17 pt
+                    - cell [ref=f54e179]:
+                      - paragraph [ref=f54e180]: 11 pt
+                  - row [ref=f54e181]:
+                    - cell [ref=f54e182]:
+                      - paragraph [ref=f54e183]: macOS
+                    - cell [ref=f54e184]:
+                      - paragraph [ref=f54e185]: 13 pt
+                    - cell [ref=f54e186]:
+                      - paragraph [ref=f54e187]: 10 pt
+                  - row [ref=f54e188]:
+                    - cell [ref=f54e189]:
+                      - paragraph [ref=f54e190]: tvOS
+                    - cell [ref=f54e191]:
+                      - paragraph [ref=f54e192]: 29 pt
+                    - cell [ref=f54e193]:
+                      - paragraph [ref=f54e194]: 23 pt
+                  - row [ref=f54e195]:
+                    - cell [ref=f54e196]:
+                      - paragraph [ref=f54e197]: visionOS
+                    - cell [ref=f54e198]:
+                      - paragraph [ref=f54e199]: 17 pt
+                    - cell [ref=f54e200]:
+                      - paragraph [ref=f54e201]: 12 pt
+                  - row [ref=f54e202]:
+                    - cell [ref=f54e203]:
+                      - paragraph [ref=f54e204]: watchOS
+                    - cell [ref=f54e205]:
+                      - paragraph [ref=f54e206]: 16 pt
+                    - cell [ref=f54e207]:
+                      - paragraph [ref=f54e208]: 12 pt
+              - paragraph [ref=f54e209]:
+                - strong [ref=f54e210]: Bear in mind that font weight can also impact how easy text is to read.
+                - text: If you’re using a custom font with a thin weight, aim for larger than the recommended sizes to increase legibility. For more guidance, see
+                - link "Typography" [ref=f54e211] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/typography
+                - text: .
+              - generic [ref=f54e212]:
+                - paragraph [ref=f54e214]:
+                  - figure "Thicker weights are easier to read for smaller font sizes." [ref=f54e215]:
+                    - generic:
+                      - img "An illustration of a rectangular view containing the word 'Hello,' formatted bold, at a small font size."
+                - paragraph [ref=f54e218]:
+                  - figure "Consider increasing the font size when using a thin weight." [ref=f54e219]:
+                    - generic:
+                      - img "An illustration of a rectangular view containing the word 'Hello,' formatted thin, at a large font size."
+              - paragraph [ref=f54e221]:
+                - strong [ref=f54e222]: Strive to meet color contrast minimum standards.
+                - text: To ensure all information in your app is legible, it’s important that there’s enough contrast between foreground text and icons and background colors. Two popular standards of measure for color contrast are the
+                - link "Web Content Accessibility Guidelines (WCAG)" [ref=f54e223] [cursor=pointer]:
+                  - /url: https://www.w3.org/TR/WCAG/
+                - text: and the Accessible Perceptual Contrast Algorithm (APCA). Use standard contrast calculators to ensure your UI meets acceptable levels.
+                - link "Accessibility Inspector" [ref=f54e224] [cursor=pointer]:
+                  - /url: /documentation/accessibility/accessibility-inspector
+                - text: uses the following values from WCAG Level AA as guidance in determining whether your app’s colors have an acceptable contrast.
+              - table [ref=f54e226]:
+                - rowgroup [ref=f54e227]:
+                  - row [ref=f54e228]:
+                    - columnheader [ref=f54e229]:
+                      - paragraph [ref=f54e230]: Text size
+                    - columnheader [ref=f54e231]:
+                      - paragraph [ref=f54e232]: Text weight
+                    - columnheader [ref=f54e233]:
+                      - paragraph [ref=f54e234]: Minimum contrast ratio
+                - rowgroup [ref=f54e235]:
+                  - row [ref=f54e236]:
+                    - cell [ref=f54e237]:
+                      - paragraph [ref=f54e238]: Up to 17 pts
+                    - cell [ref=f54e239]:
+                      - paragraph [ref=f54e240]: All
+                    - cell [ref=f54e241]:
+                      - paragraph [ref=f54e242]: 4.5:1
+                  - row [ref=f54e243]:
+                    - cell [ref=f54e244]:
+                      - paragraph [ref=f54e245]: 18 pts
+                    - cell [ref=f54e246]:
+                      - paragraph [ref=f54e247]: All
+                    - cell [ref=f54e248]:
+                      - paragraph [ref=f54e249]: 3:1
+                  - row [ref=f54e250]:
+                    - cell [ref=f54e251]:
+                      - paragraph [ref=f54e252]: All
+                    - cell [ref=f54e253]:
+                      - paragraph [ref=f54e254]: Bold
+                    - cell [ref=f54e255]:
+                      - paragraph [ref=f54e256]: 3:1
+              - paragraph [ref=f54e257]:
+                - text: If your app doesn’t provide this minimum contrast by default, ensure it at least provides a higher contrast color scheme when the system setting Increase Contrast is turned on. If your app supports
+                - link "Dark Mode" [ref=f54e258] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/dark-mode
+                - text: ", make sure to check the minimum contrast in both light and dark appearances."
+              - generic [ref=f54e259]:
+                - generic [ref=f54e260]:
+                  - paragraph [ref=f54e261]:
+                    - figure "A button with insufficient color contrast" [ref=f54e262]:
+                      - generic:
+                        - img "An illustration of a button that has insufficient contrast between the button's title and background."
+                  - paragraph:
+                    - generic:
+                      - img "An X in a circle to indicate incorrect usage."
+                - generic [ref=f54e264]:
+                  - paragraph [ref=f54e265]:
+                    - figure "A button with sufficient color contrast" [ref=f54e266]:
+                      - generic:
+                        - img "An illustration of a button that has sufficient contrast between the button's title and background."
+                  - paragraph:
+                    - generic:
+                      - img "A checkmark in a circle to indicate correct usage."
+              - paragraph [ref=f54e268]:
+                - strong [ref=f54e269]: Prefer system-defined colors.
+                - text: These colors have their own accessible variants that automatically adapt when people adjust their color preferences, such as enabling Increase Contrast or toggling between the light and dark appearances. For guidance, see
+                - link "Color" [ref=f54e270] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/color
+                - text: .
+              - generic [ref=f54e271]:
+                - paragraph [ref=f54e273]:
+                  - figure [ref=f54e274]:
+                    - generic:
+                      - img "An illustration demonstrating how the system-defined color red appears above a light and dark background. In the illustration, a circle is positioned above a rounded rectangle. The left side of the rounded rectangle is light in color, and the right side is dark. The left side of the circle is slightly darker than the right side."
+                    - generic [ref=f54e275]:
+                      - text: The
+                      - code [ref=f54e276]: systemRed
+                      - text: default color in iOS
+                - paragraph [ref=f54e278]:
+                  - figure [ref=f54e279]:
+                    - generic:
+                      - img "An illustration demonstrating how the system-defined accessibility-specific color red appears above a light and dark background. In the illustration, a circle is positioned above a rounded rectangle. The left side of the rounded rectangle is light in color, and the right side is dark. The left side of the circle is considerably darker than the right side."
+                    - generic [ref=f54e280]:
+                      - text: The
+                      - code [ref=f54e281]: systemRed
+                      - text: accessible color in iOS
+              - paragraph [ref=f54e282]:
+                - strong [ref=f54e283]: Convey information with more than color alone.
+                - text: Some people have trouble differentiating between certain colors and shades. For example, people who are color blind may have particular difficulty with pairings such as red-green and blue-orange. Offer visual indicators, like distinct shapes or icons, in addition to color to help people perceive differences in function and changes in state. Consider allowing people to customize color schemes such as chart colors or game characters so they can personalize your interface in a way that’s comfortable for them.
+              - generic [ref=f54e284]:
+                - generic [ref=f54e285]:
+                  - paragraph [ref=f54e286]:
+                    - figure "For someone with red-green color blindness, these indicators might appear the same." [ref=f54e287]:
+                      - generic:
+                        - img "An illustration of a green circle to the left of a red circle."
+                  - paragraph:
+                    - generic:
+                      - img "An X in a circle to indicate incorrect usage."
+                - generic [ref=f54e289]:
+                  - paragraph [ref=f54e290]:
+                    - figure "Both visual indicators and color help differentiate between indicators." [ref=f54e291]:
+                      - generic:
+                        - img "An illustration of a green circle containing a checkmark to the left of a red octagon containing an X."
+                  - paragraph:
+                    - generic:
+                      - img "A checkmark in a circle to indicate correct usage."
+              - paragraph [ref=f54e293]:
+                - strong [ref=f54e294]: Describe your app’s interface and content for VoiceOver.
+                - text: VoiceOver is a screen reader that lets people experience your app’s interface without needing to see the screen. For more guidance, see
+                - link "VoiceOver" [ref=f54e295] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/voiceover
+                - text: .
+              - heading [level=2] [ref=f54e296]:
+                - link "Hearing in page link" [ref=f54e297] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/accessibility#Hearing
+              - paragraph:
+                - generic:
+                  - img "An illustration containing five symbols associated with the topic of hearing, including symbols representing sound, waveforms, and closed captioning."
+              - paragraph [ref=f54e298]: The people who use your interface may be deaf or hard of hearing. They may also be in noisy or public environments.
+              - paragraph [ref=f54e299]:
+                - strong [ref=f54e300]: Support text-based ways to enjoy audio and video.
+                - text: "It’s important that dialogue and crucial information about your app or game isn’t communicated through audio alone. Depending on the context, give people different text-based ways to experience their media, and allow people to customize the visual presentation of that text:"
+              - list [ref=f54e301]:
+                - listitem [ref=f54e302]:
+                  - paragraph [ref=f54e303]:
+                    - strong [ref=f54e304]: Captions
+                    - text: give people the textual equivalent of audible information in video or audio-only content. Captions are great for scenarios like game cutscenes and video clips where text synchronizes live with the media.
+                - listitem [ref=f54e305]:
+                  - paragraph [ref=f54e306]:
+                    - strong [ref=f54e307]: Subtitles
+                    - text: allow people to read live onscreen dialogue in their preferred language. Subtitles are great for TV shows and movies.
+                - listitem [ref=f54e308]:
+                  - paragraph [ref=f54e309]:
+                    - strong [ref=f54e310]: Audio descriptions
+                    - text: are interspersed between natural pauses in the main audio of a video and supply spoken narration of important information that’s presented only visually.
+                - listitem [ref=f54e311]:
+                  - paragraph [ref=f54e312]:
+                    - strong [ref=f54e313]: Transcripts
+                    - text: provide a complete textual description of a video, covering both audible and visual information. Transcripts are great for longer-form media like podcasts and audiobooks where people may want to review content as a whole or highlight the transcript as media is playing.
+              - paragraph [ref=f54e314]:
+                - text: For developer guidance, see
+                - link "Selecting subtitles and alternative audio tracks" [ref=f54e315] [cursor=pointer]:
+                  - /url: /documentation/avfoundation/selecting-subtitles-and-alternative-audio-tracks
+                - text: .
+              - paragraph [ref=f54e316]:
+                - strong [ref=f54e317]: Use haptics in addition to audio cues.
+                - text: If your interface conveys information through audio cues — such as a success chime, error sound, or game feedback — consider pairing that sound with matching haptics for people who can’t perceive the audio or have their audio turned off. In iOS and iPadOS, you can also use
+                - link "Music Haptics" [ref=f54e318] [cursor=pointer]:
+                  - /url: /documentation/mediaaccessibility/music-haptics
+                - text: and
+                - link "Audio graphs" [ref=f54e319] [cursor=pointer]:
+                  - /url: /documentation/accessibility/audio-graphs
+                - text: to let people experience music and infographics through vibration and texture. For guidance, see
+                - link "Playing haptics" [ref=f54e320] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/playing-haptics
+                - text: .
+              - paragraph:
+                - generic:
+                  - img "An illustration of an iPhone device vibrating as music plays from the device."
+              - paragraph [ref=f54e321]:
+                - strong [ref=f54e322]: Augment audio cues with visual cues.
+                - text: This is especially important for games and spatial apps where important content might be taking place off screen. When using audio to guide people towards a specific action, also add in visual indicators that point to where you want people to interact.
+              - heading [level=2] [ref=f54e323]:
+                - link "Mobility in page link" [ref=f54e324] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/accessibility#Mobility
+              - paragraph:
+                - generic:
+                  - img "An illustration containing five symbols associated with the topic of mobility, including symbols representing the keyboard, movement, and touch."
+              - paragraph [ref=f54e325]: Ensure your interface offers a comfortable experience for people with limited dexterity or mobility.
+              - paragraph [ref=f54e326]:
+                - strong [ref=f54e327]: Offer sufficiently sized controls.
+                - text: Controls that are too small are hard for many people to interact with and select. Strive to meet the recommended minimum control size for each platform to ensure controls and menus are comfortable for all when tapping and clicking.
+              - table [ref=f54e329]:
+                - rowgroup [ref=f54e330]:
+                  - row [ref=f54e331]:
+                    - columnheader [ref=f54e332]:
+                      - paragraph [ref=f54e333]: Platform
+                    - columnheader [ref=f54e334]:
+                      - paragraph [ref=f54e335]: Default control size
+                    - columnheader [ref=f54e336]:
+                      - paragraph [ref=f54e337]: Minimum control size
+                - rowgroup [ref=f54e338]:
+                  - row [ref=f54e339]:
+                    - cell [ref=f54e340]:
+                      - paragraph [ref=f54e341]: iOS, iPadOS
+                    - cell [ref=f54e342]:
+                      - paragraph [ref=f54e343]: 44x44 pt
+                    - cell [ref=f54e344]:
+                      - paragraph [ref=f54e345]: 28x28 pt
+                  - row [ref=f54e346]:
+                    - cell [ref=f54e347]:
+                      - paragraph [ref=f54e348]: macOS
+                    - cell [ref=f54e349]:
+                      - paragraph [ref=f54e350]: 28x28 pt
+                    - cell [ref=f54e351]:
+                      - paragraph [ref=f54e352]: 20x20 pt
+                  - row [ref=f54e353]:
+                    - cell [ref=f54e354]:
+                      - paragraph [ref=f54e355]: tvOS
+                    - cell [ref=f54e356]:
+                      - paragraph [ref=f54e357]: 66x66 pt
+                    - cell [ref=f54e358]:
+                      - paragraph [ref=f54e359]: 56x56 pt
+                  - row [ref=f54e360]:
+                    - cell [ref=f54e361]:
+                      - paragraph [ref=f54e362]: visionOS
+                    - cell [ref=f54e363]:
+                      - paragraph [ref=f54e364]: 60x60 pt
+                    - cell [ref=f54e365]:
+                      - paragraph [ref=f54e366]: 28x28 pt
+                  - row [ref=f54e367]:
+                    - cell [ref=f54e368]:
+                      - paragraph [ref=f54e369]: watchOS
+                    - cell [ref=f54e370]:
+                      - paragraph [ref=f54e371]: 44x44 pt
+                    - cell [ref=f54e372]:
+                      - paragraph [ref=f54e373]: 28x28 pt
+              - paragraph [ref=f54e374]:
+                - strong [ref=f54e375]: Consider spacing between controls as important as size.
+                - text: Include enough padding between elements to reduce the chance that someone taps the wrong control. In general, it works well to add about 12 points of padding around elements that include a bezel. For elements without a bezel, about 24 points of padding works well around the element’s visible edges.
+              - generic [ref=f54e376]:
+                - generic [ref=f54e377]:
+                  - paragraph [ref=f54e378]:
+                    - figure "Elements with insufficient padding" [ref=f54e379]:
+                      - generic:
+                        - 'img "An illustration showing three buttons: rewind, play, and fast forward. The buttons have insufficient padding between them."'
+                  - paragraph:
+                    - generic:
+                      - img "An X in a circle to indicate incorrect usage."
+                - generic [ref=f54e381]:
+                  - paragraph [ref=f54e382]:
+                    - figure "Elements with sufficient padding" [ref=f54e383]:
+                      - generic:
+                        - 'img "An illustration showing three buttons: rewind, play, and fast forward. The buttons are spaced apart, with sufficient padding between them."'
+                  - paragraph:
+                    - generic:
+                      - img "A checkmark in a circle to indicate correct usage."
+              - paragraph [ref=f54e385]:
+                - strong [ref=f54e386]: Support simple gestures for common interactions.
+                - text: For many people, with or without disabilities, complex gestures can be challenging. For interactions people do frequently in your app or game, use the simplest gesture possible — avoid custom multifinger and multihand gestures — so repetitive actions are both comfortable and easy to remember.
+              - paragraph [ref=f54e387]:
+                - strong [ref=f54e388]: Offer alternatives to gestures.
+                - text: Make sure your UI’s core functionality is accessible through more than one type of physical interaction. Gestures can be less comfortable for people who have limited dexterity, so offer onscreen ways to achieve the same outcome. For example, if you use a swipe gesture to dismiss a view, also make a button available so people can tap or use an assistive device.
+              - generic [ref=f54e389]:
+                - paragraph [ref=f54e391]:
+                  - figure "Edit and tap to delete" [ref=f54e392]:
+                    - generic:
+                      - img "An illustration of a table view in edit mode. The rows of the table include delete buttons."
+                - paragraph [ref=f54e395]:
+                  - figure "Swipe to delete" [ref=f54e396]:
+                    - generic:
+                      - img "An illustration of a table view. One of the rows in the table is swiped to the left to reveal a delete button."
+              - paragraph [ref=f54e398]:
+                - strong [ref=f54e399]: Let people use Voice Control to give guidance and enter information verbally.
+                - text: With Voice Control, people can interact with their devices entirely by speaking commands. They can perform gestures, interact with screen elements, dictate and edit text, and more. To ensure a smooth experience, label interface elements appropriately. For developer guidance, see
+                - link "Voice Control" [ref=f54e400] [cursor=pointer]:
+                  - /url: /documentation/accessibility/voice-control
+                - text: .
+              - paragraph [ref=f54e401]:
+                - strong [ref=f54e402]: Integrate with Siri and Shortcuts to let people perform tasks using voice alone.
+                - text: When your app supports Siri and Shortcuts, people can automate the important and repetitive tasks they perform regularly. They can initiate these tasks from Siri, the Action button on their iPhone or Apple Watch, and shortcuts on their Home Screen or in Control Center. For guidance, see
+                - link "Siri" [ref=f54e403] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/siri
+                - text: .
+              - paragraph [ref=f54e404]:
+                - strong [ref=f54e405]: Support mobility-related assistive technologies.
+                - text: Features like
+                - link "VoiceOver" [ref=f54e406] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/voiceover
+                - text: ", AssistiveTouch, Full Keyboard Access, Pointer Control, and"
+                - link "Switch Control" [ref=f54e407] [cursor=pointer]:
+                  - /url: /documentation/accessibility/switch-control
+                - text: offer alternative ways for people with low mobility to interact with their devices. Conduct testing and verify that your app or game supports these technologies, and that your interface elements are appropriately labeled to ensure a great experience. For more information, see
+                - link "Performing accessibility testing for your app" [ref=f54e408] [cursor=pointer]:
+                  - /url: /documentation/accessibility/performing-accessibility-testing-for-your-app
+                - text: .
+              - heading [level=2] [ref=f54e409]:
+                - link "Speech in page link" [ref=f54e410] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/accessibility#Speech
+              - paragraph:
+                - generic:
+                  - img "An illustration containing five symbols associated with the topic of speech, including symbols representing waveforms and speech."
+              - paragraph [ref=f54e411]: Apple’s accessibility features help people with speech disabilities and people who prefer text-based interactions to communicate effectively using their devices.
+              - paragraph [ref=f54e412]:
+                - strong [ref=f54e413]: Let people use the keyboard alone to navigate and interact with your app.
+                - text: People can turn on Full Keyboard Access to navigate apps using their physical keyboard. The system also defines accessibility keyboard shortcuts and a wide range of other
+                - link "keyboard shortcuts" [ref=f54e414] [cursor=pointer]:
+                  - /url: https://support.apple.com/en-us/102650
+                - text: that many people use all the time. Avoid overriding system-defined keyboard shortcuts and evaluate your app to ensure it works well with Full Keyboard Access. For additional guidance, see
+                - link "Keyboards" [ref=f54e415] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/keyboards
+                - text: . For developer guidance, see
+                - link "Support Full Keyboard Access in your iOS app" [ref=f54e416] [cursor=pointer]:
+                  - /url: https://developer.apple.com/videos/play/wwdc2021/10120
+                - text: .
+              - paragraph [ref=f54e417]:
+                - strong [ref=f54e418]: Support Switch Control.
+                - text: Switch Control is an assistive technology that lets people control their devices through separate hardware, game controllers, or sounds such as a click or a pop. People can perform actions like selecting, tapping, typing, and drawing when your app or game supports the ability to navigate using Switch Control. For developer guidance, see
+                - link "Switch Control" [ref=f54e419] [cursor=pointer]:
+                  - /url: /documentation/accessibility/switch-control
+                - text: .
+              - heading [level=2] [ref=f54e420]:
+                - link "Cognitive in page link" [ref=f54e421] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/accessibility#Cognitive
+              - paragraph:
+                - generic:
+                  - img "An illustration containing five symbols associated with the topic of cognition, including symbols representing music, security, and information hierarchy."
+              - paragraph [ref=f54e422]: When you minimize complexity in your app or game, all people benefit.
+              - paragraph [ref=f54e423]:
+                - strong [ref=f54e424]: Keep actions simple and intuitive.
+                - text: Ensure that people can navigate your interface using easy-to-remember and consistent interactions. Prefer system gestures and behaviors people are already familiar with over creating custom gestures people must learn and retain.
+              - paragraph [ref=f54e425]:
+                - strong [ref=f54e426]: Minimize use of time-boxed interface elements.
+                - text: Views and controls that auto-dismiss on a timer can be problematic for people who need longer to process information, and for people who use assistive technologies that require more time to traverse the interface. Prefer dismissing views with an explicit action.
+              - paragraph [ref=f54e427]:
+                - strong [ref=f54e428]: Consider offering difficulty accommodations in games.
+                - text: Everyone has their own way of playing and enjoying games. To support a variety of cognitive abilities, consider adding the ability to customize the difficulty level of your game, such as offering options for people to reduce the criteria for successfully completing a level, adjust reaction time, or enable control assistance.
+              - paragraph [ref=f54e429]:
+                - strong [ref=f54e430]: Let people control audio and video playback.
+                - text: Avoid autoplaying audio and video content without also providing controls to start and stop it. Make sure these controls are discoverable and easy to act upon, and consider global settings that let people opt out of auto-playing all audio and video. For developer guidance, see
+                - link "Animated images" [ref=f54e431] [cursor=pointer]:
+                  - /url: /documentation/accessibility/animated-images
+                - text: and
+                - link [ref=f54e432] [cursor=pointer]:
+                  - /url: /documentation/uikit/uiaccessibility/isvideoautoplayenabled
+                  - code [ref=f54e433]: isVideoAutoplayEnabled
+                - text: .
+              - paragraph [ref=f54e434]:
+                - strong [ref=f54e435]: Allow people to opt out of flashing lights in video playback.
+                - text: People might want to avoid bright, frequent flashes of light in the media they consume. A Dim Flashing Lights setting allows the system to calculate, mitigate, and inform people about flashing lights in a piece of media. If your app supports video playback, ensure that it responds appropriately to the Dim Flashing Lights setting. For developer guidance, see
+                - link "Flashing lights" [ref=f54e436] [cursor=pointer]:
+                  - /url: /documentation/mediaaccessibility/flashing-lights
+                - text: .
+              - paragraph [ref=f54e437]:
+                - strong [ref=f54e438]: Be cautious with fast-moving and blinking animations.
+                - text: "When you use these effects in excess, it can be distracting, cause dizziness, and in some cases even result in epileptic episodes. People who are prone to these effects can turn on the Reduce Motion accessibility setting. When this setting is active, ensure your app or game responds by reducing automatic and repetitive animations, including zooming, scaling, and peripheral motion. Other best practices for reducing motion include:"
+              - list [ref=f54e439]:
+                - listitem [ref=f54e440]:
+                  - paragraph [ref=f54e441]: Tightening animation springs to reduce bounce effects
+                - listitem [ref=f54e442]:
+                  - paragraph [ref=f54e443]: Tracking animations directly with people’s gestures
+                - listitem [ref=f54e444]:
+                  - paragraph [ref=f54e445]: Avoiding animating depth changes in z-axis layers
+                - listitem [ref=f54e446]:
+                  - paragraph [ref=f54e447]: Replacing transitions in x-, y-, and z-axes with fades to avoid motion
+                - listitem [ref=f54e448]:
+                  - paragraph [ref=f54e449]: Avoiding animating into and out of blurs
+              - paragraph [ref=f54e450]:
+                - strong [ref=f54e451]: Optimize your app’s UI for Assistive Access.
+                - text: Assistive Access is an accessibility feature in iOS and iPadOS that allows people with cognitive disabilities to use a streamlined version of your app. Assistive Access sets a default layout and control presentation for apps that reduces cognitive load, such as the following layout of the Camera app.
+              - generic [ref=f54e452]:
+                - paragraph [ref=f54e454]:
+                  - 'img "A screenshot of the Camera app in Assistive Access, showing an interface with three large buttons: Photo, Video, and Back." [ref=f54e458]'
+                - paragraph [ref=f54e460]:
+                  - 'img "A screenshot of the Camera app open to the photo screen in Assistive Access, showing an interface with two large buttons: Take Photo and Back." [ref=f54e464]'
+              - paragraph [ref=f54e465]: "To optimize your app for this mode, use the following guidelines when Assistive Access is turned on:"
+              - list [ref=f54e466]:
+                - listitem [ref=f54e467]:
+                  - paragraph [ref=f54e468]: Identify the core functionality of your app and consider removing noncritical workflows and UI elements.
+                - listitem [ref=f54e469]:
+                  - paragraph [ref=f54e470]: Break up multistep workflows so people can focus on a single interaction per screen.
+                - listitem [ref=f54e471]:
+                  - paragraph [ref=f54e472]: Always ask for confirmation twice whenever people perform an action that’s difficult to recover from, such a deleting a file.
+              - paragraph [ref=f54e473]:
+                - text: For developer guidance, see
+                - link "Assistive Access" [ref=f54e474] [cursor=pointer]:
+                  - /url: /documentation/accessibility/assistive-access
+                - text: .
+              - heading [level=2] [ref=f54e475]:
+                - link "Platform considerations in page link" [ref=f54e476] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/accessibility#Platform-considerations
+              - paragraph [ref=f54e477]:
+                - emphasis [ref=f54e478]: No additional considerations for iOS, iPadOS, macOS, tvOS, or watchOS.
+              - heading [level=3] [ref=f54e479]:
+                - link "visionOS in page link" [ref=f54e480] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/accessibility#visionOS
+              - paragraph [ref=f54e481]: visionOS offers a variety of accessibility features people can use to interact with their surroundings in ways that are comfortable and work best for them, including head and hand Pointer Control, and a Zoom feature.
+              - generic [ref=f54e482]:
+                - navigation [ref=f54e483]:
+                  - list [ref=f54e484]:
+                    - listitem [ref=f54e485]:
+                      - link "Pointer Control (hand)" [ref=f54e486]:
+                        - /url: "#"
+                    - listitem [ref=f54e487]:
+                      - link "Pointer Control (head)" [ref=f54e488] [cursor=pointer]:
+                        - /url: "#"
+                    - listitem [ref=f54e489]:
+                      - link "Zoom" [ref=f54e490] [cursor=pointer]:
+                        - /url: "#"
+                - 'group "Video with custom controls. Content description: A recording of a person''s hand using Pointer Control to interact with content in an app''s visionOS window. A line with a pointer at the end extends from the person''s hand. It changes position within the field of view as the person moves their hand." [ref=f54e496]':
+                  - link "Play" [ref=f54e499] [cursor=pointer]:
+                    - /url: "#"
+              - paragraph [ref=f54e504]:
+                - strong [ref=f54e505]: Prioritize comfort.
+                - text: "The immersive nature of visionOS means that interfaces, animations, and interactions have a greater chance of causing motion sickness, and visual and ergonomic discomfort for people. To ensure the most comfortable experience, consider these tips:"
+              - list [ref=f54e506]:
+                - listitem [ref=f54e507]:
+                  - paragraph [ref=f54e508]: Keep interface elements within a person’s field of view. Prefer horizontal layouts to vertical ones that might cause neck strain, and avoid demanding the viewer’s attention in different locations in quick succession.
+                - listitem [ref=f54e509]:
+                  - paragraph [ref=f54e510]: Reduce the speed and intensity of animated objects, particularly in someone’s peripheral vision.
+                - listitem [ref=f54e511]:
+                  - paragraph [ref=f54e512]: Be gentle with camera and video motion, and avoid situations where someone may feel like the world around them is moving without their control.
+                - listitem [ref=f54e513]:
+                  - paragraph [ref=f54e514]: Avoid anchoring content to the wearer’s head, which may make them feel stuck and confined, and also prevent them from using assistive technologies like Pointer Control.
+                - listitem [ref=f54e515]:
+                  - paragraph [ref=f54e516]: Minimize the need for large and repetitive gestures, as these can become tiresome and may be difficult depending on a person’s surroundings.
+              - paragraph [ref=f54e517]:
+                - text: For additional guidance, see
+                - link "Create accessible spatial experiences" [ref=f54e518] [cursor=pointer]:
+                  - /url: https://developer.apple.com/videos/play/wwdc2023/10034
+                - text: and
+                - link "Design considerations for vision and motion" [ref=f54e519] [cursor=pointer]:
+                  - /url: https://developer.apple.com/videos/play/wwdc2023/10078
+                - text: .
+              - heading [level=2] [ref=f54e520]:
+                - link "Resources in page link" [ref=f54e521] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/accessibility#Resources
+              - heading [level=4] [ref=f54e522]:
+                - link "Related in page link" [ref=f54e523] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/accessibility#Related
+              - paragraph [ref=f54e524]:
+                - link "Inclusion" [ref=f54e525] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/inclusion
+              - paragraph [ref=f54e526]:
+                - link "Typography" [ref=f54e527] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/typography
+              - paragraph [ref=f54e528]:
+                - link "VoiceOver" [ref=f54e529] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/voiceover
+              - heading [level=4] [ref=f54e530]:
+                - link "Developer documentation in page link" [ref=f54e531] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/accessibility#Developer-documentation
+              - paragraph [ref=f54e532]:
+                - link "Building accessible apps" [ref=f54e533] [cursor=pointer]:
+                  - /url: https://developer.apple.com/accessibility/
+              - paragraph [ref=f54e534]:
+                - link "Accessibility framework" [ref=f54e535] [cursor=pointer]:
+                  - /url: /documentation/accessibility
+              - paragraph [ref=f54e536]:
+                - link "Overview of Accessibility Nutrition Labels" [ref=f54e537] [cursor=pointer]:
+                  - /url: https://devcms.apple.com/help/app-store-connect/manage-app-accessibility/overview-of-accessibility-nutrition-labels
+              - heading [level=4] [ref=f54e538]:
+                - link "Videos in page link" [ref=f54e539] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/accessibility#Videos
+              - region "grid of links" [ref=f54e540]:
+                - generic [ref=f54e541]:
+                  - link "Refine accessibility for custom controls" [ref=f54e543] [cursor=pointer]:
+                    - /url: https://developer.apple.com/videos/play/wwdc2026/220
+                    - generic [ref=f54e548]: Refine accessibility for custom controls
+                  - link "Principles of inclusive app design" [ref=f54e550] [cursor=pointer]:
+                    - /url: https://developer.apple.com/videos/play/wwdc2025/316
+                    - generic [ref=f54e555]: Principles of inclusive app design
+                  - link "Evaluate your app for Accessibility Nutrition Labels" [ref=f54e557] [cursor=pointer]:
+                    - /url: https://developer.apple.com/videos/play/wwdc2025/224
+                    - generic [ref=f54e562]: Evaluate your app for Accessibility Nutrition Labels
+              - heading [level=2] [ref=f54e563]:
+                - link "Change log in page link" [ref=f54e564] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/accessibility#Change-log
+              - table [ref=f54e566]:
+                - rowgroup [ref=f54e567]:
+                  - row [ref=f54e568]:
+                    - columnheader [ref=f54e569]:
+                      - paragraph [ref=f54e570]: Date
+                    - columnheader [ref=f54e571]:
+                      - paragraph [ref=f54e572]: Changes
+                - rowgroup [ref=f54e573]:
+                  - row [ref=f54e574]:
+                    - cell [ref=f54e575]:
+                      - paragraph [ref=f54e576]: June 9, 2025
+                    - cell [ref=f54e577]:
+                      - paragraph [ref=f54e578]: Added guidance and links for Assistive Access, Switch Control, and Accessibility Nutrition Labels.
+                  - row [ref=f54e579]:
+                    - cell [ref=f54e580]:
+                      - paragraph [ref=f54e581]: March 7, 2025
+                    - cell [ref=f54e582]:
+                      - paragraph [ref=f54e583]: Expanded and refined all guidance. Moved Dynamic Type guidance to the Typography page, and moved VoiceOver guidance to a new VoiceOver page.
+                  - row [ref=f54e584]:
+                    - cell [ref=f54e585]:
+                      - paragraph [ref=f54e586]: June 10, 2024
+                    - cell [ref=f54e587]:
+                      - paragraph [ref=f54e588]: Added a link to Apple’s Unity plug-ins for supporting Dynamic Type.
+                  - row [ref=f54e589]:
+                    - cell [ref=f54e590]:
+                      - paragraph [ref=f54e591]: December 5, 2023
+                    - cell [ref=f54e592]:
+                      - paragraph [ref=f54e593]: Updated visionOS Zoom lens artwork.
+                  - row [ref=f54e594]:
+                    - cell [ref=f54e595]:
+                      - paragraph [ref=f54e596]: June 21, 2023
+                    - cell [ref=f54e597]:
+                      - paragraph [ref=f54e598]: Updated to include guidance for visionOS.
+          - generic [ref=f54e599]: Current page is Accessibility
+      - generic [ref=f54e600]:
+        - generic [ref=f54e601]:
+          - heading "Supported platforms" [level=5] [ref=f54e602]
+          - list [ref=f54e603]:
+            - listitem [ref=f54e604]
+            - listitem [ref=f54e607]
+            - listitem [ref=f54e610]
+            - listitem [ref=f54e613]
+            - listitem [ref=f54e616]
+            - listitem [ref=f54e619]
+        - list [ref=f54e623]:
+          - listitem [ref=f54e624]:
+            - link "Accessibility" [ref=f54e625] [cursor=pointer]:
+              - /url: /design/human-interface-guidelines/accessibility#app-top
+          - listitem [ref=f54e626]:
+            - link "Vision" [ref=f54e627] [cursor=pointer]:
+              - /url: /design/human-interface-guidelines/accessibility#Vision
+          - listitem [ref=f54e628]:
+            - link "Hearing" [ref=f54e629] [cursor=pointer]:
+              - /url: /design/human-interface-guidelines/accessibility#Hearing
+          - listitem [ref=f54e630]:
+            - link "Mobility" [ref=f54e631] [cursor=pointer]:
+              - /url: /design/human-interface-guidelines/accessibility#Mobility
+          - listitem [ref=f54e632]:
+            - link "Speech" [ref=f54e633] [cursor=pointer]:
+              - /url: /design/human-interface-guidelines/accessibility#Speech
+          - listitem [ref=f54e634]:
+            - link "Cognitive" [ref=f54e635] [cursor=pointer]:
+              - /url: /design/human-interface-guidelines/accessibility#Cognitive
+          - listitem [ref=f54e636]:
+            - link "Platform considerations" [ref=f54e637] [cursor=pointer]:
+              - /url: /design/human-interface-guidelines/accessibility#Platform-considerations
+          - listitem [ref=f54e638]:
+            - link "Resources" [ref=f54e639] [cursor=pointer]:
+              - /url: /design/human-interface-guidelines/accessibility#Resources
+          - listitem [ref=f54e640]:
+            - link "Change log" [ref=f54e641] [cursor=pointer]:
+              - /url: /design/human-interface-guidelines/accessibility#Change-log
+  - contentinfo [ref=f54e643]:
+    - navigation [ref=f54e644]:
+      - link "Apple" [ref=f54e645] [cursor=pointer]:
+        - /url: https://www.apple.com
+        - text: 
+      - list [ref=f54e648]:
+        - listitem [ref=f54e649]:
+          - link "Developer" [ref=f54e650] [cursor=pointer]:
+            - /url: /
+        - listitem [ref=f54e651]:
+          - link "Documentation" [ref=f54e652] [cursor=pointer]:
+            - /url: /documentation/
+      - generic [ref=f54e653]:
+        - generic [ref=f54e654]:
+          - generic [ref=f54e655]:
+            - heading "Platforms" [level=3] [ref=f54e656]
+            - list [ref=f54e657]:
+              - listitem [ref=f54e658]:
+                - link "iOS" [ref=f54e659] [cursor=pointer]:
+                  - /url: /ios/
+              - listitem [ref=f54e660]:
+                - link "iPadOS" [ref=f54e661] [cursor=pointer]:
+                  - /url: /ipados/
+              - listitem [ref=f54e662]:
+                - link "macOS" [ref=f54e663] [cursor=pointer]:
+                  - /url: /macos/
+              - listitem [ref=f54e664]:
+                - link "tvOS" [ref=f54e665] [cursor=pointer]:
+                  - /url: /tvos/
+              - listitem [ref=f54e666]:
+                - link "visionOS" [ref=f54e667] [cursor=pointer]:
+                  - /url: /visionos/
+              - listitem [ref=f54e668]:
+                - link "watchOS" [ref=f54e669] [cursor=pointer]:
+                  - /url: /watchos/
+          - generic [ref=f54e670]:
+            - heading "Tools" [level=3] [ref=f54e671]
+            - list [ref=f54e672]:
+              - listitem [ref=f54e673]:
+                - link "Swift" [ref=f54e674] [cursor=pointer]:
+                  - /url: /swift/
+              - listitem [ref=f54e675]:
+                - link "SwiftUI" [ref=f54e676] [cursor=pointer]:
+                  - /url: /swiftui/
+              - listitem [ref=f54e677]:
+                - link "Swift Playground" [ref=f54e678] [cursor=pointer]:
+                  - /url: /swift-playground/
+              - listitem [ref=f54e679]:
+                - link "TestFlight" [ref=f54e680] [cursor=pointer]:
+                  - /url: /testflight/
+              - listitem [ref=f54e681]:
+                - link "Xcode" [ref=f54e682] [cursor=pointer]:
+                  - /url: /xcode/
+              - listitem [ref=f54e683]:
+                - link "Xcode Cloud" [ref=f54e684] [cursor=pointer]:
+                  - /url: /xcode-cloud/
+              - listitem [ref=f54e685]:
+                - link "SF Symbols" [ref=f54e686] [cursor=pointer]:
+                  - /url: /sf-symbols/
+        - generic [ref=f54e688]:
+          - heading "Topics & Technologies" [level=3] [ref=f54e689]
+          - list [ref=f54e690]:
+            - listitem [ref=f54e691]:
+              - link "Accessibility" [ref=f54e692] [cursor=pointer]:
+                - /url: /accessibility/
+            - listitem [ref=f54e693]:
+              - link "Accessories" [ref=f54e694] [cursor=pointer]:
+                - /url: /accessories/
+            - listitem [ref=f54e695]:
+              - link "App Extension" [ref=f54e696] [cursor=pointer]:
+                - /url: /app-extensions/
+            - listitem [ref=f54e697]:
+              - link "App Store" [ref=f54e698] [cursor=pointer]:
+                - /url: /app-store/
+            - listitem [ref=f54e699]:
+              - link "Audio & Video" [ref=f54e700] [cursor=pointer]:
+                - /url: /audio/
+            - listitem [ref=f54e701]:
+              - link "Augmented Reality" [ref=f54e702] [cursor=pointer]:
+                - /url: /augmented-reality/
+            - listitem [ref=f54e703]:
+              - link "Design" [ref=f54e704] [cursor=pointer]:
+                - /url: /design/
+            - listitem [ref=f54e705]:
+              - link "Distribution" [ref=f54e706] [cursor=pointer]:
+                - /url: /distribute/
+            - listitem [ref=f54e707]:
+              - link "Education" [ref=f54e708] [cursor=pointer]:
+                - /url: /education/
+            - listitem [ref=f54e709]:
+              - link "Fonts" [ref=f54e710] [cursor=pointer]:
+                - /url: /fonts/
+            - listitem [ref=f54e711]:
+              - link "Games" [ref=f54e712] [cursor=pointer]:
+                - /url: /games/
+            - listitem [ref=f54e713]:
+              - link "Health & Fitness" [ref=f54e714] [cursor=pointer]:
+                - /url: /health-fitness/
+            - listitem [ref=f54e715]:
+              - link "In-App Purchase" [ref=f54e716] [cursor=pointer]:
+                - /url: /in-app-purchase/
+            - listitem [ref=f54e717]:
+              - link "Localization" [ref=f54e718] [cursor=pointer]:
+                - /url: /localization/
+            - listitem [ref=f54e719]:
+              - link "Maps & Location" [ref=f54e720] [cursor=pointer]:
+                - /url: /maps/
+            - listitem [ref=f54e721]:
+              - link "Machine Learning & AI" [ref=f54e722] [cursor=pointer]:
+                - /url: /machine-learning/
+            - listitem [ref=f54e723]:
+              - link "Open Source" [ref=f54e724] [cursor=pointer]:
+                - /url: https://opensource.apple.com/
+            - listitem [ref=f54e725]:
+              - link "Security" [ref=f54e726] [cursor=pointer]:
+                - /url: /security/
+            - listitem [ref=f54e727]:
+              - link "Safari & Web" [ref=f54e728] [cursor=pointer]:
+                - /url: /safari/
+        - generic [ref=f54e729]:
+          - generic [ref=f54e730]:
+            - heading "Resources" [level=3] [ref=f54e731]
+            - list [ref=f54e732]:
+              - listitem
+              - listitem [ref=f54e733]:
+                - link "Documentation" [ref=f54e734] [cursor=pointer]:
+                  - /url: /documentation/
+              - listitem [ref=f54e735]:
+                - link "Tutorials" [ref=f54e736] [cursor=pointer]:
+                  - /url: /learn/
+              - listitem [ref=f54e737]:
+                - link "Downloads" [ref=f54e738] [cursor=pointer]:
+                  - /url: /download/
+              - listitem [ref=f54e739]:
+                - link "Forums" [ref=f54e740] [cursor=pointer]:
+                  - /url: /forums/
+              - listitem [ref=f54e741]:
+                - link "Videos" [ref=f54e742] [cursor=pointer]:
+                  - /url: /videos/
+          - generic [ref=f54e743]:
+            - heading "Support" [level=3] [ref=f54e744]
+            - list [ref=f54e745]:
+              - listitem [ref=f54e746]:
+                - link "Support Articles" [ref=f54e747] [cursor=pointer]:
+                  - /url: /support/articles/
+              - listitem [ref=f54e748]:
+                - link "Contact Us" [ref=f54e749] [cursor=pointer]:
+                  - /url: /contact/
+              - listitem [ref=f54e750]:
+                - link "Bug Reporting" [ref=f54e751] [cursor=pointer]:
+                  - /url: /bug-reporting/
+              - listitem [ref=f54e752]:
+                - link "System Status" [ref=f54e753] [cursor=pointer]:
+                  - /url: /system-status/
+          - generic [ref=f54e754]:
+            - heading "Account" [level=3] [ref=f54e755]
+            - list [ref=f54e756]:
+              - listitem [ref=f54e757]:
+                - link "Apple Developer" [ref=f54e758] [cursor=pointer]:
+                  - /url: /account/
+              - listitem [ref=f54e759]:
+                - link "App Store Connect" [ref=f54e760] [cursor=pointer]:
+                  - /url: https://appstoreconnect.apple.com/
+              - listitem [ref=f54e761]:
+                - link "Certificates, IDs, & Profiles" [ref=f54e762] [cursor=pointer]:
+                  - /url: /account/ios/certificate/
+              - listitem [ref=f54e763]:
+                - link "Feedback Assistant" [ref=f54e764] [cursor=pointer]:
+                  - /url: https://feedbackassistant.apple.com/
+        - generic [ref=f54e765]:
+          - generic [ref=f54e766]:
+            - heading "Programs" [level=3] [ref=f54e767]
+            - list [ref=f54e768]:
+              - listitem [ref=f54e769]:
+                - link "Apple Developer Program" [ref=f54e770] [cursor=pointer]:
+                  - /url: /programs/
+              - listitem [ref=f54e771]:
+                - link "Apple Developer Enterprise Program" [ref=f54e772] [cursor=pointer]:
+                  - /url: /programs/enterprise/
+              - listitem [ref=f54e773]:
+                - link "App Store Small Business Program" [ref=f54e774] [cursor=pointer]:
+                  - /url: /app-store/small-business-program/
+              - listitem [ref=f54e775]:
+                - link "MFi Program" [ref=f54e776] [cursor=pointer]:
+                  - /url: https://mfi.apple.com/
+              - listitem [ref=f54e777]:
+                - link "News Partner Program" [ref=f54e778] [cursor=pointer]:
+                  - /url: /programs/news-partner/
+              - listitem [ref=f54e779]:
+                - link "Video Partner Program" [ref=f54e780] [cursor=pointer]:
+                  - /url: /programs/video-partner/
+              - listitem [ref=f54e781]:
+                - link "Security Bounty Program" [ref=f54e782] [cursor=pointer]:
+                  - /url: /security-bounty/
+              - listitem [ref=f54e783]:
+                - link "Security Research Device Program" [ref=f54e784] [cursor=pointer]:
+                  - /url: /programs/security-research-device/
+          - generic [ref=f54e785]:
+            - heading "Events" [level=3] [ref=f54e786]
+            - list [ref=f54e787]:
+              - listitem [ref=f54e788]:
+                - link "Meet with Apple" [ref=f54e789] [cursor=pointer]:
+                  - /url: /events/
+              - listitem [ref=f54e790]:
+                - link "Apple Developer Centers" [ref=f54e791] [cursor=pointer]:
+                  - /url: /events/developer-centers/
+              - listitem [ref=f54e792]:
+                - link "App Store Awards" [ref=f54e793] [cursor=pointer]:
+                  - /url: /app-store/app-store-awards/
+              - listitem [ref=f54e794]:
+                - link "Apple Design Awards" [ref=f54e795] [cursor=pointer]:
+                  - /url: /design/awards/
+              - listitem [ref=f54e796]:
+                - link "Apple Developer Academies" [ref=f54e797] [cursor=pointer]:
+                  - /url: /academies/
+              - listitem [ref=f54e798]:
+                - link "WWDC" [ref=f54e799] [cursor=pointer]:
+                  - /url: /wwdc/
+    - generic [ref=f54e800]:
+      - generic [ref=f54e801]:
+        - generic [ref=f54e802]:
+          - text: To submit feedback on documentation, visit
+          - link "Feedback Assistant" [ref=f54e803] [cursor=pointer]:
+            - /url: applefeedback://new?form_identifier=developertools.fba&answers%5B%3Aarea%5D=seedADC%3Adevpubs&answers%5B%3Adoc_type_req%5D=Technology%20Documentation&answers%5B%3Adocumentation_link_req%5D=https%3A%2F%2Fdeveloper.apple.com%2Fdesign%2Fhuman-interface-guidelines%2Faccessibility
+          - text: .
+        - radiogroup "Select a color scheme preference" [ref=f54e805]:
+          - generic [ref=f54e807]:
+            - radio "Light" [ref=f54e808]
+            - generic [ref=f54e809]: Light
+          - generic [ref=f54e810]:
+            - radio "Dark" [ref=f54e811]
+            - generic [ref=f54e812]: Dark
+          - generic [ref=f54e813]:
+            - radio "Auto" [checked] [ref=f54e814]
+            - generic [ref=f54e815]: Auto
+      - combobox "Select the language for this page" [ref=f54e817] [cursor=pointer]:
+        - option "English" [selected]
+        - option "简体中文"
+        - option "日本語"
+        - option "한국어"
+      - generic [ref=f54e820]:
+        - generic [ref=f54e821]:
+          - text: Copyright © 2026
+          - link "Apple Inc." [ref=f54e822] [cursor=pointer]:
+            - /url: https://www.apple.com
+          - text: All rights reserved.
+        - generic [ref=f54e823]:
+          - link "Terms of Use" [ref=f54e824] [cursor=pointer]:
+            - /url: https://www.apple.com/legal/internet-services/terms/site.html
+          - link "Privacy Policy" [ref=f54e825] [cursor=pointer]:
+            - /url: https://www.apple.com/legal/privacy/
+          - link "Agreements and Guidelines" [ref=f54e826] [cursor=pointer]:
+            - /url: /support/terms/
