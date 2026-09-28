@@ -304,3 +304,27 @@ it; the contract it produces is the prerequisite, not the fix.
 The dense-grid gap named in §11 held. All four references and the Apple HIG cover chrome and
 surfaces; none covers a dense editable data grid at 40 rows. The skill covers tier 1, 2, 3a and
 3b and says so rather than inventing guidance and attributing it to Apple.
+
+## 14. How this unit ships — two chained PRs
+
+The unit is 3,374 lines against a repo budget of 400 per PR, so it is cut in two:
+
+| PR | Branch | Base | Contents | Lines |
+|---|---|---|---|---|
+| 1 | `feat/visual-system-macos-pr1-gate` | `main` | the gate, its CI step, the `check:visual` script entry | 457 |
+| 2 | `feat/visual-system-macos-pr2-contract` | PR 1 | `SKILL.md`, `assets/tokens.css`, the three references, the `AGENTS.md` registration, this file | 2,661 |
+
+The cut is drawn where the dependency is, not where the line count is convenient. `SKILL.md`
+references all three reference files, so shipping it in PR 1 would leave four dead links and would
+put a skill in the repo whose evidence base has not been reviewed. PR 1 is therefore the gate alone:
+self-contained, independently useful, and enforcing rules that are already true. It was verified in
+isolation — gate green, typecheck clean, lint clean, 235 tests passing, three files touched.
+
+PR 2 is still 6.7x the budget and cannot be cut further without breaking the skill's own structure,
+because every file in it is referenced by `SKILL.md`. 2,130 of its 2,661 lines are the research
+references, and those are the part that needs review, because they assert what Apple does and does
+not publish.
+
+Unrelated to this unit, and preserved untouched on its own branch: `a879d3e`, the maintainer's
+feedback-migration renumber to `0033`, which had landed on the working branch while the unit was in
+progress. It is on `feat/feedback-0033-renumber` and appears in neither PR.
