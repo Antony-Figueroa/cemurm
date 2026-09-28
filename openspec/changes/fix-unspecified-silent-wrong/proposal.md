@@ -259,3 +259,36 @@ display-side and fully revertible.
 7. **Not merged with `fix-unspecified-crashes`,** the sibling half of the same list. The split is
    *whether a product decision is required*: those inputs are invalid under every reading, so they
    fix cleanly and ship first. These three cannot ship without an answer.
+
+## Appendix: what a browser actually shows (measured, and it is not what the specs imply)
+
+Added by the fixture work in `test/music-theory-fixtures` (#226), because the rendering claims in
+this series had never been observed in the app. Seeded fixtures that contain these exact inputs now
+exist, and the readings below are from the running app on `main` (`bfaf6e8`) against the fix branches.
+
+| Body token | `main` | after the fix | finding |
+|---|---|---|---|
+| `[am]` | `am` — untransposed beside its neighbours | `Bm` | 1 |
+| `[E♭]` | `F#♭` — a chord nobody writes | `F` | 2 |
+| `[Bb]` | `C` — substitution silently not applied | `D` | 3 |
+| `[C♯7]` | `D♯7` | `D#7` | 2 |
+
+**Finding 1 (the degree view) is NOT observable, and the reason is not `qualityForDegree`.** With the
+roman-numeral view enabled, the app renders the **concrete chord** in a dimmed style and no numeral,
+for **every** chord in the fixture, at both +2 and at zero offset. `resolveDegree('C major', 'G')`
+returns `null` in a bare Node probe, and `G` in C major is unambiguously degree 5. The scale catalog
+row is present and correct (`Major` = `{0,2,4,5,7,9,11}`, an `integer[]`), and `authenticated` holds
+SELECT on `scale_catalog`, so the data is not the blocker. **The root cause is not pinned and is not
+guessed here.**
+
+Two consequences worth stating plainly:
+
+1. `qualityForDegree` is downstream of a map that never populates, so **fixing it changes nothing
+   observable in the app.** The Gherkin scenario "Degree quality derives from the scale" cannot pass
+   in the running app regardless of the fix. That is a separate defect and deserves its own change.
+2. `buildDegreeMap` keys the map by the **concrete** chord (`Dm`) while the renderer looks up the
+   **transposed** one (`Em`), so at any non-zero offset the lookup can never hit. The zero-offset
+   failure is separate and is the one that is not explained by this mismatch.
+
+The seeded demo account also carries `transpose_offset = 2, capo = 1` in `user_preferences`, which is
+what makes the offset non-zero for anyone signing in as `demo@cemurm.app`.
