@@ -137,6 +137,37 @@ The rule of thumb: if you are writing down *what a capability is*, it goes in Op
 
 **Entry rule** (`docs/engineering-review-backlog.md:5`): an item is implemented only when its hito or BDD feature requires it. YAGNI is active. This is the only rule here that does not accumulate debt — do not weaken it in the name of scalability.
 
+## Visual system
+
+**`skills/cemurm-visual-system/SKILL.md` is the single source of visual truth.** Read it before
+touching any interface. Two older sources conflict with it and are **superseded** for visual
+decisions: `docs/design-system.md` (464 lines, written 2026-09-06, never implemented) and
+`odd/tasks/cemurm-brand-landing.md` §5–§6 (unmerged branch). When they disagree with the skill, the
+skill wins.
+
+The direction is the **macOS / Apple design language**, keeping the project's colour essence: a dark
+ramp plus **one** amber accent. Classify the surface before styling it — the tiers have different
+rules, and the failure mode is styling a live-performance surface like a product screen:
+
+| The surface is | Tier | Rule |
+|---|---|---|
+| Nav, settings, dialogs, forms, auth, empty states | 1 | Full macOS language; materials allowed |
+| Song and setlist lists, tables, editors | 2 | Partial; no material, no decorative shadow |
+| `src/features/stage/pages/StageMode.jsx` — the musician's tablet | 3a | Full macOS language; radius and depth are correct here |
+| `src/features/stage/**/Overlay*.jsx` — the OBS projector surface | 3b | **Chrome-free.** No radius, shadow, translucency, gradient or personal annotation |
+
+Touched → tier 1 or 3a. Read at distance in a dark room → tier 3b.
+
+```bash
+bash scripts/check-visual-contract.sh   # the visual gate; runs in CI between lint and test
+```
+
+Two things the gate cannot tell you, because they are measured, not published: **Apple publishes no
+numeric corner radius, spacing scale, elevation ladder or motion duration** — every such token in
+`assets/tokens.css` is a project decision tagged as such. And **`corner-shape` is unavailable on
+Safari iOS and Firefox Android**, so the macOS squircle cannot ship natively; `backdrop-filter`,
+which carries the same visual language, is available everywhere.
+
 ## Conventions
 
 - **JSX, not TSX.** The spec mentions TypeScript; the codebase is plain JS. Follow what exists.
