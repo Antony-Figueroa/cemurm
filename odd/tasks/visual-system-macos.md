@@ -567,3 +567,26 @@ test was edited; a failing test would have been fixed in the source**), `pnpm bu
 The built stylesheet was checked, because a wrong class name builds cleanly and renders nothing:
 `.text-cem-secondary-elevated{…color:rgb(176 188 203…)}` and `.text-cem-secondary{…color:rgb(148
 163 184…)}` are both emitted, so the new token resolves and the old one is untouched.
+
+### Consolidated into a single PR, 2026-09-28
+
+This section originally described a two-PR split, and a third PR was added when the accessibility
+fix turned out not to belong in the documentation unit. At the maintainer's request the three are
+now **one pull request against `main`** from `feat/visual-system-macos`: 38 files, 3,830
+insertions, 6 commits.
+
+The split was not discarded, only collapsed. The three units are still separate commits and stay
+reviewable in order, because the dependency is real:
+
+| # | Commit | What it does | Why it has to come after the previous one |
+|---|---|---|---|
+| 1 | `319da53` | the gate, 7 rules | needs nothing |
+| 2 | `75cb813` | rule 05, WCAG contrast | measures the palette the gate did not previously look at |
+| 3 | `e42772e` | the four-tier contract | documents the rules the first two enforce |
+| 4 | `b4e2265` | this file | — |
+| 5 | `12779e7` | rule 05 notes and its two silent-pass bugs | — |
+| 6 | `a96fc73` | the contrast fix, 27 files | adds rule 06 to the script from commit 1 |
+
+Cost of collapsing them: **3,830 lines against a 400-line budget, 9.6x over.** The reviewer is
+reviewing three logical units in one diff. The alternative was three merges in a fixed order, where
+merging out of order lands the accessibility fix without the gate that motivated it.
