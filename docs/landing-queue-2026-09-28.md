@@ -1,3 +1,18 @@
+
+> ## SUPERSEDED 2026-09-28 — this ordering is not the plan any more
+>
+> The maintainer chose to land this as **three PRs by track**, not 25 PRs by finding. The
+> per-PR order below is kept only as the record of *why* the tracks are shaped the way they
+> are: which PRs shared a file, which would have needed a rebase, and which were a hub.
+>
+> **Do not follow the queue below.** It is a dated snapshot of an approach that was measured
+> and then replaced. The three tracks are: fixtures and docs; the ten music-theory findings;
+> and the Hito 5 feature chains.
+>
+> Two things here survive the change and are still true: `src/app/router.jsx` is touched by
+> seven PRs across the tracks, and #223 is the other hub. That is why #225 and the display
+> chain have to be resolved together rather than in separate merges.
+
 # Landing queue — 2026-09-28
 
 > **This is a dated snapshot, not a living plan.** It describes the 23 open PRs as they stood on
