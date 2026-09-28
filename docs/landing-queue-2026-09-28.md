@@ -143,6 +143,36 @@ commits, and the second is `83e6b48` — #217's only commit. It is the parent of
 GitHub listed it first under a title that said "parser" only. #218 has been retitled and its body
 corrected so the reviewer sees both findings.
 
+## Pending — needs an approval, 2026-09-28
+
+Two PRs are open and green, blocked on a ruleset setting rather than on review feedback.
+
+| PR | What | Size |
+|---|---|---|
+| **#237** | focus ring to the 2px the spec asks for, and the `prefers-reduced-motion` block the spec requires and the code lacked | 18 files, +41/−26 |
+| **#238** | `docs/design-system.md` — mark the visual half superseded, correct three checkably false claims | 1 file, +56/−9 |
+
+`main` is at `5547150`. The visual contract gate runs in CI between `lint` and `test`, 10 rules,
+0 failing. 235 tests. Neither PR is in this queue's four phases, and neither collides with it
+except **#195**, which shares `src/features/moderation/components/CaseDetail.jsx` with #237 and will
+need a rebase.
+
+**The blocker is a ruleset setting, not a review.** The `PR` ruleset sets
+`require_last_push_approval: true`, so the last person to push cannot approve their own PR. The
+branches were pushed by an agent, so it cannot approve them and they sit at `REVIEW_REQUIRED`.
+The fix is one boolean, and it is worth deciding deliberately rather than per-PR:
+
+- **`require_last_push_approval: false`**, keeping `require_code_owner_review: true` and raising
+  `required_approving_review_count` from `0` to `1`. A review is still required; the maintainer
+  can be the one who gives it. **Recommended** — the current setting means "nobody may approve
+  alone", which in a one-maintainer repo with agent-authored branches means "never".
+- **A bypass actor** for the maintainer, leaving the rest of the control intact. More fragile.
+
+Worth noting while it is open: the same ruleset has `required_approving_review_count: 0` alongside
+`require_code_owner_review: true`. As written, the review rule demands code-owner review while
+requiring zero approvals, so it does not gate. If the intent was for it to gate, that is the second
+half of the same change.
+
 ## Gates
 
 Every PR in this queue passed all four locally: `pnpm test`, `pnpm typecheck`, `pnpm lint`,
