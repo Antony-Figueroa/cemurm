@@ -132,3 +132,123 @@ by hand on every branch.
 A note that matters for reviewing any PR in this queue: **`pnpm build` does not verify imports.** With
 a deliberately broken import it prints the missing-export error and **exits 0**, still writing
 `dist/`. `pnpm lint` is the real gate — `no-undef` catches it, from `eslint:recommended`.
+
+---
+
+# Handoff — tracks 2 and 3, not yet built
+
+Written 2026-09-28 at the end of the session that built track 1 (#229). Both tracks are **mapped
+but not assembled**: the merge order is known, the conflicts are known and located, and nothing has
+been resolved. A fresh session can start from here without re-deriving any of it.
+
+## Hard constraints for whoever continues
+
+1. **Do not use `git add -A`.** It has already cost two bad diffs this session: 22 committed
+   `.playwright-mcp/` snapshots that `.gitignore` excluded (15,000 of the 17,000 lines the
+   consolidated diff first measured), and a 160-line macOS design doc that was not mine. Add paths
+   explicitly, or check `git status --porcelain | grep '^??'` before staging. **The macOS doc
+   `odd/tasks/visual-system-macos.md` is currently untracked in the working tree — leave it that
+   way.** It belongs to someone else.
+2. **The upstream cannot be pushed to.** The ruleset declines it with
+   `push declined due to repository rule violations`, and the account holds `push: true`. Push to
+   the fork `Antony-F-figuro` and open the PR from there. Backlog item 9.
+3. **Never merge.** The agreement stands: the maintainer approves and merges. Do not re-litigate it
+   without being asked.
+4. **Land track 1 (#229) first.** It adds the fixtures that make the other two reviewable, and the
+   three backlog entries the other two refer to.
+
+## Track 2 — the ten music-theory findings
+
+Nine branches, not ten: **#217 is closed as superseded by #218**, whose branch carries finding E's
+commit `83e6b48` as its parent. #218 was retitled to say it carries findings A **and** E.
+
+Merge in this order from `main` on a branch named `land/2-findings`:
+
+```bash
+git checkout -B land/2-findings main
+for b in fix/reconcile-silent-drop fix/parser-sectional-key fix/key-spelling-preference \
+         fix/onsong-agreed-key fix/spotify-key-parsing fix/readiness-lifecycle \
+         fix/unspecified-crashes fix/unspecified-silent-wrong \
+         fix/overlay-session-capability; do git merge --no-edit "$b"; done
+```
+
+The first six merge clean. **Three conflicts, in three files:**
+
+| Branch | File | Both sides touch |
+|---|---|---|
+| `fix/unspecified-crashes` | `src/domain/chart/readiness.js` | lines 23-29 |
+| `fix/unspecified-crashes` | `src/domain/setlist/collab.js` | lines 119-122 |
+| `fix/unspecified-silent-wrong` | `src/domain/music/transpose.js` | lines 78-83 |
+
+**Resolve each by keeping both changes — they are unrelated defects in the same function.** The
+line ranges were measured, and the overlaps are real context collisions, not competing logic.
+`fix/unspecified-crashes` renames nothing and `fix/unspecified-silent-wrong` does not touch
+`readiness.js` or `collab.js` at all, so in the `readiness.js` and `collab.js` cases one side is a
+pure context shift: take the incoming side and re-apply the local hunk. In `transpose.js` both sides
+edit the same region — `#224` rewrites `CHORD_RE` and adds `normalizeRoot`, `#223` fixes the
+fractional-semitone path — so both bodies are needed.
+
+After resolving: all four gates, then push to the fork and open the PR. Expected size is roughly
+2,000 lines across the music/domain and repository files.
+
+## Track 3 — the Hito 5 chains
+
+Thirteen branches, and **six of them are parent-child chains**, so the chains cost nothing: a child
+is already based on its parent. Merge roots and children in any order within a chain.
+
+Merge from `main` on `land/3-hito5`:
+
+```bash
+git checkout -B land/3-hito5 main
+for b in fix/m0a-projection-drift docs/migrations-parity \
+         feat/m2-projection-pages-v2 feat/m2-projection-entry-v2 \
+         fix/feedback-migration-numbering \
+         feat/m2-feedback-ui-v2 \
+         feat/m2-plan-freeze-core-v3 feat/m2-plan-freeze-ui-v2 \
+         fix/m1-review-batch1-minors-ui-v2 fix/m1-review-batch1-moderation-ui-v2 \
+         feat/m2-external-display-channel-v2 feat/m2-display-stagemode-integration-v2 \
+         feat/jsdoc-libs-s01-perf-core-v2; do git merge --no-edit "$b"; done
+```
+
+**One conflict:**
+
+| Branch | File |
+|---|---|
+| `feat/m2-external-display-channel-v2` | `src/app/router.jsx` |
+
+`router.jsx` is the hub of the whole queue: seven PRs across all three tracks add routes to it.
+Track 3's conflict with track 2's `fix/overlay-session-capability` is the same file plus
+`src/features/stage/pages/StageMode.jsx`. **Those two must land together rather than as separate
+merges**, which is why the earlier per-PR ordering put the router-touching PRs in one block. If
+track 2 has already landed by the time track 3 is built, this conflict is already resolved and only
+the `router.jsx` one above remains.
+
+**`fix/feedback-migration-numbering` replaces `feat/m2-feedback-data-v2`** — do not merge both. The
+renumber branch is based on the data branch and renames `0029_feedback.sql` to `0033_feedback.sql`
+plus adds the smoke test. Merging the data branch first and the renumber after is also correct;
+merging the data branch alone is not, because it ships the colliding `0029`.
+
+### Verified facts about track 3 that must not be re-litigated
+
+- The `0029` collision is **real**: `origin/fix/fail-closed-minors`,
+  `origin/feat/guardian-consent-db` and `origin/feat/guardian-email` all carry
+  `0029_fail_closed_minors.sql` in a contiguous `0029`/`0030`/`0031` run. `supabase db reset`
+  executes migrations in **filename order**, so two files sharing a version prefix have an
+  arbitrary relative order.
+- `0021_plan_freeze.sql` **keeps its number** and merges without a renumber. `0021` is still
+  unclaimed.
+- The renumber and its smoke were **verified**: 18 PASS / 0 FAIL, run inside a transaction that was
+  rolled back, with `public.feedback` confirmed absent afterwards. No `supabase db reset` was run.
+- `feat/jsdoc-libs-s01-perf-core-v2` is independent and conflicts with nothing in this track. The
+  *other* jsdoc PRs, #204–#213, are **CONFLICTING** and are not part of this work — they need
+  closing or resolving by whoever owns them.
+
+## What has not been done, and is not claimed
+
+- **Neither track 2 nor track 3 has been built, resolved, gated, or pushed.** The merge order and
+  the conflict locations are the deliverable here, not the branches.
+- **No merge has been attempted since the ruleset went active**, so whether the ruleset blocks
+  *merges* as well as pushes is still unknown. The first merge of track 1 (#229) is the cheapest
+  possible probe: it fixes nothing, so if the ruleset refuses it, nothing is lost.
+- The rendered behaviour in track 2 is verified **per finding** in the browser via the track 1
+  fixtures. The consolidated branch itself has not been exercised in the browser.
