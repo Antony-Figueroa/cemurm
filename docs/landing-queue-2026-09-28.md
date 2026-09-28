@@ -75,9 +75,44 @@ by diff, not assumed.
 `readiness.js` and `transpose.js` — precisely the three files the other PRs also move. A bad merge
 there is a change of *context*, not of code, and no gate detects that. Land it with the diff open.
 
-## BLOCKER — #190 cannot land as-is
+## Merged since this queue was written — #235, 2026-09-28
 
-`#190` carries `supabase/migrations/0029_feedback.sql`. **`0029` is also claimed by the guardian
+**#235 is already on `main`**, merge commit `5547150`. It was not in this queue when it was
+written. It carried the visual contract (`skills/cemurm-visual-system/`), a CI gate
+(`scripts/check-visual-contract.sh`, 10 rules, runs between `lint` and `test`), and a real
+accessibility fix: `cem.secondary` measured 4.04:1 against `cem.elevated`, under the WCAG AA
+4.5:1 floor.
+
+It overlapped six files with five queued PRs. **All five merge clean against the new `main`**,
+verified with `git merge-tree --write-tree` returning exit 0 for each — none of this queue needs
+a rebase because of it:
+
+| PR | Shared file | Nature of the overlap |
+|---|---|---|
+| **#187** | `AGENTS.md` | Real but non-adjacent: #235 added a `## Visual system` section after Methodology; #187 edits the database-layer migration paragraph. Different regions of the file |
+| **#189**, **#193** | `src/features/services/pages/ServiceDetail.jsx` | One line each — a Tailwind class name |
+| **#194** | `src/features/repertoire/pages/SongDetail.jsx` | One line — a Tailwind class name |
+| **#195** | `CaseDetail.jsx`, `ModerationQueue.jsx`, `Moderation.jsx` | One line each — a Tailwind class name |
+
+The `src/` overlaps are class-name changes on elements that carry `bg-cem-elevated`, far from
+what those PRs edit. If any of them conflicts on merge anyway, it is that PR's own drift against
+`main`, not #235.
+
+**This also resolves the Phase 3 blocker below.** #228 renumbers the feedback migration to
+`0033_feedback.sql` and adds the smoke test it was missing, so **#190 can now land as-is**.
+
+One consequence for whoever picks up the landing work: `docs/design-system.md` and
+`odd/tasks/cemurm-brand-landing.md` §5–§6 are now formally **superseded** for visual decisions by
+`skills/cemurm-visual-system/SKILL.md`, which is registered in `AGENTS.md`. Two documents still
+describe a visual system that no longer applies. They are not corrected by this queue.
+
+## BLOCKER — #190 could not land as-is · RESOLVED by #228
+
+> **Resolved 2026-09-28.** #228 renumbers the migration to `0033_feedback.sql` and adds
+> the missing smoke test. **#190 can land as-is.** The analysis below is kept because the
+> reasoning is the reusable part, but nothing here is blocking any more.
+
+**Originally:** `#190` carries `supabase/migrations/0029_feedback.sql`. **`0029` is also claimed by the guardian
 branch family** — `origin/fix/fail-closed-minors`, `origin/feat/guardian-consent-db` and
 `origin/feat/guardian-email` all carry a *contiguous run*:
 
