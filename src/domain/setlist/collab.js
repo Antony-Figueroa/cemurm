@@ -116,13 +116,20 @@ export function applyLock(locks, payload) {
  * message (the actor name is unknowable — postgres_changes carries none, D5).
  */
 export function reconcileSetlistOp(op, server) {
-  // `op.name`, not `op?.name`: a null op still throws a TypeError, which is
-  // correct here and out of scope to change. That crash is finding 6 and has
-  // its own change (fix-unspecified-crashes); silently fixing it inside the
-  // silent-drop fix would merge two changes that must be reviewed apart.
+export function reconcileSetlistOp(op, server) {
+  // `op.args?.` guarded a missing `args` but not a missing `op`, so a null op
+  // threw on the way in. There is nothing to reconcile, so replay is the
+  // outcome: a caller with no op has no write to lose.
+  //
+  // fix-reconcile-silent-drop deliberately left this crash standing and named
+  // fix-unspecified-crashes as the change that owns it, on the grounds that
+  // fixing it inside the silent-drop fix would merge two changes that must be
+  // reviewed apart. Both are in this branch, so the deferral is discharged and
+  // the guard belongs here — with the reason recorded, because "why is there a
+  // null check" is the question the next reader will ask.
+  if (!op) return { drop: false }
   const isSetlistOp = op.name === 'addSongToSetlist' || op.name === 'removeSongFromSetlist'
   if (!isSetlistOp) return { drop: false }
-
   const songId = op.args?.[2]
   const present = (server?.itemIds || []).includes(songId)
 
