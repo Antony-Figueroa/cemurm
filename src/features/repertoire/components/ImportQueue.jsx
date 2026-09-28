@@ -114,7 +114,7 @@ function ReviewRow({ entry, onApprove, onDiscard, onDecision, onConflictChange, 
           <button
             type="button"
             onClick={() => onDiscard(entry.id)}
-            className="rounded-md bg-cem-elevated px-3 py-1.5 text-xs font-medium text-cem-secondary hover:bg-cem-elevated/80"
+            className="rounded-md bg-cem-elevated px-3 py-1.5 text-xs font-medium text-cem-secondary-elevated hover:bg-cem-elevated/80"
           >
             Discard
           </button>

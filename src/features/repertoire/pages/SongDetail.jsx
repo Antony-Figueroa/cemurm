@@ -26,7 +26,7 @@ import { PDF_SIZE_MESSAGE, PDF_TYPE_MESSAGE, validatePdfFile } from '../../../da
 const STATUS_STYLES = {
   ready: 'bg-cem-emerald/10 text-cem-emerald',
   draft: 'bg-cem-amber/10 text-cem-amber',
-  retired: 'bg-cem-elevated text-cem-secondary',
+  retired: 'bg-cem-elevated text-cem-secondary-elevated',
 }
 
 // S10: import-license labels — the songs_license_check vocabulary (0028).
@@ -716,7 +716,7 @@ export default function SongDetail() {
                 means replacing it with a new scan (scenario 7 mirror). */}
             {openIsPdf && (
               <span
-                className="ml-1.5 rounded bg-cem-elevated px-1.5 py-0.5 align-middle text-[10px] font-medium text-cem-secondary"
+                className="ml-1.5 rounded bg-cem-elevated px-1.5 py-0.5 align-middle text-[10px] font-medium text-cem-secondary-elevated"
                 title="PDF scans carry no chord data — change key with a new scan"
               >
                 PDF scans need a new scan to change key
@@ -767,7 +767,7 @@ export default function SongDetail() {
               type="button"
               onClick={handleWithdraw}
               disabled={library.withdrawingEntryId === myEntry.id}
-              className="rounded-md border border-cem-elevated px-3 py-1.5 text-sm font-medium text-cem-secondary hover:bg-cem-elevated disabled:opacity-50"
+              className="rounded-md border border-cem-elevated px-3 py-1.5 text-sm font-medium text-cem-secondary-elevated hover:bg-cem-elevated disabled:opacity-50"
             >
               {library.withdrawingEntryId === myEntry.id ? 'Withdrawing…' : 'Withdraw from library'}
             </button>
@@ -817,7 +817,7 @@ export default function SongDetail() {
             <button
               type="button"
               onClick={handleRetire}
-              className="rounded-md border border-cem-elevated px-3 py-1.5 text-sm font-medium text-cem-secondary hover:bg-cem-elevated"
+              className="rounded-md border border-cem-elevated px-3 py-1.5 text-sm font-medium text-cem-secondary-elevated hover:bg-cem-elevated"
             >
               Retire
             </button>
@@ -853,7 +853,7 @@ export default function SongDetail() {
 
       {transitions.length > 0 && (
         <div className="mt-4 rounded-md bg-cem-elevated px-3 py-2">
-          <p className="mb-1 text-xs font-medium text-cem-secondary">Transition history</p>
+          <p className="mb-1 text-xs font-medium text-cem-secondary-elevated">Transition history</p>
           <ul className="space-y-0.5">
             {[...transitions].reverse().map((t, i) => (
               <TransitionLine key={i} t={t} />
@@ -864,7 +864,7 @@ export default function SongDetail() {
 
       {playedAt.length > 0 && (
         <div className="mt-4 rounded-md bg-cem-elevated px-3 py-2">
-          <p className="mb-1 text-xs font-medium text-cem-secondary">
+          <p className="mb-1 text-xs font-medium text-cem-secondary-elevated">
             Played at · demand {playedAt.length}
           </p>
           <ul className="space-y-0.5">
@@ -964,7 +964,7 @@ export default function SongDetail() {
               className={`mb-3 rounded-md border px-3 py-1 text-xs font-medium transition-colors ${
                 degreeView
                   ? 'border-cem-amber bg-cem-amber/10 text-cem-amber'
-                  : 'border-cem-elevated text-cem-secondary hover:bg-cem-elevated'
+                  : 'border-cem-elevated text-cem-secondary-elevated hover:bg-cem-elevated'
               }`}
             >
               {degreeView ? 'Showing: Roman numerals' : 'Show roman numerals'}

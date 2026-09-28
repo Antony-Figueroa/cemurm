@@ -14,8 +14,8 @@ import { useFollows } from '../hooks/useFollows.js'
 
 const LICENSE_STYLES = {
   'public-domain': 'bg-cem-amber/10 text-cem-amber',
-  'CC-BY-4.0': 'bg-cem-elevated text-cem-secondary',
-  proprietary: 'bg-cem-elevated text-cem-secondary',
+  'CC-BY-4.0': 'bg-cem-elevated text-cem-secondary-elevated',
+  proprietary: 'bg-cem-elevated text-cem-secondary-elevated',
 }
 
 function LicenseBadge({ license }) {
