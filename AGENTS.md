@@ -186,6 +186,14 @@ The maintainer set this working agreement on 2026-09-27. It is standing, not per
 3. **Fix what breaks to make it correct.** Invasive refactors, signature changes, updating dependent call sites and docs are pre-authorized when they are required to land the unit honestly. Do not let a failing gate defer the decision.
 4. **Merge stays human.** You open the PR; the maintainer approves and merges. Never merge or push to `main` directly.
 5. Report honestly: if a check fails, a gate was weakened, or a spec conflict was found, say so in the PR body. Do not present a green run as covering something it does not.
+6. **Notify, do not wait silently.** A PR that sits at `REVIEW_REQUIRED` with nobody notified is indistinguishable from a PR nobody opened. So:
+   - **Always request a reviewer when you open the PR**: `gh pr edit <n> --add-reviewer davidjesus516`. The review request is itself the notification, and it fires without any extra step.
+   - **When you push new commits onto a PR that already has an approval**, leave a comment mentioning `@davidjesus516` explaining what changed and why. GitHub does not re-notify a reviewer for later pushes.
+   - **When a check goes red**, say so in the same thread. Do not let a failing gate sit in the checks tab.
+
+   The repo's ruleset sets `require_last_push_approval`, so the last pusher cannot approve their own
+   PR. **That is deliberate and correct — approval on `main` must be a second pair of eyes.** It does
+   not remove the obligation to make the request, or to say so out loud when the branch moves.
 
 The one limit on clause 3: **a failing characterization test is fixed in the source, never in the assertion.** Once the suite lands (M0b), it records current behaviour on purpose (`odd/tasks/cemurm-brand-landing.md` §12.1). Editing a test to go green, loosening a threshold, or adding a skip to clear a gate hides a regression. If a test genuinely encodes a wrong expectation, that is a finding to report, not to silently rewrite. The same rule governs any future test: a red test is information, not an obstacle.
 
