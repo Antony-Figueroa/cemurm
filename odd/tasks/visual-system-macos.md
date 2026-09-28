@@ -405,3 +405,165 @@ and 05b rose 12 → 16 consistently, then reverted with the config byte-compared
 and `git diff --stat` empty. `pnpm lint`, `pnpm test` (235 passing), `pnpm typecheck` and
 `pnpm build` all green. `tailwind.config.js` is untouched; no token value was changed to make a
 check pass.
+
+## 16. `cem.secondary` on a raised fill — the measured defect, and the token that answers it
+
+§13 recorded the finding (`cem.secondary` at 4.04:1 on `cem.elevated`, 2.96:1 on `cem.hover`) and
+§15 deliberately did not fix it, on the reasoning that it has 318 usages and is therefore its own
+unit. This is that unit.
+
+**The value of `cem.secondary` is unchanged.** The minimum value clearing all four backgrounds is
+`#c7d0da`, which would lift it to near-white and collapse its hierarchy against `cem.text`
+(#f8fafc) on all 318 usages, 302 of which sit on `base`/`surface` where it already measures
+6.96:1 and 5.71:1. Fixing 16 by changing 318 is a bad trade. Instead the palette gained one
+additive token, `cem.secondary-elevated` = `#b0bccb` (**5.38:1** on elevated, 9.27:1 on base),
+following the `cem.stage.dim` precedent of a token introduced for one measured need rather than a
+rename of an existing one. `cem.secondary` still measures 6.96 / 5.71 / 4.04 / 2.96, byte-identical
+to §15's matrix.
+
+### The audit's 16 was a lower bound, and the true same-element figure is 52
+
+A same-element check over `src/` finds **52** sites, not 16, in **27** files. The audit counted only
+the sites where the class string is written **directly into a `className=`**; **21 of the 52 write
+it somewhere else entirely**, and not one of the 16 is among those 21 — verified line by line, all
+16 carry `className=`:
+
+| Form | Count | Example |
+|---|---|---|
+| Class string written into a `className=` on the element | 33, of which the audit listed 16 | `CaseDetail.jsx:105` |
+| **JS object style-map entry, interpolated into an element** | **13** | `GigCard.jsx:7` `cancelled: 'bg-cem-elevated text-cem-secondary'` |
+| **Conditional branch inside a `className` template** | **7** | `PdfChartViewer.jsx:102` `zoom === p ? … : 'bg-cem-elevated …'` |
+| **Module-level `const` reused on elements** | **1** | `ServiceDetail.jsx:44` `keyBadge`, applied at `:310` and `:744` |
+
+The style-map form is not a near miss — `GIG_STATUS_STYLES[status]` is interpolated straight into a
+`<span className=…>`, so it is the same element carrying the same two classes, and a
+`grep`-shaped method cannot see it. A further 3 lines (`Auth.jsx:7`, `GuardianConsentRequired.jsx:19`,
+`SongForm.jsx:8`) pair `disabled:bg-cem-elevated` with `placeholder:text-cem-secondary` and are
+**excluded from rule 06 on purpose**: a placeholder on a `bg-cem-surface` input measures 5.71:1 and
+passes, and WCAG SC 1.4.3 exempts an inactive component.
+
+**Remedy, per site, by what the element is.** 5 are real sentences and error text and became
+`text-cem-text` (9.90:1 on elevated): `Moderation.jsx:26`, `Notifications.jsx:113`,
+`RehearsalDetail.jsx:215`, `EnrichmentPanel.jsx:201` (carries `role="alert"`),
+`ServiceDetail.jsx:560`. The other 47 are chips, badges, column headers and button labels and
+became `text-cem-secondary-elevated`, which keeps them recessive — correct for a label — while
+clearing the floor. No element was restructured: all 52 lines differ from `HEAD` by the colour
+token and nothing else, verified pairwise. With the 2 descendant sites below the totals are
+**49 `text-cem-secondary-elevated` + 5 `text-cem-text` = 54 class-name changes across 27 files.**
+
+**One site was rejected as a false positive.** `SongForm.jsx:355` pairs an unprefixed
+`text-cem-secondary` with `file:bg-cem-elevated`, but `file:` addresses the
+`::file-selector-button` pseudo-element while the element's own text keeps the colour its
+unprefixed utility set, and that pseudo-element's text is explicitly `file:text-cem-text`. Two
+different boxes. Rule 06 therefore omits `file:`, `marker:` and `selection:` from its background
+side, and a gate that flagged it would be training maintainers to ignore it.
+
+### Rule 06, and what it cannot see
+
+`RULE_06_SECONDARY_ON_RAISED_FILL=enforcing`, baseline 0. It reuses rule 03's `COMMENT_PATTERN`
+verbatim — the `^[^:]*:[0-9]+:` prefix anchors identically for a recursive `grep -rnH` scan, which
+is why the file/line is printed on failure — and rule 01a's `SOURCE_INCLUDES`, so the file set
+cannot drift. It is a pipeline of two greps because the rule is an AND; a single grep with both
+alternatives would be an OR and would report every secondary label in `src/`.
+
+Proven to fail four ways, each reverted and byte-compared: the original defect reintroduced at
+`Moderation.jsx:26` and at `Notifications.jsx:113`; a style-map violation at `GigCard.jsx:7`; and a
+`hover:bg-cem-hover` pairing that uses neither the state nor the token the fix relied on. Each
+produced `FAIL 06` with file and line and exit 1, and exit 0 after revert.
+
+**05b went 12 → 13, and that is the intended consequence, not a weakening.** The new token enters
+the matrix on its own merit and contributes exactly one under-floor cell, `secondary-elevated` on
+`hover` at 3.93:1 — the same `cem.hover` column every other colour already fails. Scored pairs
+28 → 32. The floor was not moved and the rule stays `report`, which is precisely why 05b is
+report-only: a new token must not be able to redden the build. **No `cem.hover` site was fixed**,
+because no raised fill in `src/` is `cem.hover` at rest; the 87 `hover:bg-cem-elevated` sites were
+fixed against the elevated token, which is the fill they actually use. What 05b still reports at
+13 is dominated by the four accents rule 02 is retiring, and by the two `cem.secondary` cells that
+this unit deliberately left in place. `r2` went 16 → 17 tokens; that is the report-only inventory
+doing its job.
+
+### Descendant exposure: measured, and 2 of 4 fixed — the defect is NOT closed
+
+The 56 changes are all same-element. A child can inherit a raised fill from an ancestor, and a
+grep cannot see that, so it was measured rather than assumed. Method: a JSX-nesting scan per file
+that keeps a stack of open elements, takes each `text-cem-secondary` element's **nearest painted
+background** (its own, else the nearest ancestor's), and flags it when that background is
+`cem.elevated` or `cem.hover`. It is a lexical scan, not a DOM: containment within one file is
+exact, but see the error bars.
+
+**6 candidates before the fix, 4 after, and 2 of the 6 were real defects — both now fixed:**
+
+| Site | Ancestor fill | Verdict |
+|---|---|---|
+| `SongDetail.jsx:856` "Transition history" | opaque `bg-cem-elevated` | **4.04:1, FAIL** → fixed |
+| `SongDetail.jsx:867` "Played at · demand N" | opaque `bg-cem-elevated` | **4.04:1, FAIL** → fixed |
+| `Notifications.jsx:195,196,199` | `hover:bg-cem-elevated/40` | composites to `#1d283b`, **5.00–5.78:1, pass** |
+| `ReportDialog.jsx:109` | `bg-cem-elevated/50` | composites to `#212c40`, **4.83–5.47:1, pass** |
+
+The last four are why the raw tool output must not be read as a defect count: the scan does not
+resolve alpha, so it labels all six `cem-elevated`. Composited against `base` and `surface` they
+land at or near `cem.surface` and clear the floor. **They are reported as passing on the
+composited value, which is a judgement, not a measurement of the rendered pixel** — a backdrop
+darker than `base`, or a `bg-cem-elevated/40` over a raised parent, would move them. They are left
+unchanged and recorded here so the judgement is reviewable.
+
+**Error bars, so this is not mistaken for a complete census.** The 2 confirmed are a hard count: each
+was read by hand, in context, with its ancestor chain. The bounds around the rest:
+
+- *Closed, measured 0:* `clsx`/`classnames` helper composition — 0 occurrences in `src/`, so no
+  className is assembled in a way this scan cannot resolve. Containers whose raised fill comes from
+  a module-level `const` — 3 exist (`GigDetail.jsx:10`, `ServiceDetail.jsx:35,44`), all self-closing
+  button/badge styles that wrap no children, and all three already carry a compliant text token.
+  The cross-file hole — a component that paints `bg-cem-elevated` and receives `children` from a
+  caller's file, which no per-file scan can connect — resolves to **1 candidate** repo-wide
+  (`GigForm.jsx`), and its `{children}` sits in a plain `<div>` with no fill, so 0.
+- *Open, not measured:* classNames arriving through a prop spread into a child's `className`; a
+  raised fill set by a CSS rule rather than a utility; and any composition through a helper
+  introduced later. Each is 0 today and unquantified by construction.
+- *Not covered by this scan at all:* descendants of a container in a **different file** beyond the
+  `{children}` case above, and any runtime-composed class name.
+
+**So: the same-element defect is closed and gated; the descendant exposure is measured at 2 real
+defects, both fixed, with 4 sites that pass only once alpha is composited; and a structural blind
+spot remains that this method cannot close.** Rule 06 is a same-element check by construction and
+its 0 means "no same-element pairing", never "the contrast defect is closed". The honest summary is
+that `cem.secondary` is still 4.04:1 on `cem.elevated` and 2.96:1 on `cem.hover` as a *token* — 05b
+still reports both — and what changed is that no element in `src/` pairs it with a raised fill
+anymore.
+
+### Deviations, and one forced gate change
+
+- **The changed file set is 27 source files, not the 12 the brief listed.** The brief's 12 follows
+  from its 16, and both undercount by the mechanism in the first table above. Fixing only the 16
+  would have left rule 06 unable to reach baseline 0 without narrowing the rule to ignore the
+  style-map form, which would have been a gate written to pass rather than to catch. No file
+  outside these 27, `tailwind.config.js`, the script, and this record was touched.
+- **Rule 04's key parser was widened, from necessity rather than preference.** A JS identifier
+  cannot contain a hyphen, so `secondary-elevated` must be a quoted key, and rule 04's
+  `leaf_regex`/`leaf_value_regex` only matched bare `[A-Za-z0-9_]+`. The consequence was not a
+  missed warning: rule 05 could not read the value either, so the new token printed `n/a` in the
+  matrix and **05a failed with "matrix is 4 scored cell(s) short"** — the anti-vacuous-pass guard
+  doing its job on my own change. The regexes now accept an optionally-quoted, hyphenated key,
+  with the quote characters non-capturing so `BASH_REMATCH[1]`/`[2]` are unchanged. This makes
+  rule 04 **stricter**, not weaker: it now catches a key shape it previously ignored entirely.
+  Proven by injecting `cem.indigo` (`FAIL 04`, "undeclared colour key \"cem.indigo\"") and
+  `cem.warning-ink` (`FAIL 04`, the new quoted shape), both reverted and byte-compared.
+- **Two bugs in this unit's own new code, both found by running the gate rather than by reading
+  it.** The rule 06 patterns used `\d`, which is not POSIX: under this machine's `es_VE.UTF-8`
+  locale GNU grep printed `warning: \ sobrante después de d` and degraded the class. It is now
+  `[[:digit:]]{1,3}`, matching the script's existing convention. The descendant scanner's first
+  version blanked comments with `''`, which shifted every reported line number after the first
+  block comment and mislabelled two findings onto unrelated `text-cem-rose` paragraphs; it now
+  blanks them with equal-length whitespace so offsets survive. The first classifier also indexed
+  the wrong capture group and reported **0 violations across all of `src/`** — a vacuous pass of
+  exactly the kind §13 warns about, caught only because 0 was implausible next to a known 16.
+- **A gate value changed that this unit did not intend to change.** `\d` → `[[:digit:]]` touches
+  only rule 06's new patterns. No pre-existing rule's mode, floor, ceiling or count moved: 01a 0,
+  01b 82, 02 252, 03 0 + 1 allowlisted, 04 0, 05a 0, r1 30, and 05b 12 → 13 for the reason above.
+
+**Verification.** Gate `OK`, exit 0, **10 rules checked, 0 failing**. `bash -n` clean,
+`shellcheck -S warning` clean. `pnpm typecheck`, `pnpm lint`, `pnpm test` (**235 passed, 235 — no
+test was edited; a failing test would have been fixed in the source**), `pnpm build` all green.
+The built stylesheet was checked, because a wrong class name builds cleanly and renders nothing:
+`.text-cem-secondary-elevated{…color:rgb(176 188 203…)}` and `.text-cem-secondary{…color:rgb(148
+163 184…)}` are both emitted, so the new token resolves and the old one is untouched.

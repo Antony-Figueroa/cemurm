@@ -27,7 +27,7 @@ const ROLE_LABEL = {
 const ROLE_STYLE = {
   original: 'border-cem-elevated bg-cem-surface text-cem-secondary',
   substitute: 'border-cem-amber/40 bg-cem-amber/10 text-cem-amber',
-  candidate: 'border-cem-elevated bg-cem-elevated text-cem-secondary',
+  candidate: 'border-cem-elevated bg-cem-elevated text-cem-secondary-elevated',
 }
 
 function SongChart({ song, instrument, annotations }) {

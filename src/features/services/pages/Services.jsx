@@ -5,7 +5,7 @@ import { listServices, createService, listBlockCounts } from '../../../data/repo
 import { getMyOrganizations } from '../../../data/repositories/orgRepertoire.js'
 
 export const SERVICE_STATUS_STYLES = {
-  draft: 'bg-cem-elevated text-cem-secondary',
+  draft: 'bg-cem-elevated text-cem-secondary-elevated',
   published: 'bg-cem-emerald/10 text-cem-emerald',
   completed: 'bg-cem-sky/10 text-cem-sky',
 }

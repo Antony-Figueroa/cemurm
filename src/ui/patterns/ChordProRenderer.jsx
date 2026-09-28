@@ -106,7 +106,7 @@ export default function ChordProRenderer({
                     <button
                       type="button"
                       onClick={() => onSectionComment(sectionName)}
-                      className="ml-2 rounded border border-cem-elevated px-1.5 py-0.5 text-[10px] font-medium normal-case tracking-normal text-cem-secondary hover:bg-cem-elevated"
+                      className="ml-2 rounded border border-cem-elevated px-1.5 py-0.5 text-[10px] font-medium normal-case tracking-normal text-cem-secondary-elevated hover:bg-cem-elevated"
                     >
                       Comment
                     </button>

@@ -53,6 +53,7 @@ RULE_03_OVERLAY_CHROME=enforcing
 RULE_04_PALETTE_GROWTH=enforcing
 RULE_05A_TEXT_CONTRAST=enforcing
 RULE_05B_PALETTE_CONTRAST=report
+RULE_06_SECONDARY_ON_RAISED_FILL=enforcing
 REPORT_STAGEMODE_CHROME=report
 REPORT_CONFIG_TOKEN_COUNT=report
 
@@ -97,8 +98,41 @@ CONTRAST_ANCHOR_FG="text"
 # The matrix axes. Space-separated token leaf names, not hex values: the values
 # are parsed out of tailwind.config.js at run time, so editing a token makes
 # this check follow the edit instead of reporting a stale table.
-CONTRAST_FG_TOKENS="text secondary amber emerald rose sky coral"
+CONTRAST_FG_TOKENS="text secondary secondary-elevated amber emerald rose sky coral"
 CONTRAST_BG_TOKENS="base surface elevated hover"
+
+# ---------------------------------------------------------------------------
+# RULE 06 PARAMETERS  -- cem.secondary is not legal on a raised fill
+# ---------------------------------------------------------------------------
+# Rule 05 measures the token PALETTE, which is the right place to learn that
+# cem.secondary sits under the floor on cem.elevated. It cannot see the defect
+# that actually shipped: 52 elements pairing that failing foreground with that
+# background. Rule 06 is that pairing, checked on the source.
+#
+# The foreground side requires an UNPREFIXED text-cem-secondary. Two exclusions
+# are deliberate, and both are holes a reader must know about rather than bugs:
+#
+#   1. A variant-scoped text colour -- placeholder:text-cem-secondary,
+#      hover:text-cem-secondary -- is not this defect. A placeholder on a
+#      bg-cem-surface input is 5.71:1 and passes; flagging it would force a
+#      meaningless edit. (The disabled:bg-cem-elevated input pairing in
+#      Auth.jsx, GuardianConsentRequired.jsx and SongForm.jsx is the residual
+#      case: a disabled control, which SC 1.4.3 exempts as inactive.)
+#   2. The trailing boundary rejects text-cem-secondary-elevated, so the remedy
+#      token does not re-trip the rule that requires it. That single character
+#      class is what makes the fix enforceable at 0.
+#
+# The background side enumerates the state prefixes that paint the ELEMENT'S OWN
+# box, and deliberately omits file:, marker: and selection:. Those address a
+# pseudo-element, so file:bg-cem-elevated puts elevated behind the
+# ::file-selector-button while the element's own text keeps the colour its
+# unprefixed text utility set -- a different element entirely. SongForm.jsx:355
+# is the live example, and treating it as a violation would be a false positive
+# that trains maintainers to ignore this rule. When a new element-scoped state
+# prefix is introduced, add it here; the two prefixes actually in use today are
+# hover: (87 sites) and disabled: (3).
+CONTRAST_DEFECT_FG_PATTERN='(^|[^:[:alnum:]_-])text-cem-secondary(/[[:digit:]]{1,3})?([^[:alnum:]_-]|$)'
+CONTRAST_DEFECT_BG_PATTERN='(^|[^:[:alnum:]_-])((focus-within|group-hover|group-focus|group-active|peer-hover|peer-focus|peer-active|hover|focus|active|disabled|checked):)*(bg-cem-(elevated|hover))(/[[:digit:]]{1,3})?([^[:alnum:]_-]|$)'
 
 # ---------------------------------------------------------------------------
 # ALLOWLISTS  -- named exceptions, each with a reason
@@ -119,7 +153,7 @@ OVERLAY_CHROME_ALLOWLIST=(
 # Rule 04: the token palette may not silently grow. Every colour key that
 # exists today is listed, so adding a fifth accent -- or renaming one -- fails
 # the gate and becomes a deliberate, reviewable act. This is the current
-# palette: 16 leaves (11 flat under cem, 5 under cem.stage).
+# palette: 17 leaves (12 flat under cem, 5 under cem.stage).
 TAILWIND_COLOUR_KEY_ALLOWLIST=(
   "cem.base"
   "cem.surface"
@@ -127,6 +161,7 @@ TAILWIND_COLOUR_KEY_ALLOWLIST=(
   "cem.hover"
   "cem.text"
   "cem.secondary"
+  "cem.secondary-elevated"
   "cem.amber"
   "cem.coral"
   "cem.emerald"
@@ -389,13 +424,20 @@ fi
 # (a fifth accent, or a second scale) is caught as reliably as a new leaf.
 : >"$TMP_DIR/keys"
 : >"$TMP_DIR/findings"
-leaf_regex='^[[:space:]]*([A-Za-z0-9_]+)[[:space:]]*:[[:space:]]*["'"'"'`]#'
+# A key may be quoted and hyphenated -- JS requires quotes for any identifier
+# that is not [A-Za-z0-9_], and cem.secondary-elevated is exactly that. Without
+# the optional quotes and the hyphen, a quoted key is not merely missed by rule
+# 04: rule 05 never reads its VALUE either, so the matrix prints n/a and 05a
+# fails with "matrix is N scored cell(s) short" -- verified, not theorised. The
+# quote characters are non-capturing, so BASH_REMATCH[1] and [2] keep the
+# meaning they had before and the walk below needed no other change.
+leaf_regex='^[[:space:]]*["'"'"'`]?([A-Za-z0-9_-]+)["'"'"'`]?[[:space:]]*:[[:space:]]*["'"'"'`]#'
 # The value half of the same line, captured separately so the leaf and value
 # regexes can stay independently anchored. Group 1 is the leaf name, group 2
 # the quoted literal. Deliberately greedy up to the closing quote so a value
 # rule 05 cannot read (a var() reference, a gradient, a non-hex function) still
 # arrives intact and is reported as unreadable instead of being dropped.
-leaf_value_regex='^[[:space:]]*([A-Za-z0-9_]+)[[:space:]]*:[[:space:]]*["'"'"'`]([^"'"'"'`]*)["'"'"'`]'
+leaf_value_regex='^[[:space:]]*["'"'"'`]?([A-Za-z0-9_-]+)["'"'"'`]?[[:space:]]*:[[:space:]]*["'"'"'`]([^"'"'"'`]*)["'"'"'`]'
 ns_regex='^[[:space:]]*([A-Za-z0-9_]+)[[:space:]]*:[[:space:]]*\{'
 
 # The dotted key path is accumulated in a plain string ("cem.", then
@@ -703,6 +745,51 @@ if [ "$count_05b" -gt 0 ]; then
   note "these are measured findings, not new debt: see odd/tasks/visual-system-macos.md 13."
   note "cem.secondary is the body-text one; the accents are deprioritised by rule 02."
 fi
+
+# ---------------------------------------------------------------------------
+# RULE 06 -- no text-cem-secondary on an elevated or hover fill
+# ---------------------------------------------------------------------------
+# The measured defect: 52 elements paired cem.secondary (#94a3b8) with
+# cem.elevated or cem.hover in the SAME className string, at 4.04:1 and
+# 2.96:1. Both are under the 4.5:1 AA floor and none of them is large text, so
+# the 3:1 relaxation does not apply to any of them. Fixed by moving 47 chips and
+# labels to cem.secondary-elevated (5.38:1) and 5 real sentences to cem.text
+# (9.90:1); the baseline is 0, so this is enforcing.
+#
+# MECHANISM. Two greps and a filter, reusing machinery this script already has
+# rather than a parallel one:
+#   * COMMENT_PATTERN, verbatim from rule 03. grep -rnH emits
+#     "src/.../SlideView.jsx:38:<span ...>", so the `^[^:]*:[0-9]+:` prefix
+#     still anchors to the same place for a recursive scan as it does for rule
+#     03's per-file scan. A gate that flagged a comment explaining this rule
+#     would be a gate that gets bypassed, and these files will document it.
+#   * SOURCE_INCLUDES, so the file set cannot drift from rules 01a/01b/02.
+# The two greps are a pipeline, not a combined alternation, because the rule is
+# an AND: a line must carry an unprefixed text-cem-secondary AND a raised fill.
+# One grep with both alternatives would be an OR and would report every
+# secondary label in src/.
+#
+# KNOWN LIMITS, so a future reader does not mistake this for full coverage.
+#   * Line granularity. A line is assumed to be one className string. In this
+#     tree that holds: 0 of the 52 fixed sites had two className= on a line, and
+#     the 3 lines repo-wide that do are not rule 06 sites. A line carrying two
+#     different elements could in principle be a false positive.
+#   * It cannot see a descendant. A text-cem-secondary inside a
+#     bg-cem-elevated ancestor is a real defect this rule does not detect, and
+#     the count of those is recorded, unresolved, in
+#     odd/tasks/visual-system-macos.md 16. Treat 0 here as "no same-element
+#     pairing", never as "the contrast defect is closed".
+#   * Class names composed at runtime through variables that this grep cannot
+#     resolve are out of scope, as they are for every rule in this script.
+: >"$TMP_DIR/findings"
+grep -rnHE "${SOURCE_INCLUDES[@]}" -e "$CONTRAST_DEFECT_FG_PATTERN" "$SRC_DIR" \
+  2>/dev/null \
+  | grep -E -e "$CONTRAST_DEFECT_BG_PATTERN" \
+  | grep -vE -e "$COMMENT_PATTERN" >>"$TMP_DIR/findings" || true
+count_06="$(grep -c '' "$TMP_DIR/findings" 2>/dev/null || true)"
+verify 06 "$RULE_06_SECONDARY_ON_RAISED_FILL" \
+  "no text-cem-secondary on an elevated/hover fill" "$count_06" || true
+note "use text-cem-secondary-elevated (5.38:1) on a raised fill, or text-cem-text for sentences."
 
 # ---------------------------------------------------------------------------
 # REPORT-ONLY -- StageMode.jsx chrome
