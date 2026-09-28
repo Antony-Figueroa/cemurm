@@ -308,8 +308,8 @@ describe('applySubstitution', () => {
     // defence but is not what this test exercises, and the assertion now also
     // pins that a genuinely absent anchor still passes the token through.
     expect(applySubstitution('Em', 2.5, { Bm: 'Dmaj7' }, 'C')).toBe('Em')
-  })
-    // An anchor genuinely absent from the map still passes through untouched.
+    // An anchor genuinely absent from the map still passes through untouched,
+    // at a whole amount and at a fractional one.
     expect(applySubstitution('Em', 2, { Bm: 'Dmaj7' }, 'C')).toBe('Em')
   })
 

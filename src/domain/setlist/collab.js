@@ -116,7 +116,6 @@ export function applyLock(locks, payload) {
  * message (the actor name is unknowable — postgres_changes carries none, D5).
  */
 export function reconcileSetlistOp(op, server) {
-export function reconcileSetlistOp(op, server) {
   // `op.args?.` guarded a missing `args` but not a missing `op`, so a null op
   // threw on the way in. There is nothing to reconcile, so replay is the
   // outcome: a caller with no op has no write to lose.
