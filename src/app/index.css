@@ -11,3 +11,18 @@
     @apply bg-cem-base text-cem-text;
   }
 }
+
+/* docs/ux-spec.md 253: reduced motion reduces transitions and animations to
+   near-zero. The 0.01ms is deliberate and must not be "corrected" to 0: some
+   engines skip a transition whose duration is exactly zero, so `transitionend`
+   never fires and components that await that event hang. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}

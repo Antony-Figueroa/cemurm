@@ -191,12 +191,12 @@ export default function PublicLibrary() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by title, artist or genre…"
-              className="w-full max-w-md rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text placeholder:text-cem-secondary focus:border-cem-amber focus:outline-none focus:ring-1 focus:ring-cem-amber"
+              className="w-full max-w-md rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text placeholder:text-cem-secondary focus:border-cem-amber focus:outline-none focus:ring-2 focus:ring-cem-amber focus:ring-offset-2 focus:ring-offset-transparent"
             />
             <select
               value={licenseFilter}
               onChange={(e) => setLicenseFilter(e.target.value)}
-              className="rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text focus:border-cem-amber focus:outline-none focus:ring-1 focus:ring-cem-amber"
+              className="rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text focus:border-cem-amber focus:outline-none focus:ring-2 focus:ring-cem-amber focus:ring-offset-2 focus:ring-offset-transparent"
             >
               {LICENSE_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>

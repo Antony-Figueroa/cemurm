@@ -377,7 +377,7 @@ export default function SetlistDetail() {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="rounded-md border border-cem-elevated bg-cem-surface px-3 py-1.5 text-lg font-bold text-cem-text focus:border-cem-amber focus:outline-none focus:ring-1 focus:ring-cem-amber"
+              className="rounded-md border border-cem-elevated bg-cem-surface px-3 py-1.5 text-lg font-bold text-cem-text focus:border-cem-amber focus:outline-none focus:ring-2 focus:ring-cem-amber focus:ring-offset-2 focus:ring-offset-transparent"
             />
             <button
               type="submit"

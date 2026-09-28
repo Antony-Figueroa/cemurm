@@ -40,7 +40,7 @@ const arrowBtn =
 const dangerBtn =
   'rounded-md border border-cem-elevated px-2 py-1 text-xs font-medium text-cem-rose hover:bg-cem-elevated'
 const miniInputClass =
-  'w-full rounded-md border border-cem-elevated bg-cem-surface px-2 py-1.5 text-sm text-cem-text placeholder:text-cem-secondary focus:border-cem-amber focus:outline-none focus:ring-1 focus:ring-cem-amber'
+  'w-full rounded-md border border-cem-elevated bg-cem-surface px-2 py-1.5 text-sm text-cem-text placeholder:text-cem-secondary focus:border-cem-amber focus:outline-none focus:ring-2 focus:ring-cem-amber focus:ring-offset-2 focus:ring-offset-transparent'
 const keyBadge = 'rounded bg-cem-elevated px-1.5 py-0.5 text-xs text-cem-secondary-elevated'
 
 // Warning kind → dot color (validate_service_plan kinds: overrun, uncovered,
