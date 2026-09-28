@@ -51,6 +51,8 @@ RULE_01B_TAILWIND_PALETTE=ratchet
 RULE_02_DEAD_ACCENTS=ratchet
 RULE_03_OVERLAY_CHROME=enforcing
 RULE_04_PALETTE_GROWTH=enforcing
+RULE_05A_TEXT_CONTRAST=enforcing
+RULE_05B_PALETTE_CONTRAST=report
 REPORT_STAGEMODE_CHROME=report
 REPORT_CONFIG_TOKEN_COUNT=report
 
@@ -72,6 +74,31 @@ RATCHET_01B_MAX=82
 # migration across 35 files, not a gate change, so this ceiling is what stops
 # the palette from growing until that migration lands.
 RATCHET_02_MAX=252
+
+# ---------------------------------------------------------------------------
+# RULE 05 PARAMETERS  -- the WCAG 2.x contrast matrix
+# ---------------------------------------------------------------------------
+# 4.5:1 is the AA contrast floor for normal-size text (WCAG 2.x SC 1.4.3). The
+# same SC relaxes the floor to 3:1 for "large text" (>=18.66px bold or >=24px
+# regular), and SC 1.4.11 sets 3:1 for non-text UI components. This gate uses
+# the strict 4.5 figure for every pair on purpose. A token is not size-aware:
+# the same cem.secondary is 14px body copy in one component and a large stage
+# label in another, and a static config-level check cannot know which. Judging
+# every pair at 3:1 would pass a regression that only ever shows up in small
+# text. Over-strict on a large label is a cosmetic over-warning; too lax on
+# 14px copy is an accessibility defect, and the first is cheap to relax later
+# and the second is not. So: 4.5 everywhere.
+CONTRAST_MIN=4.5
+# The anchor token. cem.text is the body-copy foreground and the only row that
+# is enforcing, because it passes today. It is also the checker's self-test: if
+# this gate ever reports cem.text under the floor, the arithmetic is wrong, not
+# the palette, and no other number in the matrix can be trusted. Read it first.
+CONTRAST_ANCHOR_FG="text"
+# The matrix axes. Space-separated token leaf names, not hex values: the values
+# are parsed out of tailwind.config.js at run time, so editing a token makes
+# this check follow the edit instead of reporting a stale table.
+CONTRAST_FG_TOKENS="text secondary amber emerald rose sky coral"
+CONTRAST_BG_TOKENS="base surface elevated hover"
 
 # ---------------------------------------------------------------------------
 # ALLOWLISTS  -- named exceptions, each with a reason
@@ -363,6 +390,12 @@ fi
 : >"$TMP_DIR/keys"
 : >"$TMP_DIR/findings"
 leaf_regex='^[[:space:]]*([A-Za-z0-9_]+)[[:space:]]*:[[:space:]]*["'"'"'`]#'
+# The value half of the same line, captured separately so the leaf and value
+# regexes can stay independently anchored. Group 1 is the leaf name, group 2
+# the quoted literal. Deliberately greedy up to the closing quote so a value
+# rule 05 cannot read (a var() reference, a gradient, a non-hex function) still
+# arrives intact and is reported as unreadable instead of being dropped.
+leaf_value_regex='^[[:space:]]*([A-Za-z0-9_]+)[[:space:]]*:[[:space:]]*["'"'"'`]([^"'"'"'`]*)["'"'"'`]'
 ns_regex='^[[:space:]]*([A-Za-z0-9_]+)[[:space:]]*:[[:space:]]*\{'
 
 # The dotted key path is accumulated in a plain string ("cem.", then
@@ -379,6 +412,18 @@ while IFS= read -r line; do
   if [ "$in_colors" -eq 0 ]; then
     if [[ "$line" =~ colors:[[:space:]]*\{ ]]; then in_colors=1; fi
     continue
+  fi
+  # Rule 05 consumes the token VALUES from this same walk, so the nesting logic
+  # that resolves "cem.stage.bg" to its value lives in exactly one place. This
+  # match is deliberately SEPARATE from and independent of leaf_regex above:
+  # leaf_regex only matches a value that begins with "#", so a token written as
+  # 'rgb(148 163 184)' or var(--x) would be invisible to it. Matching on the
+  # quoted value alone is what lets rule 05 see such a token and report it as
+  # unreadable rather than silently dropping the cell. Both branches are needed:
+  # one finds keys, the other finds values.
+  if [[ "$line" =~ $leaf_value_regex ]]; then
+    printf '%s\t%s\n' "${prefix}${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}" \
+      >>"$TMP_DIR/token_values"
   fi
   if [[ "$line" =~ $leaf_regex ]]; then
     leaf="${BASH_REMATCH[1]}"
@@ -402,6 +447,262 @@ done <"$TAILWIND_CONFIG"
 count_04="$(grep -c '' "$TMP_DIR/findings" 2>/dev/null || true)"
 verify 04 "$RULE_04_PALETTE_GROWTH" \
   "no undeclared colour keys in $TAILWIND_CONFIG" "$count_04" || true
+
+# ---------------------------------------------------------------------------
+# RULE 05 -- WCAG 2.x contrast for every foreground-on-background token pair
+# ---------------------------------------------------------------------------
+# The palette is specified as a set of tokens, and nothing in the config
+# declares which token is legal text on which token as a surface. That is
+# exactly the class of defect the token layer exists to prevent, so the gate
+# measures it instead of trusting it.
+#
+# Values are read from $TMP_DIR/token_values, produced by rule 04's walk, so
+# editing a hex in tailwind.config.js changes the number reported here on the
+# next run. There is no second copy of the palette to drift.
+#
+# MODES. Split deliberately in two, not one rule with a mixed verdict:
+#   05a anchor, cem.text on every background -- ENFORCING. It passes today, and
+#        it is the checker's own self-test. cem.text is the body-copy
+#        foreground; if it ever drops under the floor, the arithmetic is broken
+#        and every other cell is noise, so this must be a hard failure rather
+#        than a warning that scrolls past.
+#   05b every other pair -- REPORT. The interesting finding is that 12 of 28
+#        pairs are already under 4.5:1, and the real one is not the amber accent
+#        but cem.secondary, which is body text at 2.96:1 on cem.hover. Making
+#        this enforcing on day one fails CI over debt that predates the gate,
+#        and a gate that is red on arrival gets deleted. Reported, it becomes a
+#        measured baseline: a future token change that makes it worse is visible
+#        in the diff of this output, and one that improves it is visible too.
+#        When the count reaches 0, promote 05b to enforcing and it becomes a
+#        regression guard for free -- that promotion is the point of the count.
+#
+# Threshold: CONTRAST_MIN, set in the parameters block, with the WCAG citation
+# and the reason this gate holds the normal-text floor instead of the large-text
+# 3:1 relaxation.
+#
+# AWK PORTABILITY. Ubuntu ships mawk by default and gawk is not guaranteed on the
+# runner, so this uses only POSIX awk: no gensub(), no strtonum(), no \s, no
+# arrays of arrays. Hex is decoded through an index() lookup on the digit
+# alphabet, which is portable and avoids the leading-zero octal trap that would
+# silently turn "#0f172a" into something else. exp/log stand in for the ^2.4
+# sRGB transfer exponent; ^ is a POSIX operator, but the power() form is used
+# for clarity. Nothing here writes to a file outside $TMP_DIR.
+#
+# THE -v FLAGS ARE LOAD-BEARING, and this was measured rather than assumed. The
+# parameters are passed with -v BEFORE the program text, NOT as bare
+# "name=value" operands after it. An assignment operand is applied when awk
+# reaches it on the command line, which is after BEGIN has already run, so
+# split(fgs, ...) inside BEGIN sees an empty string, the matrix silently scores
+# 0 pairs, and the gate prints a clean PASS over a check that never ran. That
+# is the worst possible failure for a contrast rule and it is invisible: no
+# error, no warning, no crash. --assign has the same defect, and so does -v
+# placed after the program text, which awk reads as an input filename. Only
+# leading -v is applied before BEGIN.
+#
+# awk creates a redirected output file on its first write, so a category with
+# zero findings would leave no file at all and every reader below would fail on
+# a missing path. Pre-creating all four guarantees that "no findings" is an
+# empty file rather than an absent one. awk's ">" truncates on first open, so
+# this is not overwritten by stale content.
+: >"$TMP_DIR/contrast_matrix"
+: >"$TMP_DIR/contrast_findings"
+: >"$TMP_DIR/contrast_skipped"
+: >"$TMP_DIR/contrast_summary"
+# -v flags lead the program text, per the note above.
+awk -v min="$CONTRAST_MIN" \
+  -v fgs="$CONTRAST_FG_TOKENS" \
+  -v bgs="$CONTRAST_BG_TOKENS" \
+  -v anchor="$CONTRAST_ANCHOR_FG" \
+  -v matrix="$TMP_DIR/contrast_matrix" \
+  -v failfile="$TMP_DIR/contrast_findings" \
+  -v skipfile="$TMP_DIR/contrast_skipped" \
+  -v summary="$TMP_DIR/contrast_summary" '
+function hexdigit(c,   p) {
+  # One hex character -> 0..15. Portable and correct for "0f"; a numeric cast
+  # of "0f" would be 0, and that mistake makes every dark token look black.
+  p = index("0123456789abcdef", tolower(c))
+  return (p == 0) ? -1 : p - 1
+}
+function byte(h, i) {
+  return hexdigit(substr(h, i, 1)) * 16 + hexdigit(substr(h, i + 1, 1))
+}
+function chan(v,   c) {
+  # WCAG 2.x: c = v/255, then linear below 0.03928, else ((c+0.055)/1.055)^2.4
+  c = v / 255
+  if (c <= 0.03928) return c / 12.92
+  # The (c + 0.055) / 1.055 sRGB offset is applied HERE, inside pow. Writing
+  # pow(c, 2.4) instead silently drops it, and the error is not a crash: every
+  # channel comes out too dark, the ratios come out too HIGH, and a palette
+  # that genuinely fails the floor gets reported as passing. This is the exact
+  # failure mode a contrast checker must not have, and it is why the matrix is
+  # diffed against a hand-computed reference rather than trusted on first run.
+  return pow((c + 0.055) / 1.055, 2.4)
+}
+function lum(h) {
+  return 0.2126 * chan(byte(h, 2)) + 0.7152 * chan(byte(h, 4)) \
+       + 0.0722 * chan(byte(h, 6))
+}
+function ratio(fg, bg,   lf, lb, t) {
+  lf = lum(fg); lb = lum(bg)
+  if (lf < lb) { t = lf; lf = lb; lb = t }
+  # WCAG 2.x: (L1 + 0.05) / (L2 + 0.05), L1 the lighter of the two.
+  return (lf + 0.05) / (lb + 0.05)
+}
+function pow(a, b) { return exp(b * log(a)) }
+function normalise(h,   s, out, i, c) {
+  # Accept #rgb and #rrggbb, with or without the leading hash, any case.
+  # Returns "" for anything else, which the caller reports as unreadable. It
+  # never guesses: an unreadable token is skipped loudly, never approximated.
+  s = tolower(h)
+  sub(/^#/, "", s)
+  if (s ~ /^[0-9a-f][0-9a-f][0-9a-f]$/) {
+    out = ""
+    for (i = 1; i <= 3; i++) { c = substr(s, i, 1); out = out c c }
+    return "#" out
+  }
+  if (s ~ /^[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]$/) return "#" s
+  return ""
+}
+BEGIN {
+  # TAB-separated input: the value is the rest of the line, so a token written
+  # as "rgb(148 163 184)" arrives whole. On awk default field splitting the
+  # value would be cut at the first space and the skip message would name a
+  # colour the author never wrote.
+  FS = "\t"
+  min_ratio = min + 0
+  nrows = split(fgs, FG, " ")
+  ncols = split(bgs, BG, " ")
+}
+{
+  # input is "path<TAB>rawvalue"; FS is set in BEGIN so a value with spaces
+  # stays intact.
+  path = $1
+  raw = $2
+  hex = normalise(raw)
+  if (hex == "") {
+    # Only a token the matrix actually consumes is worth a message; an
+    # unreadable token outside the matrix belongs to rule 04, not to a
+    # contrast gap. The leaf is compared against the axis names, not the
+    # dotted paths: FG holds "text", the input path is "cem.text".
+    leaf = path
+    sub(/^cem\./, "", leaf)
+    sub(/^stage\./, "", leaf)
+    needed = 0
+    for (i = 1; i <= nrows; i++) if (FG[i] == leaf) needed = 1
+    for (i = 1; i <= ncols; i++) if (BG[i] == leaf) needed = 1
+    if (needed) {
+      shown = (raw == "") ? "empty" : raw
+      printf "%s\tvalue is not a plain hex literal (%s); not scored\n", \
+        path, shown > skipfile
+    }
+    next
+  }
+  TOKEN[path] = hex
+}
+END {
+  # Header + the full matrix. Every pair is printed, not only the failures, so
+  # the state of the palette is legible at a glance and a reader can see how
+  # close a passing cell is to the floor. A cell under the floor gets a "*".
+  line = sprintf("        %-10s", "fg \\ bg")
+  for (c = 1; c <= ncols; c++) line = line sprintf("%10s", BG[c])
+  print line > matrix
+  below = 0
+  anchor_below = 0
+  pairs = 0
+  unscored = 0
+  for (r = 1; r <= nrows; r++) {
+    line = sprintf("        %-10s", FG[r])
+    for (c = 1; c <= ncols; c++) {
+      if (!(("cem." FG[r]) in TOKEN) || !(("cem." BG[c]) in TOKEN)) {
+        line = line sprintf("%10s", "n/a")
+        unscored++
+        continue
+      }
+      v = ratio(TOKEN["cem." FG[r]], TOKEN["cem." BG[c]])
+      pairs++
+      mark = (v < min_ratio) ? "*" : " "
+      if (v < min_ratio) {
+        below++
+        if (FG[r] == anchor) anchor_below++
+        # Findings are named with both hexes so a reviewer can verify the ratio
+        # by hand without re-running the gate.
+        printf "%s (%s) on %s (%s) = %.2f:1, under %.1f:1\n", \
+          FG[r], TOKEN["cem." FG[r]], BG[c], TOKEN["cem." BG[c]], v, min_ratio > failfile
+      }
+      line = line sprintf("%9.2f%s", v, mark)
+    }
+    print line > matrix
+  }
+  close(matrix)
+  printf "%d %d %d %d\n", below, anchor_below, pairs, unscored > summary
+  close(summary)
+  close(failfile)
+  close(skipfile)
+}
+' "$TMP_DIR/token_values" || true
+
+: >"$TMP_DIR/findings"
+if [ -s "$TMP_DIR/contrast_skipped" ]; then
+  # A token the matrix could not read is a hole in the coverage. It is reported
+  # as WARN, never FAIL: an unreadable value is a config-authoring problem, and
+  # guessing a colour to make a check pass would be worse than reporting it.
+  while IFS= read -r skipped; do
+    [ -n "$skipped" ] || continue
+    warn 05a "unreadable token value, pair not scored" "$skipped"
+  done <"$TMP_DIR/contrast_skipped"
+fi
+
+# The anchor is a subset of the findings, so it needs its own count. Reading
+# both from the same findings file is what keeps 05a honest: it cannot report
+# zero while 05b reports the same cell as failing, because they are the same
+# number, filtered.
+anchor_findings="$TMP_DIR/contrast_anchor"
+: >"$anchor_findings"
+if [ -s "$TMP_DIR/contrast_findings" ]; then
+  grep -E "^${CONTRAST_ANCHOR_FG} " "$TMP_DIR/contrast_findings" \
+    >"$anchor_findings" || true
+fi
+# An anchor that could not be READ is not a passing anchor. 05a counts only
+# scored pairs, so if cem.text itself is unreadable the count is 0 and an
+# enforcing rule would print PASS over a row that was never evaluated -- the
+# same vacuous pass as the -v bug above, reached by a different route. Any
+# unscored cell in the matrix is therefore injected into 05a's findings, so an
+# incomplete matrix fails the enforcing rule instead of quietly shrinking.
+if [ -s "$TMP_DIR/contrast_summary" ]; then
+  read -r _below _anchor scored_pairs unscored_pairs <"$TMP_DIR/contrast_summary"
+  if [ "${unscored_pairs:-0}" -gt 0 ]; then
+    printf 'matrix is %s scored cell(s) short: the anchor row is incomplete, not passing\n' \
+      "$unscored_pairs" >>"$anchor_findings"
+  fi
+fi
+
+: >"$TMP_DIR/findings"
+cp "$anchor_findings" "$TMP_DIR/findings"
+verify 05a "$RULE_05A_TEXT_CONTRAST" \
+  "cem.$CONTRAST_ANCHOR_FG clears $CONTRAST_MIN:1 on every background" \
+  "$(grep -c '' "$anchor_findings" 2>/dev/null || true)" || true
+if [ -s "$TMP_DIR/contrast_matrix" ]; then
+  while IFS= read -r row; do note "$row"; done <"$TMP_DIR/contrast_matrix"
+fi
+
+# 05b counts every under-floor pair, anchor included, so the total below is
+# visible in one number and matches the matrix the reader just saw.
+: >"$TMP_DIR/findings"
+cp "$TMP_DIR/contrast_findings" "$TMP_DIR/findings"
+count_05b="$(grep -c '' "$TMP_DIR/contrast_findings" 2>/dev/null || true)"
+verify 05b "$RULE_05B_PALETTE_CONTRAST" \
+  "every fg/bg token pair clears $CONTRAST_MIN:1" "$count_05b" || true
+if [ -s "$TMP_DIR/contrast_summary" ]; then
+  read -r below_pairs _anchor_pairs scored_pairs unscored_pairs \
+    <"$TMP_DIR/contrast_summary"
+  note "contrast: $scored_pairs pair(s) scored, $below_pairs under $CONTRAST_MIN:1, ${unscored_pairs:-0} unscored"
+  note "WCAG 2.x AA, normal text (SC 1.4.3). The 3:1 large-text relaxation is not used."
+fi
+if [ "$count_05b" -gt 0 ]; then
+  show_findings "$TMP_DIR/contrast_findings"
+  note "these are measured findings, not new debt: see odd/tasks/visual-system-macos.md 13."
+  note "cem.secondary is the body-text one; the accents are deprioritised by rule 02."
+fi
 
 # ---------------------------------------------------------------------------
 # REPORT-ONLY -- StageMode.jsx chrome
