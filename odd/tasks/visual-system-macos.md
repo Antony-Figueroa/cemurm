@@ -328,3 +328,80 @@ not publish.
 Unrelated to this unit, and preserved untouched on its own branch: `a879d3e`, the maintainer's
 feedback-migration renumber to `0033`, which had landed on the working branch while the unit was in
 progress. It is on `feat/feedback-0033-renumber` and appears in neither PR.
+
+## 15. Rule 05 — the contrast rule added to the gate
+
+Added to `scripts/check-visual-contract.sh`, which lands in **PR 1** (`75cb813`) — it is a change to
+the gate, and the gate is PR 1's whole subject. This note rides in PR 2 because the task record does.
+It computes the WCAG 2.x contrast ratio for every foreground-token-on-background-token pair in
+`tailwind.config.js` and prints the full 7 × 4 matrix. Token values are parsed from the config at run
+time, so editing a hex changes the reported number on the next run; there is no second copy of the
+palette to drift.
+
+| Sub-rule | Mode | Baseline | Why that mode |
+|---|---|---|---|
+| 05a `cem.text` on every background | enforcing | **0** of 4 | Passes today, and it is the checker's own self-test |
+| 05b every other fg/bg pair | report | **12** of 28 under the floor | Correct in principle, false today — see below |
+
+**The floor is 4.5:1**, the AA normal-text threshold (SC 1.4.3), not the 3:1 that SC 1.4.3 allows
+for large text. A token is not size-aware: the same `cem.secondary` is 14px body copy in one
+component and a large stage label in another, and a static config-level check cannot tell them
+apart. Judging everything at 3:1 would pass a regression that only ever surfaces in small text.
+Over-strict on a large label is a cosmetic over-warning; too lax on 14px copy is an accessibility
+defect. The strict figure is the cheaper mistake.
+
+**The measured matrix, 12 of 28 pairs under the floor:**
+
+| fg \ bg | base | surface | elevated | hover |
+|---|---|---|---|---|
+| text | 17.06 | 13.98 | 9.90 | 7.24 |
+| secondary | 6.96 | 5.71 | **4.04** | **2.96** |
+| amber | 8.31 | 6.81 | 4.82 | **3.53** |
+| emerald | 7.04 | 5.77 | **4.08** | **2.99** |
+| rose | 4.86 | **3.98** | **2.82** | **2.06** |
+| sky | 6.44 | 5.28 | **3.74** | **2.73** |
+| coral | 6.37 | 5.22 | **3.69** | **2.70** |
+
+This confirms and extends the `cem.secondary` finding already in §13 from two hand-computed cells to
+a full matrix. The one that matters for a human decision is still `cem.secondary` at **2.96:1** on
+`cem.hover` — it is body text, and it has 318 usages across 41 files, so correcting it is its own
+unit and not a change this gate should make. The four accent rows are lower still, but rule 02
+already holds them at 252 usages and they are on the retirement path, so tightening them now would
+be theatre. No token value was changed.
+
+**05b is report, not enforcing, and the count is the reason.** Promoting it today fails CI on its
+first run over debt that predates the gate, and a gate that is red on arrival gets deleted. As a
+report it is a ratchet in waiting: the number is visible in every run, a token change that makes it
+worse shows up in the diff of this output, and when it reaches 0 the rule is promoted to enforcing
+and becomes a regression guard for free.
+
+### Three defects found by making the checker fail on purpose
+
+A contrast checker that always passes is worse than no checker, so 05 was made to fail three ways.
+Two of the three were bugs in this rule, found only because it was tested against a known-bad tree.
+
+1. **The `-v` flags must precede the program text.** Passing the parameters as bare `name=value`
+   operands looks correct and silently scores **0 pairs**: an assignment operand is applied when awk
+   reaches it on the command line, which is after `BEGIN` has already run, so `split(fgs, …)` inside
+   `BEGIN` sees an empty string. `--assign` has the same defect, and `-v` placed after the program is
+   read as an input filename. The output was a clean `PASS 05a  0 occurrences` over a check that
+   never ran — no error, no warning, no crash. This is the exact false confidence §12 records for
+   rule 02, reached by a different route.
+2. **The sRGB offset was dropped from the power term.** `pow(c, 2.4)` instead of
+   `pow((c + 0.055) / 1.055, 2.4)` makes every channel too dark and every ratio too *high*:
+   `cem.text` on `cem.base` reported **18.74** instead of **17.06**. Same class of failure, opposite
+   direction — a palette that genuinely fails the floor gets reported as passing. Caught by
+   diffing the matrix against a reference table, not by reading the code.
+3. **An unreadable token is not a passing token.** A cell that cannot be scored is counted into
+   05a's findings, so the enforcing rule fails on an incomplete matrix rather than reporting 0. Also
+   verified: a 3-digit hex (`#fff`) normalises to its 6-digit equivalent, and a value the parser
+   cannot read — `'var(--cem-text)'`, `'rgb(148 163 184)'` — is skipped with a `WARN` naming the
+   path and the exact value, never guessed at and never silently dropped.
+
+**Verification, all on this branch.** `bash -n` clean; `shellcheck -S warning` clean; gate `OK`,
+exit 0, 9 rules checked, every pre-existing rule byte-identical in mode and count. Vacuous-pass test:
+`cem.text` set to `#0f172a` gave `FAIL 05a  4 occurrences` with all four cells listed and exit 1,
+and 05b rose 12 → 16 consistently, then reverted with the config byte-compared against its backup
+and `git diff --stat` empty. `pnpm lint`, `pnpm test` (235 passing), `pnpm typecheck` and
+`pnpm build` all green. `tailwind.config.js` is untouched; no token value was changed to make a
+check pass.
