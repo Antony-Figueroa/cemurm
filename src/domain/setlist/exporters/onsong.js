@@ -26,13 +26,19 @@ export function serializeOnSong(setlist, songs) {
     const song = byId.get(songId)
     if (!song) continue // missing song — nothing to serialize
 
-    // Agreed key: the item's pinned version wins; otherwise the song's
-    // current version key (flattened song.key).
-    let key = song.key || ''
-    const versionId = setlist?.versionIds?.[songId]
-    if (versionId && Array.isArray(song.versions)) {
-      const selected = song.versions.find((v) => v.id === versionId)
-      if (selected?.key) key = selected.key
+    // Agreed key: the band's settled key for this item wins, because
+    // external-integrations.feature requires the export to carry "agreed keys"
+    // and the agreed key is the one that differs from the chart's own. Falling
+    // back to the pinned version and then the song key keeps a setlist where
+    // nobody agreed anything still exporting correctly.
+    const agreed = setlist?.agreedKeys?.[songId]
+    let key = agreed || song.key || ''
+    if (!agreed) {
+      const versionId = setlist?.versionIds?.[songId]
+      if (versionId && Array.isArray(song.versions)) {
+        const selected = song.versions.find((v) => v.id === versionId)
+        if (selected?.key) key = selected.key
+      }
     }
 
     const lines = []
