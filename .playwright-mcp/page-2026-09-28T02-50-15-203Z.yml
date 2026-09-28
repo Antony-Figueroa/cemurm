@@ -1,0 +1,967 @@
+- generic [ref=f34e2]:
+  - link "Skip Navigation" [ref=f34e3] [cursor=pointer]:
+    - /url: /design/human-interface-guidelines/materials#app-main
+  - generic [ref=f34e5]:
+    - link "Ver en español" [ref=f34e6] [cursor=pointer]:
+      - /url: /la/design/human-interface-guidelines/materials
+    - button "Continue viewing in English" [ref=f34e10] [cursor=pointer]
+  - navigation "Global" [ref=f34e13]:
+    - list [ref=f34e15]:
+      - listitem [ref=f34e16]:
+        - link "Apple Developer" [ref=f34e17] [cursor=pointer]:
+          - /url: /
+      - listitem [ref=f34e18]:
+        - generic [ref=f34e20]:
+          - list [ref=f34e22]:
+            - listitem [ref=f34e23]:
+              - link "Get Started" [ref=f34e24] [cursor=pointer]:
+                - /url: /get-started/
+            - listitem:
+              - button "Get Started menu"
+          - list [ref=f34e27]:
+            - listitem [ref=f34e28]:
+              - link "Platforms" [ref=f34e29] [cursor=pointer]:
+                - /url: /platforms/
+            - listitem:
+              - button "Platforms menu"
+          - list [ref=f34e32]:
+            - listitem [ref=f34e33]:
+              - link "Technologies" [ref=f34e34] [cursor=pointer]:
+                - /url: /technologies/
+            - listitem:
+              - button "Technologies menu"
+          - list [ref=f34e37]:
+            - listitem [ref=f34e38]:
+              - link "Community" [ref=f34e39] [cursor=pointer]:
+                - /url: /community/
+            - listitem:
+              - button "Community menu"
+          - list [ref=f34e42]:
+            - listitem [ref=f34e43]:
+              - link "Documentation" [ref=f34e44] [cursor=pointer]:
+                - /url: /documentation/
+            - listitem:
+              - button "Documentation menu"
+          - list [ref=f34e47]:
+            - listitem [ref=f34e48]:
+              - link "Downloads" [ref=f34e49] [cursor=pointer]:
+                - /url: /download/
+            - listitem:
+              - button "Downloads menu"
+          - list [ref=f34e52]:
+            - listitem [ref=f34e53]:
+              - link "Support" [ref=f34e54] [cursor=pointer]:
+                - /url: /support/
+            - listitem:
+              - button "Support menu"
+      - listitem [ref=f34e56]:
+        - button "Search" [ref=f34e57] [cursor=pointer]
+      - listitem [ref=f34e58]:
+        - link "Sign in" [ref=f34e60] [cursor=pointer]:
+          - /url: /login/?return=%2Fdesign%2Fhuman-interface-guidelines%2Fmaterials
+  - generic [ref=f34e61]:
+    - navigation [ref=f34e62]:
+      - generic [ref=f34e65]:
+        - button "Open Documentation Navigator" [ref=f34e68] [cursor=pointer]
+        - link "Design" [ref=f34e74] [cursor=pointer]:
+          - /url: /design/
+        - list [ref=f34e77]:
+          - listitem [ref=f34e78]:
+            - link "Overview" [ref=f34e79] [cursor=pointer]:
+              - /url: https://developer.apple.com/design/
+          - listitem [ref=f34e80]:
+            - link "What’s New" [ref=f34e81] [cursor=pointer]:
+              - /url: https://developer.apple.com/design/whats-new/
+          - listitem [ref=f34e82]:
+            - link "Get Started" [ref=f34e83] [cursor=pointer]:
+              - /url: https://developer.apple.com/design/get-started/
+          - listitem [ref=f34e84]:
+            - link "Guidelines" [ref=f34e85] [cursor=pointer]:
+              - /url: /design/human-interface-guidelines
+          - listitem [ref=f34e86]:
+            - link "Resources" [ref=f34e87] [cursor=pointer]:
+              - /url: https://developer.apple.com/design/resources/
+    - generic [ref=f34e88]:
+      - generic [ref=f34e89]:
+        - navigation [ref=f34e91]:
+          - generic [ref=f34e94]:
+            - generic [ref=f34e96]:
+              - heading "Human Interface Guidelines" [level=2] [ref=f34e97]
+              - button "Close Documentation Navigator" [ref=f34e98] [cursor=pointer]
+            - generic [ref=f34e101]:
+              - generic "Documentation Navigator" [ref=f34e102]:
+                - generic [ref=f34e103]:
+                  - generic [ref=f34e107]:
+                    - button "Technologies" [ref=f34e109] [cursor=pointer]
+                    - link [ref=f34e113] [cursor=pointer]:
+                      - /url: /design/human-interface-guidelines/technologies
+                      - paragraph [ref=f34e114]: Technologies
+                  - generic [ref=f34e118]:
+                    - button "Inputs" [ref=f34e120] [cursor=pointer]
+                    - link [ref=f34e124] [cursor=pointer]:
+                      - /url: /design/human-interface-guidelines/inputs
+                      - paragraph [ref=f34e125]: Inputs
+                  - generic [ref=f34e129]:
+                    - button "Components" [ref=f34e131] [cursor=pointer]
+                    - link [ref=f34e135] [cursor=pointer]:
+                      - /url: /design/human-interface-guidelines/components
+                      - paragraph [ref=f34e136]: Components
+                  - generic [ref=f34e140]:
+                    - button "Patterns" [ref=f34e142] [cursor=pointer]
+                    - link [ref=f34e146] [cursor=pointer]:
+                      - /url: /design/human-interface-guidelines/patterns
+                      - paragraph [ref=f34e147]: Patterns
+                  - link [ref=f34e157] [cursor=pointer]:
+                    - /url: /design/human-interface-guidelines/writing
+                    - paragraph [ref=f34e158]: Writing
+                  - link [ref=f34e168] [cursor=pointer]:
+                    - /url: /design/human-interface-guidelines/typography
+                    - paragraph [ref=f34e169]: Typography
+                  - link [ref=f34e179] [cursor=pointer]:
+                    - /url: /design/human-interface-guidelines/spatial-layout
+                    - paragraph [ref=f34e180]: Spatial layout
+                  - link [ref=f34e191] [cursor=pointer]:
+                    - /url: /design/human-interface-guidelines/sf-symbols
+                    - paragraph [ref=f34e192]: SF Symbols
+                  - link [ref=f34e203] [cursor=pointer]:
+                    - /url: /design/human-interface-guidelines/right-to-left
+                    - paragraph [ref=f34e204]: Right to left
+                  - link [ref=f34e215] [cursor=pointer]:
+                    - /url: /design/human-interface-guidelines/privacy
+                    - paragraph [ref=f34e216]: Privacy
+                  - link [ref=f34e227] [cursor=pointer]:
+                    - /url: /design/human-interface-guidelines/motion
+                    - paragraph [ref=f34e228]: Motion
+                  - link [ref=f34e239] [cursor=pointer]:
+                    - /url: /design/human-interface-guidelines/materials
+                    - paragraph [ref=f34e240]: Materials
+                  - link [ref=f34e251] [cursor=pointer]:
+                    - /url: /design/human-interface-guidelines/layout
+                    - paragraph [ref=f34e252]: Layout
+                  - link [ref=f34e263] [cursor=pointer]:
+                    - /url: /design/human-interface-guidelines/inclusion
+                    - paragraph [ref=f34e264]: Inclusion
+                  - link [ref=f34e275] [cursor=pointer]:
+                    - /url: /design/human-interface-guidelines/immersive-experiences
+                    - paragraph [ref=f34e276]: Immersive experiences
+                  - link [ref=f34e287] [cursor=pointer]:
+                    - /url: /design/human-interface-guidelines/images
+                    - paragraph [ref=f34e288]: Images
+                  - link [ref=f34e299] [cursor=pointer]:
+                    - /url: /design/human-interface-guidelines/icons
+                    - paragraph [ref=f34e300]: Icons
+                  - link [ref=f34e311] [cursor=pointer]:
+                    - /url: /design/human-interface-guidelines/dark-mode
+                    - paragraph [ref=f34e312]: Dark Mode
+                  - link [ref=f34e323] [cursor=pointer]:
+                    - /url: /design/human-interface-guidelines/color
+                    - paragraph [ref=f34e324]: Color
+                  - link [ref=f34e335] [cursor=pointer]:
+                    - /url: /design/human-interface-guidelines/branding
+                    - paragraph [ref=f34e336]: Branding
+                  - link [ref=f34e347] [cursor=pointer]:
+                    - /url: /design/human-interface-guidelines/app-icons
+                    - paragraph [ref=f34e348]: App icons
+                  - link [ref=f34e359] [cursor=pointer]:
+                    - /url: /design/human-interface-guidelines/accessibility
+                    - paragraph [ref=f34e360]: Accessibility
+                  - generic [ref=f34e364]:
+                    - button "Foundations" [expanded] [ref=f34e366] [cursor=pointer]
+                    - link [ref=f34e370] [cursor=pointer]:
+                      - /url: /design/human-interface-guidelines/foundations
+                      - paragraph [ref=f34e371]: Foundations
+                  - generic [ref=f34e375]:
+                    - button "Getting started" [ref=f34e377] [cursor=pointer]
+                    - link [ref=f34e381] [cursor=pointer]:
+                      - /url: /design/human-interface-guidelines/getting-started
+                      - paragraph [ref=f34e382]: Getting started
+              - generic [ref=f34e383]: 24 items were found. Tab back to navigate through them.
+              - generic:
+                - paragraph
+            - search [ref=f34e387]:
+              - generic [ref=f34e389]:
+                - button [aria-hidden] [ref=f34e390]
+                - generic "Filter" [ref=f34e394]:
+                  - combobox "Filter" [ref=f34e395]
+          - generic [ref=f34e397]: Navigator is ready
+        - generic [ref=f34e399]:
+          - main [ref=f34e400]:
+            - generic [ref=f34e403]:
+              - heading "Materials" [level=1] [ref=f34e405]
+              - generic [ref=f34e406]: A material is a visual effect that creates a sense of depth, layering, and hierarchy between foreground and background elements.
+            - generic [ref=f34e411]:
+              - paragraph [ref=f34e412]:
+                - img "A sketch of a capsule shape overlapping a square. A subtle bend in the edges of the square that are beneath the capsule suggests the layering of the Liquid Glass material over background content. The image is overlaid with rectangular and circular grid lines and is tinted yellow to subtly reflect the yellow in the original six-color Apple logo." [ref=f34e414]
+              - paragraph [ref=f34e415]: Materials help visually separate foreground elements, such as text and controls, from background elements, such as content and solid colors. By allowing color to pass through from background to foreground, a material establishes visual hierarchy to help people more easily retain a sense of place.
+              - paragraph [ref=f34e416]:
+                - text: "Apple platforms feature two types of materials: Liquid Glass, and standard materials."
+                - link "Liquid Glass" [ref=f34e417] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/materials#Liquid-Glass
+                - text: is a dynamic material that unifies the design language across Apple platforms, allowing you to present controls and navigation without obscuring underlying content. In contrast to Liquid Glass, the
+                - link "standard materials" [ref=f34e418] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/materials#Standard-materials
+                - text: help with visual differentiation within the content layer.
+              - heading [level=2] [ref=f34e419]:
+                - link "Liquid Glass in page link" [ref=f34e420] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/materials#Liquid-Glass
+              - paragraph [ref=f34e421]: Liquid Glass forms a distinct functional layer for controls and navigation elements — like tab bars and sidebars — that floats above the content layer, establishing a clear visual hierarchy between functional elements and content. Liquid Glass allows content to scroll and peek through from beneath these elements to give the interface a sense of dynamism and depth, all while maintaining legibility for controls and navigation.
+              - paragraph [ref=f34e422]:
+                - strong [ref=f34e423]: Don’t use Liquid Glass in the content layer.
+                - text: Liquid Glass works best when it provides a clear distinction between interactive elements and content, and including it in the content layer can result in unnecessary complexity and a confusing visual hierarchy. Instead, use
+                - link "standard materials" [ref=f34e424] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/materials#Standard-materials
+                - text: for elements in the content layer, such as app backgrounds. An exception to this is for controls in the content layer with a transient interactive element like
+                - link "sliders" [ref=f34e425] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/sliders
+                - text: and
+                - link "toggles" [ref=f34e426] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/toggles
+                - text: ; in these cases, the element takes on a Liquid Glass appearance to emphasize its interactivity when a person activates it.
+              - paragraph [ref=f34e427]:
+                - strong [ref=f34e428]: Use Liquid Glass effects sparingly.
+                - text: Standard components from system frameworks pick up the appearance and behavior of this material automatically. If you apply Liquid Glass effects to a custom control, do so sparingly. Liquid Glass seeks to bring attention to the underlying content, and overusing this material in multiple custom controls can provide a subpar user experience by distracting from that content. Limit these effects to the most important functional elements in your app. For developer guidance, see
+                - link "Applying Liquid Glass to custom views" [ref=f34e429] [cursor=pointer]:
+                  - /url: /documentation/swiftui/applying-liquid-glass-to-custom-views
+                - text: .
+              - paragraph [ref=f34e430]:
+                - strong [ref=f34e431]: Only use clear Liquid Glass for components that appear over visually rich backgrounds.
+                - text: Liquid Glass provides two variants —
+                - link [ref=f34e432] [cursor=pointer]:
+                  - /url: /documentation/swiftui/glass/regular
+                  - code [ref=f34e433]: regular
+                - text: and
+                - link [ref=f34e434] [cursor=pointer]:
+                  - /url: /documentation/swiftui/glass/clear
+                  - code [ref=f34e435]: clear
+                - text: — that you can choose when building custom components or styling some system components. The appearance of these variants can differ in response to certain system settings, like if people choose a preferred look for Liquid Glass in their device’s settings, or turn on accessibility settings that reduce transparency or increase contrast in the interface.
+              - paragraph [ref=f34e436]:
+                - text: The
+                - emphasis [ref=f34e437]: regular
+                - text: variant blurs and adjusts the luminosity of background content to maintain legibility of text and other foreground elements. Scroll edge effects further enhance legibility by blurring and reducing the opacity of background content. Most system components use this variant. Use the regular variant when background content might create legibility issues, or when components have a significant amount of text, such as alerts, sidebars, or popovers.
+              - generic [ref=f34e438]:
+                - paragraph [ref=f34e440]:
+                  - figure "On dark background" [ref=f34e441]:
+                    - img "A visual example of the regular variant of Liquid Glass, which appears darker when there is a dark background beneath it." [ref=f34e443]
+                - paragraph [ref=f34e446]:
+                  - figure "On light background" [ref=f34e447]:
+                    - img "A visual example of the regular variant of Liquid Glass, which appears lighter when there is a light background beneath it." [ref=f34e449]
+              - paragraph [ref=f34e451]:
+                - text: The
+                - emphasis [ref=f34e452]: clear
+                - text: variant is highly translucent, which is ideal for prioritizing the visibility of the underlying content and ensuring visually rich background elements remain prominent. Use this variant for components that float above media backgrounds — such as photos and videos — to create a more immersive content experience.
+              - paragraph:
+                - generic:
+                  - img "A visual example of the clear variant of Liquid Glass, which allows the visual detail of the background beneath it to show through."
+              - paragraph [ref=f34e453]: "For optimal contrast and legibility, determine whether to add a dimming layer behind components with clear Liquid Glass:"
+              - list [ref=f34e454]:
+                - listitem [ref=f34e455]:
+                  - paragraph [ref=f34e456]:
+                    - text: If the underlying content is bright, consider adding a dark dimming layer of 35% opacity. For developer guidance, see
+                    - link [ref=f34e457] [cursor=pointer]:
+                      - /url: /documentation/swiftui/glass/clear
+                      - code [ref=f34e458]: clear
+                    - text: .
+                - listitem [ref=f34e459]:
+                  - paragraph [ref=f34e460]: If the underlying content is sufficiently dark, or if you use standard media playback controls from AVKit that provide their own dimming layer, you don’t need to apply a dimming layer.
+              - paragraph [ref=f34e461]:
+                - text: For guidance about the use of color, see
+                - link "Liquid Glass color" [ref=f34e462] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/color#Liquid-Glass-color
+                - text: .
+              - heading [level=2] [ref=f34e463]:
+                - link "Standard materials in page link" [ref=f34e464] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/materials#Standard-materials
+              - paragraph [ref=f34e465]:
+                - text: Use standard materials and effects — such as
+                - link "blur" [ref=f34e466] [cursor=pointer]:
+                  - /url: /documentation/uikit/uiblureffect
+                - text: ","
+                - link "vibrancy" [ref=f34e467] [cursor=pointer]:
+                  - /url: /documentation/uikit/uivibrancyeffect
+                - text: ", and"
+                - link "blending modes" [ref=f34e468] [cursor=pointer]:
+                  - /url: /documentation/appkit/nsvisualeffectview/blendingmode-swift.enum
+                - text: — to convey a sense of structure in the content beneath Liquid Glass.
+              - paragraph [ref=f34e469]:
+                - strong [ref=f34e470]: Choose materials and effects based on semantic meaning and recommended usage.
+                - text: Avoid selecting a material or effect based on the apparent color it imparts to your interface, because system settings can change its appearance and behavior. Instead, match the material or vibrancy style to your specific use case.
+              - paragraph [ref=f34e471]:
+                - strong [ref=f34e472]: Help ensure legibility by using vibrant colors on top of materials.
+                - text: When you use system-defined vibrant colors, you don’t need to worry about colors seeming too dark, bright, saturated, or low contrast in different contexts. Regardless of the material you choose, use vibrant colors on top of it. For guidance, see
+                - link "System colors" [ref=f34e473] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/color#System-colors
+                - text: .
+              - generic [ref=f34e474]:
+                - generic [ref=f34e475]:
+                  - paragraph [ref=f34e476]:
+                    - figure [ref=f34e477]:
+                      - generic:
+                        - img "An illustration of a Share button with a translucent background material and a symbol. The symbol uses the systemGray3 color and is difficult to see against the background material."
+                      - generic [ref=f34e478]:
+                        - text: Poor contrast between the material and
+                        - code [ref=f34e479]: systemGray3
+                        - text: label
+                  - paragraph:
+                    - generic:
+                      - img "An X in a circle to indicate incorrect usage"
+                - generic [ref=f34e480]:
+                  - paragraph [ref=f34e481]:
+                    - figure "Good contrast between the material and vibrant color label" [ref=f34e482]:
+                      - generic:
+                        - img "An illustration of a Share button with a translucent background material and a symbol. The symbol uses vibrant color and is clearly visible against the background material."
+                  - paragraph:
+                    - generic:
+                      - img "A checkmark in a circle to indicate correct usage"
+              - paragraph [ref=f34e484]:
+                - strong [ref=f34e485]: Consider contrast and visual separation when choosing a material to combine with blur and vibrancy effects.
+                - text: "For example, consider that:"
+              - list [ref=f34e486]:
+                - listitem [ref=f34e487]:
+                  - paragraph [ref=f34e488]: Thicker materials, which are more opaque, can provide better contrast for text and other elements with fine features.
+                - listitem [ref=f34e489]:
+                  - paragraph [ref=f34e490]: Thinner materials, which are more translucent, can help people retain their context by providing a visible reminder of the content that’s in the background.
+              - paragraph [ref=f34e491]:
+                - text: For developer guidance, see
+                - link [ref=f34e492] [cursor=pointer]:
+                  - /url: /documentation/swiftui/material
+                  - code [ref=f34e493]: Material
+                - text: .
+              - heading [level=2] [ref=f34e494]:
+                - link "Platform considerations in page link" [ref=f34e495] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/materials#Platform-considerations
+              - heading [level=3] [ref=f34e496]:
+                - link "iOS, iPadOS in page link" [ref=f34e497] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/materials#iOS-iPadOS
+              - paragraph [ref=f34e498]: In addition to Liquid Glass, iOS and iPadOS continue to provide four standard materials — ultra-thin, thin, regular (default), and thick — which you can use in the content layer to help create visual distinction.
+              - generic [ref=f34e499]:
+                - paragraph [ref=f34e501]:
+                  - figure [ref=f34e502]:
+                    - generic:
+                      - img "An illustration of the iOS and iPadOS ultraThin material above a colorful background. Where the material overlaps the background, it provides a diffuse gradient of the background colors."
+                    - code [ref=f34e504]: ultraThin
+                - paragraph [ref=f34e506]:
+                  - figure [ref=f34e507]:
+                    - generic:
+                      - img "An illustration of the iOS and iPadOS thin material above a colorful background. Where the material overlaps the background, it provides a diffuse and slightly darkened gradient of the background colors."
+                    - code [ref=f34e509]: thin
+              - generic [ref=f34e510]:
+                - paragraph [ref=f34e512]:
+                  - figure [ref=f34e513]:
+                    - generic:
+                      - img "An illustration of the iOS and iPadOS regular material above a colorful background. Where the material overlaps the background, it provides a diffuse and darkened gradient of the background colors."
+                    - code [ref=f34e515]: regular
+                - paragraph [ref=f34e517]:
+                  - figure [ref=f34e518]:
+                    - generic:
+                      - img "An illustration of the iOS and iPadOS thick material above a colorful background. Where the material overlaps the background, it provides a dark, muted gradient of the background colors."
+                    - code [ref=f34e520]: thick
+              - paragraph [ref=f34e521]: "iOS and iPadOS also define vibrant colors for labels, fills, and separators that are specifically designed to work with each material. Labels and fills both have several levels of vibrancy; separators have one level. The name of a level indicates the relative amount of contrast between an element and the background: The default level has the highest contrast, whereas quaternary (when it exists) has the lowest contrast."
+              - paragraph [ref=f34e522]:
+                - text: Except for quaternary, you can use the following vibrancy values for labels on any material. In general, avoid using quaternary on top of the
+                - link [ref=f34e523] [cursor=pointer]:
+                  - /url: /documentation/swiftui/material/thin
+                  - code [ref=f34e524]: thin
+                - text: and
+                - link [ref=f34e525] [cursor=pointer]:
+                  - /url: /documentation/swiftui/material/ultrathin
+                  - code [ref=f34e526]: ultraThin
+                - text: materials, because the contrast is too low.
+              - list [ref=f34e527]:
+                - listitem [ref=f34e528]:
+                  - paragraph [ref=f34e529]:
+                    - link [ref=f34e530] [cursor=pointer]:
+                      - /url: /documentation/uikit/uivibrancyeffectstyle/label
+                      - code [ref=f34e531]: UIVibrancyEffectStyle.label
+                    - text: (default)
+                - listitem [ref=f34e532]:
+                  - paragraph [ref=f34e533]:
+                    - link [ref=f34e534] [cursor=pointer]:
+                      - /url: /documentation/uikit/uivibrancyeffectstyle/secondarylabel
+                      - code [ref=f34e535]: UIVibrancyEffectStyle.secondaryLabel
+                - listitem [ref=f34e536]:
+                  - paragraph [ref=f34e537]:
+                    - link [ref=f34e538] [cursor=pointer]:
+                      - /url: /documentation/uikit/uivibrancyeffectstyle/tertiarylabel
+                      - code [ref=f34e539]: UIVibrancyEffectStyle.tertiaryLabel
+                - listitem [ref=f34e540]:
+                  - paragraph [ref=f34e541]:
+                    - link [ref=f34e542] [cursor=pointer]:
+                      - /url: /documentation/uikit/uivibrancyeffectstyle/quaternarylabel
+                      - code [ref=f34e543]: UIVibrancyEffectStyle.quaternaryLabel
+              - paragraph [ref=f34e544]: You can use the following vibrancy values for fills on all materials.
+              - list [ref=f34e545]:
+                - listitem [ref=f34e546]:
+                  - paragraph [ref=f34e547]:
+                    - link [ref=f34e548] [cursor=pointer]:
+                      - /url: /documentation/uikit/uivibrancyeffectstyle/fill
+                      - code [ref=f34e549]: UIVibrancyEffectStyle.fill
+                    - text: (default)
+                - listitem [ref=f34e550]:
+                  - paragraph [ref=f34e551]:
+                    - link [ref=f34e552] [cursor=pointer]:
+                      - /url: /documentation/uikit/uivibrancyeffectstyle/secondaryfill
+                      - code [ref=f34e553]: UIVibrancyEffectStyle.secondaryFill
+                - listitem [ref=f34e554]:
+                  - paragraph [ref=f34e555]:
+                    - link [ref=f34e556] [cursor=pointer]:
+                      - /url: /documentation/uikit/uivibrancyeffectstyle/tertiaryfill
+                      - code [ref=f34e557]: UIVibrancyEffectStyle.tertiaryFill
+              - paragraph [ref=f34e558]:
+                - text: The system provides a single, default vibrancy value for a
+                - link "separator" [ref=f34e559] [cursor=pointer]:
+                  - /url: /documentation/uikit/uivibrancyeffectstyle/separator
+                - text: ", which works well on all materials."
+              - heading [level=3] [ref=f34e560]:
+                - link "macOS in page link" [ref=f34e561] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/materials#macOS
+              - paragraph [ref=f34e562]:
+                - text: macOS provides several standard materials with designated purposes, and vibrant versions of all
+                - link "system colors" [ref=f34e563] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/color#Specifications
+                - text: . For developer guidance, see
+                - link [ref=f34e564] [cursor=pointer]:
+                  - /url: /documentation/appkit/nsvisualeffectview/material-swift.enum
+                  - code [ref=f34e565]: NSVisualEffectView.Material
+                - text: .
+              - paragraph [ref=f34e566]:
+                - strong [ref=f34e567]: Choose when to allow vibrancy in custom views and controls.
+                - text: Depending on configuration and system settings, system views and controls use vibrancy to make foreground content stand out against any background. Test your interface in a variety of contexts to discover when vibrancy enhances the appearance and improves communication.
+              - paragraph [ref=f34e568]:
+                - strong [ref=f34e569]: Choose a background blending mode that complements your interface design.
+                - text: "macOS defines two modes that blend background content: behind window and within window. For developer guidance, see"
+                - link [ref=f34e570] [cursor=pointer]:
+                  - /url: /documentation/appkit/nsvisualeffectview/blendingmode-swift.enum
+                  - code [ref=f34e571]: NSVisualEffectView.BlendingMode
+                - text: .
+              - heading [level=3] [ref=f34e572]:
+                - link "tvOS in page link" [ref=f34e573] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/materials#tvOS
+              - paragraph [ref=f34e574]: In tvOS, Liquid Glass appears throughout navigation elements and system experiences such as Top Shelf and Control Center. Certain interface elements, like image views and buttons, adopt Liquid Glass when they gain focus.
+              - paragraph [ref=f34e575]:
+                - img "A screenshot of the Destination Video app running in tvOS. The app shows a screen with details about a video called A BOT-anist Adventure. The background is a colorful image of the main character in a scene from the video. The interface elements floating above the background adopt a Liquid Glass appearance to allow background color to show through and create a more immersive media experience." [ref=f34e579]
+              - paragraph [ref=f34e580]: "In addition to Liquid Glass, tvOS continues to provide standard materials, which you can use to help define structure in the content layer. The thickness of a standard material affects how prominently the underlying content shows through. For example, consider using standard materials in the following ways:"
+              - table [ref=f34e582]:
+                - rowgroup [ref=f34e583]:
+                  - row [ref=f34e584]:
+                    - columnheader [ref=f34e585]:
+                      - paragraph [ref=f34e586]: Material
+                    - columnheader [ref=f34e587]:
+                      - paragraph [ref=f34e588]: Recommended for
+                - rowgroup [ref=f34e589]:
+                  - row [ref=f34e590]:
+                    - cell [ref=f34e591]:
+                      - paragraph [ref=f34e592]:
+                        - link [ref=f34e593] [cursor=pointer]:
+                          - /url: /documentation/swiftui/material/ultrathin
+                          - code [ref=f34e594]: ultraThin
+                    - cell [ref=f34e595]:
+                      - paragraph [ref=f34e596]: Full-screen views that require a light color scheme
+                  - row [ref=f34e597]:
+                    - cell [ref=f34e598]:
+                      - paragraph [ref=f34e599]:
+                        - link [ref=f34e600] [cursor=pointer]:
+                          - /url: /documentation/swiftui/material/thin
+                          - code [ref=f34e601]: thin
+                    - cell [ref=f34e602]:
+                      - paragraph [ref=f34e603]: Overlay views that partially obscure onscreen content and require a light color scheme
+                  - row [ref=f34e604]:
+                    - cell [ref=f34e605]:
+                      - paragraph [ref=f34e606]:
+                        - link [ref=f34e607] [cursor=pointer]:
+                          - /url: /documentation/swiftui/material/regular
+                          - code [ref=f34e608]: regular
+                    - cell [ref=f34e609]:
+                      - paragraph [ref=f34e610]: Overlay views that partially obscure onscreen content
+                  - row [ref=f34e611]:
+                    - cell [ref=f34e612]:
+                      - paragraph [ref=f34e613]:
+                        - link [ref=f34e614] [cursor=pointer]:
+                          - /url: /documentation/swiftui/material/thick
+                          - code [ref=f34e615]: thick
+                    - cell [ref=f34e616]:
+                      - paragraph [ref=f34e617]: Overlay views that partially obscure onscreen content and require a dark color scheme
+              - heading [level=3] [ref=f34e618]:
+                - link "visionOS in page link" [ref=f34e619] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/materials#visionOS
+              - paragraph [ref=f34e620]:
+                - text: In visionOS, windows generally use an unmodifiable system-defined material called
+                - emphasis [ref=f34e621]: glass
+                - text: that helps people stay grounded by letting light, the current Environment, virtual content, and objects in people’s surroundings show through. Glass is an adaptive material that limits the range of background color information so a window can continue to provide contrast for app content while becoming brighter or darker depending on people’s physical surroundings and other virtual content.
+              - 'group "Video with custom controls. Content description: A recording of the Music app window in visionOS. The window uses the glass material and adapts as the viewing angle and lighting change." [ref=f34e623]':
+                - link "Play" [ref=f34e626] [cursor=pointer]:
+                  - /url: "#"
+              - complementary "note" [ref=f34e631]:
+                - paragraph [ref=f34e632]: Note
+                - paragraph [ref=f34e633]: visionOS doesn’t have a distinct Dark Mode setting. Instead, glass automatically adapts to the luminance of the objects and colors behind it.
+              - paragraph [ref=f34e634]:
+                - strong [ref=f34e635]: Prefer translucency to opaque colors in windows.
+                - text: Areas of opacity can block people’s view, making them feel constricted and reducing their awareness of the virtual and physical objects around them.
+              - generic [ref=f34e636]:
+                - generic [ref=f34e637]:
+                  - paragraph:
+                    - generic:
+                      - img "An illustration of a field of view in visionOS with a window in the center. The window has an opaque background that obstructs its surroundings."
+                  - paragraph:
+                    - generic:
+                      - img "An X in a circle to indicate incorrect usage"
+                - generic [ref=f34e638]:
+                  - paragraph:
+                    - generic:
+                      - img "An illustration of a field of view in visionOS with a window in the center. The window has a translucent material background that allows its surroundings to pass through."
+                  - paragraph:
+                    - generic:
+                      - img "A checkmark in a circle to indicate correct usage"
+              - paragraph [ref=f34e639]:
+                - strong [ref=f34e640]: If necessary, choose materials that help you create visual separations or indicate interactivity in your app.
+                - text: If you need to create a custom component, you may need to specify a system material for it. Use the following examples for guidance.
+              - list [ref=f34e641]:
+                - listitem [ref=f34e642]:
+                  - paragraph [ref=f34e643]:
+                    - text: The
+                    - link [ref=f34e644] [cursor=pointer]:
+                      - /url: /documentation/swiftui/material/thin
+                      - code [ref=f34e645]: thin
+                    - text: material brings attention to interactive elements like buttons and selected items.
+                - listitem [ref=f34e646]:
+                  - paragraph [ref=f34e647]:
+                    - text: The
+                    - link [ref=f34e648] [cursor=pointer]:
+                      - /url: /documentation/swiftui/material/regular
+                      - code [ref=f34e649]: regular
+                    - text: material can help you visually separate sections of your app, like a sidebar or a grouped table view.
+                - listitem [ref=f34e650]:
+                  - paragraph [ref=f34e651]:
+                    - text: The
+                    - link [ref=f34e652] [cursor=pointer]:
+                      - /url: /documentation/swiftui/material/thick
+                      - code [ref=f34e653]: thick
+                    - text: material lets you create a dark element that remains visually distinct when it’s on top of an area that uses a
+                    - code [ref=f34e654]: regular
+                    - text: background.
+              - paragraph:
+                - generic:
+                  - img "An illustration of a field of view in visionOS with a window in the center. The window is composed of a sidebar on the left and a content area on the right, with a text field at the top and a button in the lower-right corner. The sidebar uses regular material, while the text field uses thick material and the button uses thin material."
+              - paragraph [ref=f34e655]: To ensure foreground content remains legible when it displays on top of a material, visionOS applies vibrancy to text, symbols, and fills. Vibrancy enhances the sense of depth by pulling light and color forward from both virtual and physical surroundings.
+              - paragraph [ref=f34e656]: visionOS defines three vibrancy values that help you communicate a hierarchy of text, symbols, and fills.
+              - list [ref=f34e657]:
+                - listitem [ref=f34e658]:
+                  - paragraph [ref=f34e659]:
+                    - text: Use
+                    - link [ref=f34e660] [cursor=pointer]:
+                      - /url: /documentation/uikit/uivibrancyeffectstyle/label
+                      - code [ref=f34e661]: UIVibrancyEffectStyle.label
+                    - text: for standard text.
+                - listitem [ref=f34e662]:
+                  - paragraph [ref=f34e663]:
+                    - text: Use
+                    - link [ref=f34e664] [cursor=pointer]:
+                      - /url: /documentation/uikit/uivibrancyeffectstyle/secondarylabel
+                      - code [ref=f34e665]: UIVibrancyEffectStyle.secondaryLabel
+                    - text: for descriptive text like footnotes and subtitles.
+                - listitem [ref=f34e666]:
+                  - paragraph [ref=f34e667]:
+                    - text: Use
+                    - link [ref=f34e668] [cursor=pointer]:
+                      - /url: /documentation/uikit/uivibrancyeffectstyle/tertiarylabel
+                      - code [ref=f34e669]: UIVibrancyEffectStyle.tertiaryLabel
+                    - text: for inactive elements, and only when text doesn’t need high legibility.
+              - generic [ref=f34e670]:
+                - paragraph [ref=f34e672]:
+                  - figure [ref=f34e673]:
+                    - generic:
+                      - img "An illustration of a Share button with a translucent background material and a symbol. The symbol uses the default vibrant label color and has very high contrast against the background material."
+                    - code [ref=f34e675]: label
+                - paragraph [ref=f34e677]:
+                  - figure [ref=f34e678]:
+                    - generic:
+                      - img "An illustration of a Share button with a translucent background material and a symbol. The symbol uses the secondary vibrant label color and has high contrast against the background material."
+                    - code [ref=f34e680]: secondaryLabel
+                - paragraph [ref=f34e682]:
+                  - figure [ref=f34e683]:
+                    - generic:
+                      - img "An illustration of a Share button with a translucent background material and a symbol. The symbol uses the tertiary vibrant label color and has muted contrast against the background material."
+                    - code [ref=f34e685]: tertiaryLabel
+              - heading [level=3] [ref=f34e686]:
+                - link "watchOS in page link" [ref=f34e687] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/materials#watchOS
+              - paragraph [ref=f34e688]:
+                - strong [ref=f34e689]: Use materials to provide context in a full-screen modal view.
+                - text: Because full-screen modal views are common in watchOS, the contrast provided by material layers can help orient people in your app and distinguish controls and system elements from other content. Avoid removing or replacing material backgrounds for modal sheets when they’re provided by default.
+              - paragraph [ref=f34e690]:
+                - img "An illustration of a modal view in watchOS with an example title, descriptive text, and a single action button. The modal completely covers the screen with a transparent material, and uses a thinner material for the button along with vibrant label text." [ref=f34e694]
+              - heading [level=2] [ref=f34e695]:
+                - link "Resources in page link" [ref=f34e696] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/materials#Resources
+              - heading [level=4] [ref=f34e697]:
+                - link "Related in page link" [ref=f34e698] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/materials#Related
+              - paragraph [ref=f34e699]:
+                - link "Color" [ref=f34e700] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/color
+              - paragraph [ref=f34e701]:
+                - link "Accessibility" [ref=f34e702] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/accessibility
+              - paragraph [ref=f34e703]:
+                - link "Dark Mode" [ref=f34e704] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/dark-mode
+              - heading [level=4] [ref=f34e705]:
+                - link "Developer documentation in page link" [ref=f34e706] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/materials#Developer-documentation
+              - paragraph [ref=f34e707]:
+                - link "Adopting Liquid Glass" [ref=f34e708] [cursor=pointer]:
+                  - /url: /documentation/technologyoverviews/adopting-liquid-glass
+              - paragraph [ref=f34e709]:
+                - link [ref=f34e710] [cursor=pointer]:
+                  - /url: /documentation/swiftui/view/glasseffect(_:in:)
+                  - code [ref=f34e711]: glassEffect(_:in:)
+                - text: — SwiftUI
+              - paragraph [ref=f34e712]:
+                - link [ref=f34e713] [cursor=pointer]:
+                  - /url: /documentation/swiftui/material
+                  - code [ref=f34e714]: Material
+                - text: — SwiftUI
+              - paragraph [ref=f34e715]:
+                - link [ref=f34e716] [cursor=pointer]:
+                  - /url: /documentation/uikit/uivisualeffectview
+                  - code [ref=f34e717]: UIVisualEffectView
+                - text: — UIKit
+              - paragraph [ref=f34e718]:
+                - link [ref=f34e719] [cursor=pointer]:
+                  - /url: /documentation/appkit/nsvisualeffectview
+                  - code [ref=f34e720]: NSVisualEffectView
+                - text: — AppKit
+              - heading [level=4] [ref=f34e721]:
+                - link "Videos in page link" [ref=f34e722] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/materials#Videos
+              - region "grid of links" [ref=f34e723]:
+                - generic [ref=f34e724]:
+                  - link "Meet Liquid Glass" [ref=f34e726] [cursor=pointer]:
+                    - /url: https://developer.apple.com/videos/play/wwdc2025/219
+                    - generic [ref=f34e731]: Meet Liquid Glass
+                  - link "Get to know the new design system" [ref=f34e733] [cursor=pointer]:
+                    - /url: https://developer.apple.com/videos/play/wwdc2025/356
+                    - generic [ref=f34e738]: Get to know the new design system
+              - heading [level=2] [ref=f34e739]:
+                - link "Change log in page link" [ref=f34e740] [cursor=pointer]:
+                  - /url: /design/human-interface-guidelines/materials#Change-log
+              - table [ref=f34e742]:
+                - rowgroup [ref=f34e743]:
+                  - row [ref=f34e744]:
+                    - columnheader [ref=f34e745]:
+                      - paragraph [ref=f34e746]: Date
+                    - columnheader [ref=f34e747]:
+                      - paragraph [ref=f34e748]: Changes
+                - rowgroup [ref=f34e749]:
+                  - row [ref=f34e750]:
+                    - cell [ref=f34e751]:
+                      - paragraph [ref=f34e752]: September 9, 2025
+                    - cell [ref=f34e753]:
+                      - paragraph [ref=f34e754]: Updated guidance for Liquid Glass.
+                  - row [ref=f34e755]:
+                    - cell [ref=f34e756]:
+                      - paragraph [ref=f34e757]: June 9, 2025
+                    - cell [ref=f34e758]:
+                      - paragraph [ref=f34e759]: Added guidance for Liquid Glass.
+                  - row [ref=f34e760]:
+                    - cell [ref=f34e761]:
+                      - paragraph [ref=f34e762]: August 6, 2024
+                    - cell [ref=f34e763]:
+                      - paragraph [ref=f34e764]: Added platform-specific art.
+                  - row [ref=f34e765]:
+                    - cell [ref=f34e766]:
+                      - paragraph [ref=f34e767]: December 5, 2023
+                    - cell [ref=f34e768]:
+                      - paragraph [ref=f34e769]: Updated descriptions of the various material types, and clarified terms related to vibrancy and material thickness.
+                  - row [ref=f34e770]:
+                    - cell [ref=f34e771]:
+                      - paragraph [ref=f34e772]: June 21, 2023
+                    - cell [ref=f34e773]:
+                      - paragraph [ref=f34e774]: Updated to include guidance for visionOS.
+                  - row [ref=f34e775]:
+                    - cell [ref=f34e776]:
+                      - paragraph [ref=f34e777]: June 5, 2023
+                    - cell [ref=f34e778]:
+                      - paragraph [ref=f34e779]: Added guidance on using materials to provide context and orientation in watchOS apps.
+          - generic [ref=f34e780]: Current page is Materials
+      - generic [ref=f34e781]:
+        - generic [ref=f34e782]:
+          - heading "Supported platforms" [level=5] [ref=f34e783]
+          - list [ref=f34e784]:
+            - listitem [ref=f34e785]
+            - listitem [ref=f34e788]
+            - listitem [ref=f34e791]
+            - listitem [ref=f34e794]
+            - listitem [ref=f34e797]
+            - listitem [ref=f34e800]
+        - list [ref=f34e804]:
+          - listitem [ref=f34e805]:
+            - link "Materials" [ref=f34e806] [cursor=pointer]:
+              - /url: /design/human-interface-guidelines/materials#app-top
+          - listitem [ref=f34e807]:
+            - link "Liquid Glass" [ref=f34e808] [cursor=pointer]:
+              - /url: /design/human-interface-guidelines/materials#Liquid-Glass
+          - listitem [ref=f34e809]:
+            - link "Standard materials" [ref=f34e810] [cursor=pointer]:
+              - /url: /design/human-interface-guidelines/materials#Standard-materials
+          - listitem [ref=f34e811]:
+            - link "Platform considerations" [ref=f34e812] [cursor=pointer]:
+              - /url: /design/human-interface-guidelines/materials#Platform-considerations
+          - listitem [ref=f34e813]:
+            - link "Resources" [ref=f34e814] [cursor=pointer]:
+              - /url: /design/human-interface-guidelines/materials#Resources
+          - listitem [ref=f34e815]:
+            - link "Change log" [ref=f34e816] [cursor=pointer]:
+              - /url: /design/human-interface-guidelines/materials#Change-log
+  - contentinfo [ref=f34e818]:
+    - navigation [ref=f34e819]:
+      - link "Apple" [ref=f34e820] [cursor=pointer]:
+        - /url: https://www.apple.com
+        - text: 
+      - list [ref=f34e823]:
+        - listitem [ref=f34e824]:
+          - link "Developer" [ref=f34e825] [cursor=pointer]:
+            - /url: /
+        - listitem [ref=f34e826]:
+          - link "Documentation" [ref=f34e827] [cursor=pointer]:
+            - /url: /documentation/
+      - generic [ref=f34e828]:
+        - generic [ref=f34e829]:
+          - generic [ref=f34e830]:
+            - heading "Platforms" [level=3] [ref=f34e831]
+            - list [ref=f34e832]:
+              - listitem [ref=f34e833]:
+                - link "iOS" [ref=f34e834] [cursor=pointer]:
+                  - /url: /ios/
+              - listitem [ref=f34e835]:
+                - link "iPadOS" [ref=f34e836] [cursor=pointer]:
+                  - /url: /ipados/
+              - listitem [ref=f34e837]:
+                - link "macOS" [ref=f34e838] [cursor=pointer]:
+                  - /url: /macos/
+              - listitem [ref=f34e839]:
+                - link "tvOS" [ref=f34e840] [cursor=pointer]:
+                  - /url: /tvos/
+              - listitem [ref=f34e841]:
+                - link "visionOS" [ref=f34e842] [cursor=pointer]:
+                  - /url: /visionos/
+              - listitem [ref=f34e843]:
+                - link "watchOS" [ref=f34e844] [cursor=pointer]:
+                  - /url: /watchos/
+          - generic [ref=f34e845]:
+            - heading "Tools" [level=3] [ref=f34e846]
+            - list [ref=f34e847]:
+              - listitem [ref=f34e848]:
+                - link "Swift" [ref=f34e849] [cursor=pointer]:
+                  - /url: /swift/
+              - listitem [ref=f34e850]:
+                - link "SwiftUI" [ref=f34e851] [cursor=pointer]:
+                  - /url: /swiftui/
+              - listitem [ref=f34e852]:
+                - link "Swift Playground" [ref=f34e853] [cursor=pointer]:
+                  - /url: /swift-playground/
+              - listitem [ref=f34e854]:
+                - link "TestFlight" [ref=f34e855] [cursor=pointer]:
+                  - /url: /testflight/
+              - listitem [ref=f34e856]:
+                - link "Xcode" [ref=f34e857] [cursor=pointer]:
+                  - /url: /xcode/
+              - listitem [ref=f34e858]:
+                - link "Xcode Cloud" [ref=f34e859] [cursor=pointer]:
+                  - /url: /xcode-cloud/
+              - listitem [ref=f34e860]:
+                - link "SF Symbols" [ref=f34e861] [cursor=pointer]:
+                  - /url: /sf-symbols/
+        - generic [ref=f34e863]:
+          - heading "Topics & Technologies" [level=3] [ref=f34e864]
+          - list [ref=f34e865]:
+            - listitem [ref=f34e866]:
+              - link "Accessibility" [ref=f34e867] [cursor=pointer]:
+                - /url: /accessibility/
+            - listitem [ref=f34e868]:
+              - link "Accessories" [ref=f34e869] [cursor=pointer]:
+                - /url: /accessories/
+            - listitem [ref=f34e870]:
+              - link "App Extension" [ref=f34e871] [cursor=pointer]:
+                - /url: /app-extensions/
+            - listitem [ref=f34e872]:
+              - link "App Store" [ref=f34e873] [cursor=pointer]:
+                - /url: /app-store/
+            - listitem [ref=f34e874]:
+              - link "Audio & Video" [ref=f34e875] [cursor=pointer]:
+                - /url: /audio/
+            - listitem [ref=f34e876]:
+              - link "Augmented Reality" [ref=f34e877] [cursor=pointer]:
+                - /url: /augmented-reality/
+            - listitem [ref=f34e878]:
+              - link "Design" [ref=f34e879] [cursor=pointer]:
+                - /url: /design/
+            - listitem [ref=f34e880]:
+              - link "Distribution" [ref=f34e881] [cursor=pointer]:
+                - /url: /distribute/
+            - listitem [ref=f34e882]:
+              - link "Education" [ref=f34e883] [cursor=pointer]:
+                - /url: /education/
+            - listitem [ref=f34e884]:
+              - link "Fonts" [ref=f34e885] [cursor=pointer]:
+                - /url: /fonts/
+            - listitem [ref=f34e886]:
+              - link "Games" [ref=f34e887] [cursor=pointer]:
+                - /url: /games/
+            - listitem [ref=f34e888]:
+              - link "Health & Fitness" [ref=f34e889] [cursor=pointer]:
+                - /url: /health-fitness/
+            - listitem [ref=f34e890]:
+              - link "In-App Purchase" [ref=f34e891] [cursor=pointer]:
+                - /url: /in-app-purchase/
+            - listitem [ref=f34e892]:
+              - link "Localization" [ref=f34e893] [cursor=pointer]:
+                - /url: /localization/
+            - listitem [ref=f34e894]:
+              - link "Maps & Location" [ref=f34e895] [cursor=pointer]:
+                - /url: /maps/
+            - listitem [ref=f34e896]:
+              - link "Machine Learning & AI" [ref=f34e897] [cursor=pointer]:
+                - /url: /machine-learning/
+            - listitem [ref=f34e898]:
+              - link "Open Source" [ref=f34e899] [cursor=pointer]:
+                - /url: https://opensource.apple.com/
+            - listitem [ref=f34e900]:
+              - link "Security" [ref=f34e901] [cursor=pointer]:
+                - /url: /security/
+            - listitem [ref=f34e902]:
+              - link "Safari & Web" [ref=f34e903] [cursor=pointer]:
+                - /url: /safari/
+        - generic [ref=f34e904]:
+          - generic [ref=f34e905]:
+            - heading "Resources" [level=3] [ref=f34e906]
+            - list [ref=f34e907]:
+              - listitem
+              - listitem [ref=f34e908]:
+                - link "Documentation" [ref=f34e909] [cursor=pointer]:
+                  - /url: /documentation/
+              - listitem [ref=f34e910]:
+                - link "Tutorials" [ref=f34e911] [cursor=pointer]:
+                  - /url: /learn/
+              - listitem [ref=f34e912]:
+                - link "Downloads" [ref=f34e913] [cursor=pointer]:
+                  - /url: /download/
+              - listitem [ref=f34e914]:
+                - link "Forums" [ref=f34e915] [cursor=pointer]:
+                  - /url: /forums/
+              - listitem [ref=f34e916]:
+                - link "Videos" [ref=f34e917] [cursor=pointer]:
+                  - /url: /videos/
+          - generic [ref=f34e918]:
+            - heading "Support" [level=3] [ref=f34e919]
+            - list [ref=f34e920]:
+              - listitem [ref=f34e921]:
+                - link "Support Articles" [ref=f34e922] [cursor=pointer]:
+                  - /url: /support/articles/
+              - listitem [ref=f34e923]:
+                - link "Contact Us" [ref=f34e924] [cursor=pointer]:
+                  - /url: /contact/
+              - listitem [ref=f34e925]:
+                - link "Bug Reporting" [ref=f34e926] [cursor=pointer]:
+                  - /url: /bug-reporting/
+              - listitem [ref=f34e927]:
+                - link "System Status" [ref=f34e928] [cursor=pointer]:
+                  - /url: /system-status/
+          - generic [ref=f34e929]:
+            - heading "Account" [level=3] [ref=f34e930]
+            - list [ref=f34e931]:
+              - listitem [ref=f34e932]:
+                - link "Apple Developer" [ref=f34e933] [cursor=pointer]:
+                  - /url: /account/
+              - listitem [ref=f34e934]:
+                - link "App Store Connect" [ref=f34e935] [cursor=pointer]:
+                  - /url: https://appstoreconnect.apple.com/
+              - listitem [ref=f34e936]:
+                - link "Certificates, IDs, & Profiles" [ref=f34e937] [cursor=pointer]:
+                  - /url: /account/ios/certificate/
+              - listitem [ref=f34e938]:
+                - link "Feedback Assistant" [ref=f34e939] [cursor=pointer]:
+                  - /url: https://feedbackassistant.apple.com/
+        - generic [ref=f34e940]:
+          - generic [ref=f34e941]:
+            - heading "Programs" [level=3] [ref=f34e942]
+            - list [ref=f34e943]:
+              - listitem [ref=f34e944]:
+                - link "Apple Developer Program" [ref=f34e945] [cursor=pointer]:
+                  - /url: /programs/
+              - listitem [ref=f34e946]:
+                - link "Apple Developer Enterprise Program" [ref=f34e947] [cursor=pointer]:
+                  - /url: /programs/enterprise/
+              - listitem [ref=f34e948]:
+                - link "App Store Small Business Program" [ref=f34e949] [cursor=pointer]:
+                  - /url: /app-store/small-business-program/
+              - listitem [ref=f34e950]:
+                - link "MFi Program" [ref=f34e951] [cursor=pointer]:
+                  - /url: https://mfi.apple.com/
+              - listitem [ref=f34e952]:
+                - link "News Partner Program" [ref=f34e953] [cursor=pointer]:
+                  - /url: /programs/news-partner/
+              - listitem [ref=f34e954]:
+                - link "Video Partner Program" [ref=f34e955] [cursor=pointer]:
+                  - /url: /programs/video-partner/
+              - listitem [ref=f34e956]:
+                - link "Security Bounty Program" [ref=f34e957] [cursor=pointer]:
+                  - /url: /security-bounty/
+              - listitem [ref=f34e958]:
+                - link "Security Research Device Program" [ref=f34e959] [cursor=pointer]:
+                  - /url: /programs/security-research-device/
+          - generic [ref=f34e960]:
+            - heading "Events" [level=3] [ref=f34e961]
+            - list [ref=f34e962]:
+              - listitem [ref=f34e963]:
+                - link "Meet with Apple" [ref=f34e964] [cursor=pointer]:
+                  - /url: /events/
+              - listitem [ref=f34e965]:
+                - link "Apple Developer Centers" [ref=f34e966] [cursor=pointer]:
+                  - /url: /events/developer-centers/
+              - listitem [ref=f34e967]:
+                - link "App Store Awards" [ref=f34e968] [cursor=pointer]:
+                  - /url: /app-store/app-store-awards/
+              - listitem [ref=f34e969]:
+                - link "Apple Design Awards" [ref=f34e970] [cursor=pointer]:
+                  - /url: /design/awards/
+              - listitem [ref=f34e971]:
+                - link "Apple Developer Academies" [ref=f34e972] [cursor=pointer]:
+                  - /url: /academies/
+              - listitem [ref=f34e973]:
+                - link "WWDC" [ref=f34e974] [cursor=pointer]:
+                  - /url: /wwdc/
+    - generic [ref=f34e975]:
+      - generic [ref=f34e976]:
+        - generic [ref=f34e977]:
+          - text: To submit feedback on documentation, visit
+          - link "Feedback Assistant" [ref=f34e978] [cursor=pointer]:
+            - /url: applefeedback://new?form_identifier=developertools.fba&answers%5B%3Aarea%5D=seedADC%3Adevpubs&answers%5B%3Adoc_type_req%5D=Technology%20Documentation&answers%5B%3Adocumentation_link_req%5D=https%3A%2F%2Fdeveloper.apple.com%2Fdesign%2Fhuman-interface-guidelines%2Fmaterials
+          - text: .
+        - radiogroup "Select a color scheme preference" [ref=f34e980]:
+          - generic [ref=f34e982]:
+            - radio "Light" [ref=f34e983]
+            - generic [ref=f34e984]: Light
+          - generic [ref=f34e985]:
+            - radio "Dark" [ref=f34e986]
+            - generic [ref=f34e987]: Dark
+          - generic [ref=f34e988]:
+            - radio "Auto" [checked] [ref=f34e989]
+            - generic [ref=f34e990]: Auto
+      - combobox "Select the language for this page" [ref=f34e992] [cursor=pointer]:
+        - option "English" [selected]
+        - option "简体中文"
+        - option "日本語"
+        - option "한국어"
+      - generic [ref=f34e995]:
+        - generic [ref=f34e996]:
+          - text: Copyright © 2026
+          - link "Apple Inc." [ref=f34e997] [cursor=pointer]:
+            - /url: https://www.apple.com
+          - text: All rights reserved.
+        - generic [ref=f34e998]:
+          - link "Terms of Use" [ref=f34e999] [cursor=pointer]:
+            - /url: https://www.apple.com/legal/internet-services/terms/site.html
+          - link "Privacy Policy" [ref=f34e1000] [cursor=pointer]:
+            - /url: https://www.apple.com/legal/privacy/
+          - link "Agreements and Guidelines" [ref=f34e1001] [cursor=pointer]:
+            - /url: /support/terms/
