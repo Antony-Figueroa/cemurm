@@ -157,11 +157,11 @@ column, no versioned-per-purpose grant. A teacher reading a minor's graded perfo
 consent record covering it**. Product gap, not schema gap.
 
 **R6 — Offline: one failed XP event blocks the whole queue forever.**
-`src/offline/drainer.js:243-244` breaks the loop on any non-superseded error. A single rejected
+`src/offline/drainer.js` broke the loop on any non-superseded error (the `break` is now at `:215`, the RETRY path). A single rejected
 XP event stalls every later queued op, including unrelated setlist writes.
 
-**R7 — No idempotency anywhere in the queue.** `drainer.js:227` does `await fn(...op.args)`. If
-the call succeeds and `removeOps` (`queue.js:139`) fails, the op replays and pays twice. Today
+**R7 — No idempotency anywhere in the queue.** `drainer.js:179` does `await fn(...op.args)`. If
+the call succeeds and `removeOps` (`queue.js:96`) fails, the op replays and pays twice. Today
 every op is only *incidentally* idempotent. `education_events` needs the `unique client_uuid`
 and a server-side `on conflict do nothing`.
 
@@ -321,6 +321,14 @@ The proposal assumed a working practice system to build on.
 - `odd/tasks/hito4-minors-consent.md:24-28` cites six pre-relocation paths, none of which exist.
 - `src/components/projection/SlideView.jsx` is orphaned dead code (zero importers) but still
   scanned by the visual gate, whose Rule 06 documentation cites it as the live motivating example.
+
+## Corrections applied after review
+
+A delegated writer fixed R6 and reported that the audit's own line references were stale.
+Verified and corrected against the current source: the pre-fix `break` was not at
+`drainer.js:243-244`; the surviving `break` at `:215` is the RETRY path, which is correct
+because ops replay in `seq` order. `WRITE_OPS` starts at `:21`, the `fn(...op.args)` call is
+at `:179`, and `removeOps` is at `queue.js:96`. The bug was real; only the line numbers were wrong.
 
 ## Verification performed
 
