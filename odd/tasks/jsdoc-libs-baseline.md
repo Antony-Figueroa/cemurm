@@ -161,7 +161,7 @@ still pushed, still holding all 43 files and 218 commits.
 Status as of 2026-09-29. `v1` = the closed cumulative stack (#204–#213); `v2` = independent slices.
 
 - [x] S01 perf-core (`gigs.js` 105) — v2 port open as **#198**
-- [x] S02 rehearsals-services (94) — v2 port open as **#240**
+- [x] S02 rehearsals-services (94) — split in two to respect the ≤400 rule: **#248** (rehearsals, 296) + **#249** (services, 345). The combined **#240** was closed at 641 lines.
 - [x] S03 collab-core (84) — v2 port open as **#245**
 - [x] S04 notifications-collab (57) — v2 port open as **#246**
 - [x] S05 import-core (73) — v2 port open as **#244**
@@ -199,6 +199,44 @@ preserved at tag `backup/pr244-cumulative-5fcb8ae9`.
 **not** fix this. It moves the pointer, but the slice commit still has the earlier slices as
 ancestors, so `git diff origin/main...<branch>` keeps showing their files. Only a cherry-pick onto
 the shared base actually removes them.
+
+### Budget: measure AFTER #215, and split by file, not arbitrarily
+
+The maintainer's standing call is to respect the ≤400-line rule *wherever it is possible to do so
+without harming the change*. Two things follow for the next slice.
+
+**1. Every slice PR carries `tsconfig.json` from the shared base commit `0e64e2a`** — 18 lines,
+which the budget must not be charged for, because #215 will land that exact change on `main`
+first. Measuring a slice's real size means excluding it:
+
+```bash
+git diff --numstat origin/main...<branch> | grep -v tsconfig.json | awk '{s+=$1+$2} END {print s}'
+```
+
+| PR | as opened | real size (no tsconfig) |
+|----|-----------|------------------------|
+| #198 S01 | 323 | 323 |
+| #248 S02a | 314 | 296 |
+| #249 S02b | 363 | 345 |
+| #245 S03 | 397 | 379 |
+| #246 S04 | 363 | 345 |
+| #244 S05 | **403** | 385 |
+| #243 S10 | 314 | 314 |
+
+So **no slice is over budget on its own content** — #244's 403 is the tsconfig line, and it drops
+to 385 the moment #215 merges. Do not "fix" that 3-line overage by trimming annotations: the ODD
+contract forbids buying line-count savings with deleted comments, and the number is not real.
+
+**2. Split on a file boundary, never mid-file.** S02 was the one genuine overrun (641 lines for
+`rehearsals.js` 296 + `services.js` 345) and it was never stacked — 48+46 errors in two large
+modules is simply that much annotation. The split was per-file, which keeps each half
+independently typecheckable and independently mergeable. Splitting a single file instead would
+produce two PRs that neither typechecks alone.
+
+Verify a split half the same way as a whole slice: the annotated file must reach **0** under
+`tsc --noEmit --checkJs`, and its sibling must still show its errors *on that branch* — proof the
+other half really is absent rather than accidentally included.
+
 - [ ] **Prerequisite — #215** should land before S05, S06, S07, S09 and S11, though for a narrower reason than "the include is too small". Measured on 2026-09-28: `main`'s `include` (`["src/domain", "src/data/repositories", "src/lib"]`) loads **48** files; `0e64e2a`'s widened include loads **55**. tsc loads the globs *plus everything reachable by import*, so most relocated modules come in transitively — `spotify.js`, `webMidi.js`, `offline/cache.js`, `offline/queue.js` and `data/supabase.js` are all reached that way. The **6 slice files `main` genuinely never loads** are:
 
   | File | Slice | Errors left |
