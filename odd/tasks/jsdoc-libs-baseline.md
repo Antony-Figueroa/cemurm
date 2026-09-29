@@ -158,19 +158,47 @@ still pushed, still holding all 43 files and 218 commits.
 
 ## Tasks
 
-Status as of 2026-09-28. `v1` = the closed cumulative stack (#204–#213); `v2` = independent slices.
+Status as of 2026-09-29. `v1` = the closed cumulative stack (#204–#213); `v2` = independent slices.
 
 - [x] S01 perf-core (`gigs.js` 105) — v2 port open as **#198**
 - [x] S02 rehearsals-services (94) — v2 port open as **#240**
-- [x] S03 collab-core (84) — v2 port committed `3a119c0`, **no PR yet**
-- [x] S04 notifications-collab (57) — v2 port committed `e76b2a8`, **no PR yet**
-- [ ] S05 import-core (73) — in progress
+- [x] S03 collab-core (84) — v2 port open as **#245**
+- [x] S04 notifications-collab (57) — v2 port open as **#246**
+- [x] S05 import-core (73) — v2 port open as **#244**
 - [ ] S06 planningcenter-onsong (81) — not ported
 - [ ] S07 music-providers (102) — not ported
 - [ ] S08 theory-midi (93) — not ported
 - [ ] S09 search-offline (82) — not ported
-- [ ] S10 public-library-moderation (41) — not ported
+- [x] S10 public-library-moderation (41) — v2 port open as **#243**
 - [ ] S11 core-misc (89 + `src/data/supabase.js` pragma) — not ported
+
+### The v2 slices WERE stacked again, and were re-cut (2026-09-29)
+
+**Read this before cutting another slice.** The v2 branches were created linearly —
+`3a119c0` (S03) is a descendant of `d492e9c` (S02), and `e76b2a8` (S04) and `5fcb8ae9` (S05) are
+descendants of both — so each slice's PR carried its predecessors' files. Measured before the fix:
+
+| Slice | commits over main | files in its PR |
+|-------|-------------------|-----------------|
+| S02 | 2 | 3 |
+| S03 | 3 | **5** |
+| S04 | 4 | **8** |
+| S05 | 5 | **11** — PR #244 opened at +1698/-70 |
+
+That is the v1 failure mode reproduced, against the rule written 100 lines above it in this same
+file. Two ways it was wrong: slices were not independently mergeable, and 11 files / +1698 broke
+the 400-line PR budget outright.
+
+**Fix.** Each slice's commit was cherry-picked onto `0e64e2a` (v2-base), so every branch is now
+2 commits / 3–4 files. Content is byte-identical to what was already verified — checked with
+`git diff <old-sha> <new-branch> -- <that slice's own files>`, empty for S03, S04 and S05. #244 went
+from 11 files/+1698 to 4 files/+373 without touching the PR itself. The pre-cut history is
+preserved at tag `backup/pr244-cumulative-5fcb8ae9`.
+
+**The trap, because it cost a wasted step:** `git branch -f <slice-branch> <slice-sha>` does
+**not** fix this. It moves the pointer, but the slice commit still has the earlier slices as
+ancestors, so `git diff origin/main...<branch>` keeps showing their files. Only a cherry-pick onto
+the shared base actually removes them.
 - [ ] **Prerequisite — #215** should land before S05, S06, S07, S09 and S11, though for a narrower reason than "the include is too small". Measured on 2026-09-28: `main`'s `include` (`["src/domain", "src/data/repositories", "src/lib"]`) loads **48** files; `0e64e2a`'s widened include loads **55**. tsc loads the globs *plus everything reachable by import*, so most relocated modules come in transitively — `spotify.js`, `webMidi.js`, `offline/cache.js`, `offline/queue.js` and `data/supabase.js` are all reached that way. The **6 slice files `main` genuinely never loads** are:
 
   | File | Slice | Errors left |
