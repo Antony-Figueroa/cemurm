@@ -1,6 +1,8 @@
 # education-bdd — Education capability as BDD product truth
 
-> Change slug: `cemurm-education`. Branch: `docs/cemurm-education-audit` (isolated worktree).
+> Change slug: `cemurm-education`. Branch: `docs/cemurm-education-bdd` (isolated worktree),
+branched on `docs/cemurm-education-proposal` because this record cites that proposal's
+§H as its rationale. Merge the proposal first or this citation dangles.
 > **This unit writes product truth only. No code, no migration, no spec, no nav.**
 > Product truth layer: BDD (`features/*.feature`), per `AGENTS.md`. This file is the ODD execution record.
 
