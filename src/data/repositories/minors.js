@@ -11,8 +11,11 @@
 // and sendGuardianConsentEmail asks the send-guardian-consent edge function to
 // mail the guardian the one-shot link. Neither step may be skipped: a request
 // with no email reaches no guardian, so the minor stays locked forever.
+// confirmGuardianConsent is the third, GUARDIAN-driven step: it is the only way
+// the row ever leaves 'pending', and it is called with no session at all.
 // Public surface: getAgeStatus, setDateOfBirth, getConsentStatus,
-// requestGuardianConsent, sendGuardianConsentEmail, approvePublicSharing.
+// requestGuardianConsent, sendGuardianConsentEmail, confirmGuardianConsent,
+// approvePublicSharing.
 // Scenario coverage: features/minors-and-guardian-consent.feature
 // (signup age gate, account activation, consent record, public-sharing gate).
 
@@ -26,6 +29,12 @@ const USER_ERRORS = new Set([
   'Consent is only required for minors.',
   'Consent already active for this account.',
   'Consent not found or not active.',
+  // 0031 confirm_guardian_consent_by_token — ONE string for FIVE causes (wrong
+  // token, unknown account, already-confirmed, revoked, no longer a minor). It
+  // must survive handleError untouched: collapsing it into the generic message
+  // would still be safe, but re-throwing it is what lets the page show the
+  // server's own non-enumerating wording instead of a second guess at it.
+  'Consent not found or already finalized.',
   // 0030 set_date_of_birth / my_age_status
   'Sign in to set your date of birth.',
   'Sign in to check your age status.',
@@ -136,6 +145,39 @@ export async function sendGuardianConsentEmail() {
   return status === 'sent' || status === 'already_active' || status === 'no_open_request'
     ? status
     : 'unavailable'
+}
+
+/**
+ * THE GUARDIAN'S HALF of the 0031 handshake (RPC
+ * public.confirm_guardian_consent_by_token, `anon`-granted, `security
+ * definer`). Called from /guardian/confirm with NO session: the emailed
+ * `?user=…&token=…` pair IS the authority, and the RPC flips exactly one
+ * 'pending' row to 'active'. There is no other write path to that column, so
+ * this call is the whole of what a token can do.
+ *
+ * ⚠ ONE MESSAGE FOR EVERY FAILURE. The server raises the single string
+ * 'Consent not found or already finalized.' for a wrong token, an unknown
+ * account, an already-confirmed consent, a revoked one and a no-longer-minor
+ * account alike (0031:252-261), so the endpoint cannot be used to learn
+ * whether a token, an account or a consent exists. That string is in
+ * USER_ERRORS and therefore re-thrown verbatim; callers must render it as
+ * written and must NOT add a branch that guesses a more specific cause.
+ *
+ * The token is a one-shot secret. It is passed to the RPC and nowhere else —
+ * never logged, never interpolated into an error, never returned.
+ *
+ * Void on success. The minor's next ledger read (getConsentStatus, which
+ * RequireGuardianConsent re-runs on every mount) is what unlocks the app —
+ * there is nothing to refresh on this side.
+ */
+export function confirmGuardianConsent({ userId, token }) {
+  return withErrorMapping(async () => {
+    const { error } = await supabase.rpc('confirm_guardian_consent_by_token', {
+      p_user_id: userId,
+      p_revocation_token: token,
+    })
+    if (error) throw error
+  })
 }
 
 /**
