@@ -31,8 +31,9 @@
 // (0017:361) needs p_guardian_email as part of its witness, and the emailed URL
 // carries only `user` and `token`. So the copy below says consent "can be
 // withdrawn at any time" and stops there, instead of pointing a parent at a
-// dead link. Fixing the revoke path is a separate decision — see
-// odd/tasks/guardian-consent-app-flow.md, "The revoke defect".
+// dead link. The fix is one line in the edge function that builds the link, not
+// a change to 0017 — see odd/tasks/guardian-consent-app-flow.md, "The revoke
+// defect".
 
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'

@@ -80,16 +80,30 @@ secret, the email is the witness."
 The emailed revoke link is `${siteUrl}/guardian/revoke?user=…&token=…` — **no email**. So the page
 the email points at cannot call the function the email is adjacent to.
 
-Two fixes, both real, neither free:
+Three further pieces of evidence, all verified in this repo, settle which side is right:
 
-| Option | Change | Cost |
-|---|---|---|
-| A. carry the email in the link | edge function emits `&email=…`; page reads and strips it | guardian PII transits a URL, and it lands in whatever logs the email provider keeps |
-| B. add `0032_revoke_by_token.sql` with a 2-arg revoke | token alone becomes the witness, symmetric with `confirm_guardian_consent_by_token` | a migration, and it relaxes the witness on a compliance write |
+1. **`0017` is already on `main`.** Its witness is not a proposal awaiting a decision; it is
+   shipped, and its comment states the rule the whole design rests on.
+2. **A local branch, `feat/guardian-routes` (commit `7ed2133`, pre-M0a tree, no PR), already
+   implements the revoke page against `0017` unchanged.** Its shared `src/lib/guardianLink.js`
+   documents `email` as "the WITNESS that 0017's revoke requires alongside the token", and
+   `GuardianRevoke.jsx` calls `public.revoke_guardian_consent` with `guardianEmail` read from the
+   query string. So the page contract is already written, and it expects the parameter the email
+   never sends.
+3. **That branch's edge function is byte-identical to `feat/guardian-email`'s.** Neither emits
+   `&email=`. The defect is in the producer, and it has been in the producer from the start.
 
-`0032` is free — no open branch claims it. This is a security-adjacent witness decision, so it is
-the maintainer's call, not this unit's. Until it is made, the email ships a revoke link that cannot
-work, which is a real defect and is stated as such rather than papered over.
+So there is no fork to escalate. The edge function must emit `&email=` in the revoke URL; the RPC
+stays exactly as `0017` wrote it; the page reads and scrubs the parameter like any other. Option B
+would require a migration that contradicts a design already merged, to work around a one-line
+omission in the function that sends the mail. The cost of A is real but bounded and already
+mitigated by the immediate scrub, and the PII exposure is the witness value `0017` already
+considers necessary for a login-less revoke.
+
+`0032` is free, and stays free — no branch, local or remote, and no open PR contains a `0032*`
+migration. (PR #228's body states `0032` is taken by `0032_overlay_access_token.sql`; that file
+does not exist anywhere in this repository, on any branch, so #228 renumbered to `0033` for a
+number nobody is using.)
 
 ## Constraints
 
