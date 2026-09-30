@@ -83,9 +83,17 @@
 /**
  * Replay decision for one queued op: drop it, and tell the user why when the
  * online change that beats it needs surfacing (R7).
+ *
+ * `reason` is present only alongside `notice`, and it says WHICH kind of drop
+ * this is, because the wording differs and only one of them may blame someone
+ * else: 'superseded' (the server is genuinely newer), 'malformed' (this client
+ * cannot identify the op) and 'unknown-age' (the op lost its timestamp). The
+ * last two are this client's blind spots, not a collaborator's win, and the
+ * notice is worded to say exactly that.
  * @typedef {object} ReconcileDecision
  * @property {boolean} drop
  * @property {boolean} [notice]
+ * @property {'superseded' | 'malformed' | 'unknown-age'} [reason]
  */
 
 /**
