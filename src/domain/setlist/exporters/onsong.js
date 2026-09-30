@@ -27,6 +27,7 @@
  * @typedef {{
  *   itemIds?: string[] | string | null,
  *   versionIds?: Record<string, string>,
+ *   agreedKeys?: Record<string, string>,
  *   name?: string,
  *   [key: string]: unknown,
  * }} ExportSetlist

@@ -25,7 +25,7 @@ import { findScaleByName } from '../../data/repositories/scaleCatalog.js'
  * 'power' is the honest answer for pentatonic/chromatic scales (cardinality
  * < 7) and for any root-third-fifth that is neither major/minor/dim/aug, so
  * the arm is part of the real surface, not a catch-all wildcard.
- * @typedef {'major' | 'minor' | 'diminished' | 'augmented' | 'power'} DegreeQuality
+ * @typedef {'major' | 'minor' | 'diminished' | 'augmented' | 'suspended' | 'power'} DegreeQuality
  */
 
 /**
@@ -87,6 +87,8 @@ function extractRoot(chord) {
  *
  * Returns { triad, seventh } — triad is one of major|minor|diminished|augmented
  * |power|suspended, seventh is 7|m7|M7|dim7|null.
+ * @param {string | null | undefined} chord
+ * @returns {{ triad: DegreeQuality, seventh: string | null } | null}
  */
 function parseChordQuality(chord) {
   const suffix = String(chord || '').replace(/^[A-G][#b]?/, '').toLowerCase()
@@ -160,7 +162,7 @@ function qualityForDegree(intervals, degree) {
   // near each time. Consecutive steps of a heptatonic scale essentially never
   // span a perfect fifth, so the function returned 'power' for all 49
   // degree/scale pairs measured, and every modal degree rendered as a capital.
-  const at = (step) => intervals[(((step - 1) % len) + len) % len]
+  const at = (/** @type {number} */ step) => intervals[(((step - 1) % len) + len) % len]
   const root = at(degree)
   const third = at(degree + 2)
   const fifth = at(degree + 4)
@@ -197,6 +199,7 @@ function qualityForDegree(intervals, degree) {
  * - Seventh chords get "7" appended based on quality
  * @param {number} degree
  * @param {DegreeQuality | null} quality
+ * @param {string | null} [seventh]
  * @returns {string}
  */
 function formatRomanNumeral(degree, quality, seventh) {
@@ -204,7 +207,7 @@ function formatRomanNumeral(degree, quality, seventh) {
 
   const majorNumeral = ROMAN_MAJOR[degree - 1]
   const minorNumeral = ROMAN_MINOR[degree - 1]
-  const withSeventh = (numeral) => {
+  const withSeventh = (/** @type {string} */ numeral) => {
     if (!seventh) return numeral
     if (seventh === 'm7') return `${numeral}7`
     if (seventh === 'M7') return `${numeral}maj7`
