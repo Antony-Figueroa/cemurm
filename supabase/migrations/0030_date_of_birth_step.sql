@@ -1,16 +1,26 @@
 -- CEMURM 0030 — Date-of-birth step: one validated write path for the age fact
 --
--- Slice: feat/auth-fail-closed-social — work unit 2 (the app half) of the change
--- "Auth — fail-closed minors + social signup + guardian email"
--- (odd/tasks/auth-fail-closed-social.md, tasks T2.1–T2.4).
+-- Slice: fix/fail-closed-minors — the server half of the date-of-birth step.
+-- Supersedes the age gate that 0017 described but never enforced; see
+-- odd/tasks/minors-fail-closed-db.md for the record.
+--
+-- ⚠ 0017's OWN COMMENTS ARE NOW WRONG, and it is worth saying so in the file
+-- that supersedes them rather than only in a later commit. 0017 lines 8, 38
+-- and 70 all say the app "learns minor status via user_metadata". That was
+-- true of the code 0017 shipped and it is false now: the age facts come from
+-- public.my_age_status() below, because user_metadata is writable by the
+-- account holder through GoTrue updateUser(). A reader who opens 0017 first
+-- meets the retired claim with nothing contradicting it, and 0017 is still
+-- the file that defines guardian_consents.
+--
 -- Business contract (features/minors-and-guardian-consent.feature):
 --  · signup age gate (scenario 1): 0017 kept the age DECLARATION in GoTrue
 --    user_metadata and left profiles.date_of_birth with no writer at all
 --    (0029 header). This migration gives the column its single, validated
 --    writer: public.set_date_of_birth. Declaring a date is what releases the
 --    app — the client asks for it in the date-of-birth step
---    (src/pages/DateOfBirthRequired.jsx, rendered by
---    src/components/auth/AuthGuards.jsx) and a declared MINOR date hands the
+--    (src/features/auth/pages/DateOfBirthRequired.jsx, rendered by
+--    src/app/providers/AuthGuards.jsx) and a declared MINOR date hands the
 --    same user straight to the existing guardian screen (scenario 2, unchanged
 --    behaviour).
 --  · account activation (scenario 2): unknown is still unknown — nothing here
