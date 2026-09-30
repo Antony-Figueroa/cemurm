@@ -214,7 +214,7 @@ A new user browses the public library, finds "Amazing Grace" in ChordPro format,
 
 ## Hito 5 — Integrations (Months 9–10)
 
-**Implementation status: in progress** — feature branches exist (`feat/hito5-plan-freeze` is furthest along — PR 3/10 of its chain, NOT merged to main; also `feat/hito5-midi`, `feat/hito5-obs`, `feat/hito5-external-display`, `feat/hito5-in-app-feedback`, `feat/hito5-congregation-projection`, `feat/hito5-spotify-enrichment`). Migrations 0021+ exist only on those branches, not on main. Nothing from Hito 5 is merged to main yet.
+**Implementation status: in progress** — feature branches exist (`feat/hito5-plan-freeze` is furthest along — PR 3/10 of its chain, NOT merged to main; also `feat/hito5-midi`, `feat/hito5-obs`, `feat/hito5-external-display`, `feat/hito5-in-app-feedback`, `feat/hito5-congregation-projection`, `feat/hito5-spotify-enrichment`). Six Hito 5 migrations — `0023`–`0028` — are merged to main; the plan-freeze chain (migrations `0020`–`0022`) is not.
 
 ### Objectives
 - Enable Web MIDI integration for program change commands
@@ -298,6 +298,7 @@ A beta tester installs the PWA on their phone, goes through the onboarding tutor
 | 2026-09-20 | #125–#127 | Hito 4: S4.1 public library (browse/contribute + seed catalog) | Merged |
 | 2026-09-20 | #137, #138, #139 | Hito 4: music theory, community moderation, org repertoire | Merged |
 | 2026-09-20 | branch | Hito 4: minors & guardian consent, service planning, rehearsal workflow (merged via branches) | Merged |
+| 2026-09-21 → 2026-09-24 | branch | Hito 5 backend + integrations: migrations `0023_substitutions`, `0024_midi_program`, `0025_overlay_sessions`, `0026_external_enrichment`, `0027_pdf_chart_storage`, `0028_import_pipeline` (merged via branches) | Merged |
 | — | 3/10 chain | Hito 5: `feat/hito5-plan-freeze` in progress (PR 3/10, not merged) | In progress |
 
 ### Planned vs. implemented (as of 2026-09-23)
@@ -306,5 +307,5 @@ A beta tester installs the PWA on their phone, goes through the onboarding tutor
 - **Hito 2 — Stage Mode: core complete.** Stage Mode and offline access shipped in #87 (8/8 deliverables; `public/sw.js` + IndexedDB cache/queue live). Remaining caveats: real-device HID testing requires a physical foot pedal + `chrome://flags` HID; browser-level offline QA and PWA background-update UX are follow-up work under `pwa-updates-and-storage`.
 - **Hito 3 — Collaboration: complete.** Band collaboration (shared setlists, bandmates, comments) and notifications shipped and archived (`openspec/changes/archive/2026-09-18-hito-3-band-collaboration/`, `2026-09-19-hito-3-notifications/`). Outstanding from the original feature list: MusicXML/ABC notation, thematic collections, and the full practice-mode surface.
 - **Hito 4 — Basic Community: complete.** Public library (S4.1 #125–#127), contributions/profiles/follows (S4.2 #131/#136), music theory (#137), community moderation (#138), org repertoire (#139), minors & guardian consent, service planning, and rehearsal workflow are merged on main (migrations through `0019_rehearsal_workflow.sql`). The URL-importer deliverable is not shipped — it rides Hito 5's integrations surface.
-- **Hito 5 — Integrations: in progress.** Feature branches exist (plan-freeze furthest along, PR 3/10 of chain, not merged); migrations 0021+ are branch-only. Next milestone is merging the plan-freeze chain, then MIDI/external-display/OBS.
+- **Hito 5 — Integrations: in progress.** Six migrations (`0023`–`0028`) are merged on main; the plan-freeze chain (migrations `0020`–`0022`) is still branch-only, with plan-freeze furthest along at PR 3/10. Next milestone is merging the plan-freeze chain, then MIDI/external-display/OBS.
 - **Hito 6 — Beta Polish: not started.** Planned for months 11–12.

@@ -20,7 +20,7 @@ function AlbumArt({ url, className = 'h-14 w-14' }) {
   useEffect(() => { setBroken(false) }, [url])
   if (!url || broken) {
     return (
-      <div className={`${className} flex shrink-0 items-center justify-center rounded-md bg-cem-elevated text-base text-cem-secondary`} aria-hidden="true">
+      <div className={`${className} flex shrink-0 items-center justify-center rounded-md bg-cem-elevated text-base text-cem-secondary-elevated`} aria-hidden="true">
         ♪
       </div>
     )
@@ -104,7 +104,7 @@ export default function EnrichmentPanel({ song, enrichment, declaredKey }) {
           <span className="rounded bg-cem-emerald/10 px-2 py-0.5 text-xs font-medium text-cem-emerald">Applied</span>
         )}
         {state === 'discarded' && (
-          <span className="rounded bg-cem-elevated px-2 py-0.5 text-xs font-medium text-cem-secondary">Discarded</span>
+          <span className="rounded bg-cem-elevated px-2 py-0.5 text-xs font-medium text-cem-secondary-elevated">Discarded</span>
         )}
       </div>
 
@@ -198,7 +198,7 @@ export default function EnrichmentPanel({ song, enrichment, declaredKey }) {
 
       {state === 'error' && (
         <div className="mt-3 space-y-2">
-          <p className="rounded-md bg-cem-elevated px-3 py-2 text-xs text-cem-secondary" role="alert">
+          <p className="rounded-md bg-cem-elevated px-3 py-2 text-xs text-cem-text" role="alert">
             {errorMessage === 'integration revoked'
               ? 'Spotify integration is revoked — reconnect in Settings to enrich again.'
               : 'Spotify enrichment is unavailable right now. Try again later.'}

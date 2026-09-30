@@ -26,7 +26,7 @@ const ROLE_LABELS = {
 
 const STATUS_STYLES = {
   active: 'bg-cem-amber/10 text-cem-amber',
-  former: 'bg-cem-elevated text-cem-secondary',
+  former: 'bg-cem-elevated text-cem-secondary-elevated',
 }
 
 const ghostBtn =

@@ -110,7 +110,7 @@ export default function Notifications() {
       </div>
 
       {!online && (
-        <p className="mt-3 rounded-md bg-cem-elevated/50 px-3 py-2 text-xs text-cem-secondary">
+        <p className="mt-3 rounded-md bg-cem-elevated/50 px-3 py-2 text-xs text-cem-text">
           You&apos;re offline — showing cached notifications.
         </p>
       )}

@@ -102,7 +102,7 @@ export default function CaseDetail({ caseData, onDecide, deciding, onBack, onApp
           {Object.entries(caseData.reason_counts || {}).map(([reason, count]) => (
             <span
               key={reason}
-              className="rounded bg-cem-elevated px-2 py-0.5 text-xs font-medium text-cem-secondary"
+              className="rounded bg-cem-elevated px-2 py-0.5 text-xs font-medium text-cem-secondary-elevated"
             >
               {REASON_LABELS[reason] || reason}: {count}
             </span>
