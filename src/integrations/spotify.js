@@ -354,6 +354,15 @@ async function searchRealProvider(title, artist) {
 /**
  * Spotify keyIndex (0–11, 0 = C) + mode → 'E major' / 'E minor' label, using
  * the app's NOTES_SHARP spelling (transpose.js). Returns '' when absent.
+ *
+ * The spelling is always sharp. That is a real limitation and not a rule: the
+ * label is a suggestion shown next to a chart the user already owns, and
+ * picking a spelling here would mean deciding the chart's. A B♭ chart offered
+ * "A# major" is visibly wrong to a musician, and this is finding I — the fix is
+ * the caller's, because only the caller knows whether the chart is flat-friendly.
+ * Preferring sharps here keeps the suggestion stable while the spelling decision
+ * stays with the enrichment UI.
+ *
  * Normalization/canonicalization goes through canonicalKeyLabel().
  *
  * `keyIndex` is deliberately `number | string`: the body wraps it in Number() and
@@ -370,7 +379,36 @@ export function spotifyKeyToLabel(keyIndex, mode) {
   if (keyIndex === null || keyIndex === undefined) return ''
   const note = NOTES_SHARP[((Number(keyIndex) % 12) + 12) % 12]
   if (!note) return ''
-  return `${note} ${mode === 'minor' ? 'minor' : 'major'}`
+  // The mode arrives in whichever shape the provider or the cached row used:
+  // Spotify's audio-features payload is an integer (0 minor, 1 major), and this
+  // module's own normalizer at :163 emits the strings 'major'/'minor'. Anything
+  // else used to fall through to 'major', which turned "I do not know" into a
+  // confident wrong answer. Unknown now returns '' so the caller can decide.
+  const spelled = normalizeSpotifyMode(mode)
+  if (!spelled) return ''
+  return `${note} ${spelled}`
+}
+
+/**
+ * Coerce a provider mode into 'major' | 'minor' | ''. Accepts Spotify's integer
+ * form (0 = minor, 1 = major) and the unambiguous case-insensitive string
+ * forms. A bare 'M' is deliberately NOT accepted: it is a major third in jazz
+ * shorthand and minor elsewhere, so it is left unrecognised rather than guessed
+ * in either direction. Anything else unrecognised is ''.
+ * @param {unknown} mode
+ * @returns {'major' | 'minor' | ''}
+ */
+function normalizeSpotifyMode(mode) {
+  if (typeof mode === 'number') {
+    if (mode === 0) return 'minor'
+    if (mode === 1) return 'major'
+    return ''
+  }
+  if (typeof mode !== 'string') return ''
+  const text = mode.trim().toLowerCase()
+  if (text === 'minor' || text === 'min') return 'minor'
+  if (text === 'major' || text === 'maj') return 'major'
+  return ''
 }
 
 /**
