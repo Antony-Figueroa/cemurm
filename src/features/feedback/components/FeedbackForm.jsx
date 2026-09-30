@@ -126,7 +126,7 @@ function FeedbackFormBody() {
             className={`rounded px-3 py-1.5 text-sm font-medium ${
               kind === option.value
                 ? 'bg-cem-amber text-cem-base'
-                : 'bg-cem-elevated text-cem-secondary hover:text-cem-text'
+                : 'bg-cem-elevated text-cem-secondary-elevated hover:text-cem-text'
             }`}
           >
             {option.label}

@@ -199,6 +199,17 @@ import { supabase } from '../supabase.js'
  */
 
 /**
+ * One row of list_plan_versions (0021_plan_freeze.sql), newest first.
+ * @typedef {object} PlanVersion
+ * @property {number} version_number
+ * @property {string} status
+ * @property {string | null} published_at
+ * @property {string | null} published_by
+ * @property {string | null} published_by_name
+ * @property {string | null} reason
+ */
+
+/**
  * Mutation inputs — client guards run before any network call.
  * @typedef {object} ServiceInput
  * @property {string | undefined} [orgId]
@@ -618,6 +629,11 @@ export async function updateServiceStatus(id, status) {
  * Leader-only; flips draft→published on first publish, supersedes the previous
  * version, logs the change and notifies every assignee. Returns version_number.
  */
+/**
+ * @param {string} serviceId
+ * @param {string} [reason]
+ * @returns {Promise<number>}
+ */
 export async function publishPlan(serviceId, reason = '') {
   return withErrorMapping(async () => {
     const { data, error } = await supabase
@@ -632,6 +648,10 @@ export async function publishPlan(serviceId, reason = '') {
  * Members AND leaders: `snapshot` is what members execute; the live `draft`
  * and `draft_changed` flag power the leader's "Changed after publish" state.
  */
+/**
+ * @param {string} serviceId
+ * @returns {Promise<Record<string, unknown>>}
+ */
 export async function getPublishedPlan(serviceId) {
   return withErrorMapping(async () => {
     const { data, error } = await supabase
@@ -642,6 +662,10 @@ export async function getPublishedPlan(serviceId) {
 }
 
 /** Leader-only version history (list_plan_versions RPC), newest first. */
+/**
+ * @param {string} serviceId
+ * @returns {Promise<PlanVersion[]>}
+ */
 export async function listPlanVersions(serviceId) {
   return withErrorMapping(async () => {
     const { data, error } = await supabase

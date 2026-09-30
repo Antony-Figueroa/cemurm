@@ -58,7 +58,7 @@ export function collectDiagnostics({ consent, screenshotDataUrl }) {
  * Insert a feedback row. Signature is write-op compatible for offlineSync:
  * (userId, payload). Throws a typed error on server failure so the UI can
  * surface "Could not send, retry or copy your text" and keep the draft.
- * @returns {{ok: true}}
+ * @returns {Promise<{ok: true}>}
  */
 export async function submitFeedback(userId, payload) {
   const { kind, message, screen, diagnostics } = payload
