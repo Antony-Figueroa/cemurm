@@ -781,7 +781,7 @@ export default function ServiceDetail() {
       )}
 
       {versionedRead && published?.draft_changed && (
-        <p className="mt-3 rounded-md bg-cem-elevated px-3 py-2 text-sm text-cem-secondary">
+        <p className="mt-3 rounded-md bg-cem-elevated px-3 py-2 text-sm text-cem-text">
           The plan was changed after the last publish — members still execute the published version.
         </p>
       )}
