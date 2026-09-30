@@ -801,7 +801,7 @@ export default function SetlistDetail() {
                       onClick={() => handleMove(index, 0)}
                       disabled={index === 0}
                       title="Move to top"
-                      className="rounded border border-cem-elevated px-2 py-0.5 text-xs text-cem-secondary hover:bg-cem-elevated disabled:opacity-40"
+                      className="rounded border border-cem-elevated px-2 py-0.5 text-xs text-cem-secondary-elevated hover:bg-cem-elevated disabled:opacity-40"
                     >
                       ↑ top
                     </button>
@@ -810,7 +810,7 @@ export default function SetlistDetail() {
                       onClick={() => handleMove(index, index - 1)}
                       disabled={index === 0}
                       title="Move up"
-                      className="rounded border border-cem-elevated px-2 py-0.5 text-xs text-cem-secondary hover:bg-cem-elevated disabled:opacity-40"
+                      className="rounded border border-cem-elevated px-2 py-0.5 text-xs text-cem-secondary-elevated hover:bg-cem-elevated disabled:opacity-40"
                     >
                       ↑
                     </button>
@@ -819,7 +819,7 @@ export default function SetlistDetail() {
                       onClick={() => handleMove(index, index + 1)}
                       disabled={index === itemIds.length - 1}
                       title="Move down"
-                      className="rounded border border-cem-elevated px-2 py-0.5 text-xs text-cem-secondary hover:bg-cem-elevated disabled:opacity-40"
+                      className="rounded border border-cem-elevated px-2 py-0.5 text-xs text-cem-secondary-elevated hover:bg-cem-elevated disabled:opacity-40"
                     >
                       ↓
                     </button>

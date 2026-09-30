@@ -89,7 +89,7 @@ export default function ReportDialog({ entry, reasons, onSubmit, onClose, alread
                 key={reason}
                 className={`flex items-start gap-2 rounded-md border px-3 py-2 text-sm ${
                   reported
-                    ? 'cursor-not-allowed border-cem-elevated bg-cem-elevated/50 text-cem-secondary'
+                    ? 'cursor-not-allowed border-cem-elevated bg-cem-elevated/50 text-cem-secondary-elevated'
                     : selectedReason === reason
                       ? 'border-cem-amber bg-cem-amber/5 text-cem-text'
                       : 'border-cem-elevated text-cem-text hover:border-cem-amber/50'
