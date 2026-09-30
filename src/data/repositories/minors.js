@@ -1,3 +1,4 @@
+// @ts-check
 // Supabase data layer for minor accounts + guardian consent (Hito 4).
 // The backend owns every rule: consent writes go through the RPCs only, and
 // profiles.date_of_birth / is_minor are never client-readable (0017 shipped no
@@ -20,6 +21,56 @@
 // (signup age gate, account activation, consent record, public-sharing gate).
 
 import { supabase } from '../supabase.js'
+
+/**
+ * Raw guardian_consents row as the `select('*')` returns it (migration 0017):
+ * identity + consent text columns are not-null; the three lifecycle
+ * timestamps and the public-sharing approval are nullable.
+ * @typedef {object} RawConsentRow
+ * @property {string} id
+ * @property {string} user_id
+ * @property {string} guardian_name
+ * @property {string} guardian_email
+ * @property {string} consent_text
+ * @property {string} consent_version
+ * @property {'pending' | 'active' | 'revoked' | 'archived'} status
+ * @property {boolean} public_sharing_approved
+ * @property {string | null} public_sharing_approved_at
+ * @property {string} revocation_token
+ * @property {string} consented_at
+ * @property {string | null} revoked_at
+ * @property {string | null} archived_at
+ * @property {string} created_at
+ * @property {string} updated_at
+ */
+
+/**
+ * Flattened consent shape (normalizeProfile — flattenSetlist precedent):
+ * snake_case columns promoted to camelCase.
+ * @typedef {object} Consent
+ * @property {string} id
+ * @property {string} userId
+ * @property {'pending' | 'active' | 'revoked' | 'archived'} status
+ * @property {boolean} publicSharingApproved
+ * @property {string | null} publicSharingApprovedAt
+ * @property {string} guardianName
+ * @property {string} guardianEmail
+ * @property {string} consentText
+ * @property {string} consentedAt
+ * @property {string | null} revokedAt
+ * @property {string | null} archivedAt
+ */
+
+/**
+ * requestGuardianConsent RPC arguments — the guardian identity + the exact text
+ * they will see, stored verbatim (scenario 3). Same shape the deprecated
+ * recordConsent took; the name tracks the 0031 RPC it now calls.
+ * @typedef {object} RequestGuardianConsentInput
+ * @property {string} userId
+ * @property {string} guardianName
+ * @property {string} guardianEmail
+ * @property {string} consentText
+ */
 
 // ponytail: known user-facing errors re-thrown as-is; network/PostgREST
 // errors map to a safe generic message (songs.js/publicLibrary.js pattern).
@@ -45,16 +96,29 @@ const USER_ERRORS = new Set([
   'Profile not found.',
 ])
 
+/**
+ * @param {Error} error
+ * @returns {never}
+ */
 function handleError(error) {
   if (USER_ERRORS.has(error?.message)) throw error
   throw new Error('Something went wrong. Please try again.')
 }
 
+/**
+ * @template T
+ * @param {() => Promise<T>} fn
+ * @returns {Promise<T>}
+ */
 async function withErrorMapping(fn) {
-  try { return await fn() } catch (e) { handleError(e) }
+  try { return await fn() } catch (e) { handleError(/** @type {Error} */ (e)) }
 }
 
 // snake_case → camelCase, matching the app's flatten conventions (songs.js).
+/**
+ * @param {RawConsentRow | null | undefined} row
+ * @returns {Consent | null}
+ */
 function flattenConsent(row) {
   if (!row) return null
   return {
@@ -76,6 +140,8 @@ function flattenConsent(row) {
  * Latest consent row for the user (created_at desc, limit 1) or null when
  * none exists. The row's status tells the caller whether consent is 'active'
  * (vs older revoked/archived records). RLS self-select only.
+ * @param {string} userId
+ * @returns {Promise<Consent | null>}
  */
 export function getConsentStatus(userId) {
   return withErrorMapping(async () => {
@@ -102,6 +168,8 @@ export function getConsentStatus(userId) {
  *
  * The exact consent text the guardian will see is stored verbatim (scenario 3).
  * Returns the new pending row id. Follow it with sendGuardianConsentEmail().
+ * @param {RequestGuardianConsentInput} input
+ * @returns {Promise<string>}
  */
 export function requestGuardianConsent({ userId, guardianName, guardianEmail, consentText }) {
   return withErrorMapping(async () => {
@@ -132,6 +200,7 @@ export function requestGuardianConsent({ userId, guardianName, guardianEmail, co
  *   'already_active'  — consent was confirmed while this page was open
  *   'no_open_request' — no pending row to send for (stale page)
  *   'unavailable'     — the call could not complete (offline, 5xx, bad config)
+ * @returns {Promise<'sent' | 'already_active' | 'no_open_request' | 'unavailable'>}
  */
 export async function sendGuardianConsentEmail() {
   let result
@@ -169,6 +238,8 @@ export async function sendGuardianConsentEmail() {
  * Void on success. The minor's next ledger read (getConsentStatus, which
  * RequireGuardianConsent re-runs on every mount) is what unlocks the app —
  * there is nothing to refresh on this side.
+ * @param {{ userId: string, token: string }} input
+ * @returns {Promise<void>}
  */
 export function confirmGuardianConsent({ userId, token }) {
   return withErrorMapping(async () => {
@@ -183,6 +254,8 @@ export function confirmGuardianConsent({ userId, token }) {
 /**
  * Mark public sharing as guardian-approved on the caller's ACTIVE consent
  * (RPC only, scenario 4). Void on success — publishing becomes allowed.
+ * @param {string} userId
+ * @returns {Promise<void>}
  */
 export function approvePublicSharing(userId) {
   return withErrorMapping(async () => {
@@ -203,6 +276,7 @@ export function approvePublicSharing(userId) {
  * account that has not finished onboarding is never mistaken for a grown-up.
  * Callers must treat a rejected read as dobKnown: false — see
  * RequireGuardianConsent in src/components/auth/AuthGuards.jsx.
+ * @returns {Promise<{ dobKnown: boolean, isMinor: boolean }>}
  */
 export function getAgeStatus() {
   return withErrorMapping(async () => {
@@ -226,6 +300,8 @@ export function getAgeStatus() {
  *
  * `date` is an ISO 'YYYY-MM-DD' string (what <input type="date"> gives us).
  * Void on success — re-read getAgeStatus() to see the resulting state.
+ * @param {string} date
+ * @returns {Promise<void>}
  */
 export function setDateOfBirth(date) {
   return withErrorMapping(async () => {
