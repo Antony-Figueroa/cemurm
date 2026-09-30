@@ -5,6 +5,24 @@
 import { parseChordPro } from './parser.js'
 
 /**
+ * The slice of a version computeReadiness reads: base key + chart body, plus
+ * the PDF-scan branch inputs. Every field is optional/nullish because the
+ * caller assembles this from a (possibly absent) version row, and the demo
+ * passes a null version to exercise the missing-key guard.
+ * @typedef {object} ReadinessInput
+ * @property {string | null | undefined} [key]
+ * @property {string | null | undefined} [body]
+ * @property {boolean | null | undefined} [hasPdfChart]
+ * @property {number | null | undefined} [sizeBytes]
+ */
+
+/**
+ * @typedef {object} Readiness
+ * @property {'ready' | 'draft'} status
+ * @property {string | null} reason
+ */
+
+/**
  * Readiness for ONE version.
  *
  * Readiness rules (BDD order of precedence):
