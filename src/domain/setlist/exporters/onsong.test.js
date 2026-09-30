@@ -168,19 +168,66 @@ describe('serializeOnSong — agreed key', () => {
     expect(serializeOnSong({ itemIds: ['s1'], versionIds: { s2: 'v' } }, [song])).toBe('{key: C}\nx')
   })
 
-  it('NEVER emits the setlist item agreed_key', () => {
-    // FINDING: features/external-integrations.feature promises the export
-    // "contains the songs in order with their charts and agreed keys", but
-    // flattenSetlist() does not carry agreed_key onto the Setlist object at
-    // all, so the exporter cannot reach it. The only key it can emit is the
-    // pinned version base_key (or the song key). Confirmed against the seed,
-    // whose setlist_items rows do carry agreed_key 'G' and 'C'.
+  it('emits the setlist item agreed_key, which is the one the spec asks for', () => {
+    // The assertion this replaces read "NEVER emits the setlist item
+    // agreed_key" and asserted the output did NOT contain it. That was the
+    // bug, pinned: the feature file says the export "contains the songs in
+    // order with their charts and agreed keys", and the only key the exporter
+    // could reach was the pinned version's base_key.
+    //
+    // Eb is the agreed key while G is the chart's own — the case the whole
+    // finding is about, since those are different keys for the same song.
+    //
+    // Note the body's own {key: G} line. The header comment says the body
+    // "passes through VERBATIM so ChordPro sections survive", so G is still in
+    // the output; that duplication is the second half of finding C and is not
+    // addressed here. What is asserted is that the EXPORTED key is the agreed
+    // one, which is the line the exporter chose rather than the one the body
+    // happened to carry.
     const text = serializeOnSong(
-      { name: 'Demo Setlist', itemIds: [SONG_AMAZING_GRACE.id], items: [{ songId: SONG_AMAZING_GRACE.id, agreedKey: 'Eb' }], agreedKeys: { [SONG_AMAZING_GRACE.id]: 'Eb' } },
+      { name: 'Demo Setlist', itemIds: [SONG_AMAZING_GRACE.id], agreedKeys: { [SONG_AMAZING_GRACE.id]: 'Eb' } },
       [SONG_AMAZING_GRACE],
     )
-    expect(text).not.toContain('Eb')
+    const emitted = text.match(/^\{key: ([^}]*)\}/m)
+    expect(emitted, 'exactly one exporter-authored key line').toBeTruthy()
+    expect(emitted[1]).toBe('Eb')
+  })
+
+  it('still carries the chart own key from the body — a known duplication, not a fix', () => {
+    // Recorded so the gap is visible rather than forgotten. Folding this into
+    // the agreed-key change would mean rewriting the body contract, which is a
+    // separate decision: strip it, or teach the exporter precedence.
+    const text = serializeOnSong(
+      { itemIds: [SONG_AMAZING_GRACE.id], agreedKeys: { [SONG_AMAZING_GRACE.id]: 'Eb' } },
+      [SONG_AMAZING_GRACE],
+    )
     expect(text).toContain('{key: G}')
+    expect(text.match(/\{key: /g)).toHaveLength(2)
+  })
+
+  it('lets the agreed key outrank a pinned version, and the song key', () => {
+    const song = { id: 's', title: 'T', artist: 'A', key: 'C', versions: [{ id: 'v', key: 'D' }], body: '[C]x' }
+    // Pinned version says D, song says C, the band agreed Eb. The agreement is
+    // the answer the spec names.
+    const text = serializeOnSong({ itemIds: ['s'], versionIds: { s: 'v' }, agreedKeys: { s: 'Eb' } }, [song])
+    expect(text).toContain('{key: Eb}')
+  })
+
+  it('falls back to the pinned version, then the song key, when nothing was agreed', () => {
+    const song = { id: 's', title: 'T', artist: 'A', key: 'C', versions: [{ id: 'v', key: 'D' }], body: '[C]x' }
+    // A setlist where nobody agreed a key is an ordinary state, not an error,
+    // and the old precedence is preserved for it exactly.
+    expect(serializeOnSong({ itemIds: ['s'], versionIds: { s: 'v' } }, [song])).toContain('{key: D}')
+    expect(serializeOnSong({ itemIds: ['s'] }, [song])).toContain('{key: C}')
+    // An agreed key for a DIFFERENT song must not leak into this one.
+    expect(serializeOnSong({ itemIds: ['s'], agreedKeys: { other: 'Eb' } }, [song])).toContain('{key: C}')
+  })
+
+  it('treats an empty agreed key as absent rather than emitting nothing', () => {
+    const song = { id: 's', title: 'T', artist: 'A', key: 'C', body: '[C]x' }
+    const text = serializeOnSong({ itemIds: ['s'], agreedKeys: { s: '' } }, [song])
+    expect(text).toContain('{key: C}')
+    expect(text).not.toContain('{key: }')
   })
 })
 
