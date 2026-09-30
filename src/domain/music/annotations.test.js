@@ -281,24 +281,20 @@ describe('applySubstitution', () => {
     expect(applySubstitution('B', 0, { B: 'C' }, 'Bb')).toBe('C')
   })
 
-  it('does not consult the typed anchor for a fractional semitone count', () => {
-    // This PR adds a third lookup — the anchor as the musician typed it — and
-    // that lookup is deliberately skipped when the amount is not a whole number
-    // of semitones. The other two lookups are a transposition round trip, and a
-    // fractional amount has no valid reverse transpose, so both derived names are
-    // the same non-note. Comparing the typed anchor against that would invent a
-    // substitution out of a transposition that cannot exist: at 2.5 the concrete
-    // name is 'undefined', which is not in the map, and the typed 'Bm' would then
-    // match a DIFFERENT key space and render as 'undefinedmaj7'.
+  it('no longer misses on a fractional semitone count — the reverse lookup is clean', () => {
+    // The assertion this replaces was named "misses on a fractional semitone
+    // count (the reverse lookup yields 'undefined')" and asserted the token
+    // comes back UNCHANGED. The unchanged result was a miss, not a pass: the
+    // reverse lookup computed 'undefined', found no mapping for it, and gave
+    // up quietly. So a substitution the user had set never applied.
     //
-    // This assertion is unchanged from the suite as it stands, so the test keeps
-    // its original name. #223, which stops a non-integer amount producing
-    // 'undefined' at all, inverts it; that PR and this one both touch it, and the
-    // one that lands second needs the other.
-    expect(applySubstitution('Bm', 2.5, { Bm: 'Dmaj7' }, 'C')).toBe('Bm')
-    // The same anchor with a whole amount does match, which is the whole point.
-    // The target is transposed along with everything else, so the 'Dmaj7' the
-    // musician wrote for the base key becomes 'Emaj7' two semitons up.
+    // The reverse transpose now returns the token itself for a non-integer
+    // amount, which the map does contain, so the substitution is found. This
+    // is a behaviour change and it is the correct one — the amount being
+    // fractional does not make the anchor unrecognisable.
+    expect(applySubstitution('Bm', 2.5, { Bm: 'Dmaj7' }, 'C')).toBe('Dmaj7')
+    // The same anchor with a whole amount also matches — the path that was
+    // already working, kept as the regression guard for the one this PR changed.
     expect(applySubstitution('Bm', 2, { Bm: 'Dmaj7' }, 'C')).toBe('Emaj7')
     // An anchor genuinely absent from the map still passes through untouched.
     expect(applySubstitution('Em', 2, { Bm: 'Dmaj7' }, 'C')).toBe('Em')
