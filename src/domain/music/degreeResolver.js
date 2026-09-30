@@ -77,6 +77,38 @@ function extractRoot(chord) {
   return m ? m[1] : null
 }
 
+/**
+ * Read the quality a chord spells out for itself, or null when it spells none.
+ *
+ * The scale is the fallback, not the authority: `music-theory.feature` says a
+ * musician's explicit chord wins over the derived one, and until this existed
+ * the suffix was never parsed, so an `E7` and a bare `E` were indistinguishable
+ * and the override scenario could not pass.
+ *
+ * Returns { triad, seventh } — triad is one of major|minor|diminished|augmented
+ * |power|suspended, seventh is 7|m7|M7|dim7|null.
+ */
+function parseChordQuality(chord) {
+  const suffix = String(chord || '').replace(/^[A-G][#b]?/, '').toLowerCase()
+  if (!suffix) return null
+
+  // Order matters: the more specific markers are tested before the bare ones.
+  // `maj7` must be matched before `m7`, or a minor seventh is read as a major
+  // one — a first version used `m(aj)?7` and rendered Cm7 as Imaj7.
+  if (/^(dim|o)(7)?$/.test(suffix)) return { triad: 'diminished', seventh: /7$/.test(suffix) ? 'dim7' : null }
+  if (/^(aug|\+)(7)?$/.test(suffix)) return { triad: 'augmented', seventh: null }
+  if (/^maj7$/.test(suffix)) return { triad: 'major', seventh: 'M7' }
+  if (/^(m|min|-)7$/.test(suffix)) return { triad: 'minor', seventh: 'm7' }
+  if (/^7$/.test(suffix)) return { triad: 'major', seventh: '7' }
+  if (/^(m|min|-)(9|11|13)?$/.test(suffix)) return { triad: 'minor', seventh: null }
+  if (/^maj(9|11|13)?$/.test(suffix)) return { triad: 'major', seventh: null }
+  if (/^(9|11|13)$/.test(suffix)) return { triad: 'major', seventh: '7' }
+  if (/^sus(2|4)?$/.test(suffix)) return { triad: 'suspended', seventh: null }
+  if (/^5$/.test(suffix)) return { triad: 'power', seventh: null }
+  if (/^(maj|M)$/.test(suffix)) return { triad: 'major', seventh: null }
+  return null
+}
+
 // Roman numeral labels for scale degrees (1-based index).
 const ROMAN_MAJOR = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII']
 const ROMAN_MINOR = ['i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii']
@@ -122,12 +154,16 @@ function qualityForDegree(intervals, degree) {
   // For non-heptatonic scales, return 'power' — degree quality is less meaningful.
   if (len < 7) return 'power'
 
-  // Build the triad on this degree: root, third, fifth.
-  const root = intervals[degree - 1]
-  const thirdIdx = degree + 1 <= len ? degree + 1 : degree + 1 - len
-  const fifthIdx = degree + 2 <= len ? degree + 2 : degree + 2 - len
-  const third = intervals[thirdIdx - 1]
-  const fifth = intervals[fifthIdx - 1]
+  // The triad on this degree stacks SCALE DEGREES 1, 3 and 5, which are
+  // `degree`, `degree + 2` and `degree + 4` steps around the scale. This used to
+  // read `degree` and `degree + 1` — the next two scale STEPS, one degree too
+  // near each time. Consecutive steps of a heptatonic scale essentially never
+  // span a perfect fifth, so the function returned 'power' for all 49
+  // degree/scale pairs measured, and every modal degree rendered as a capital.
+  const at = (step) => intervals[(((step - 1) % len) + len) % len]
+  const root = at(degree)
+  const third = at(degree + 2)
+  const fifth = at(degree + 4)
 
   const thirdInterval = ((third - root) % 12 + 12) % 12
   const fifthInterval = ((fifth - root) % 12 + 12) % 12
@@ -163,20 +199,34 @@ function qualityForDegree(intervals, degree) {
  * @param {DegreeQuality | null} quality
  * @returns {string}
  */
-function formatRomanNumeral(degree, quality) {
+function formatRomanNumeral(degree, quality, seventh) {
   if (!degree || degree < 1 || degree > 7) return '?'
 
   const majorNumeral = ROMAN_MAJOR[degree - 1]
+  const minorNumeral = ROMAN_MINOR[degree - 1]
+  const withSeventh = (numeral) => {
+    if (!seventh) return numeral
+    if (seventh === 'm7') return `${numeral}7`
+    if (seventh === 'M7') return `${numeral}maj7`
+    // The diminished triad already carries its °, so a dim7 adds only the 7.
+    // Appending '°7' as well produced 'i°°7'.
+    if (seventh === 'dim7') return `${numeral}7`
+    return `${numeral}7`
+  }
 
   switch (quality) {
     case 'major':
-      return majorNumeral
+      return withSeventh(majorNumeral)
     case 'minor':
-      return ROMAN_MINOR[degree - 1]
+      return withSeventh(minorNumeral)
     case 'diminished':
-      return `${ROMAN_MINOR[degree - 1]}°`
+      return withSeventh(`${minorNumeral}°`)
     case 'augmented':
       return `${majorNumeral}+`
+    // A suspended chord has no third, so the scale's quality does not apply and
+    // there is nothing to derive — only the written "sus" survives.
+    case 'suspended':
+      return withSeventh(majorNumeral)
     case 'power':
       return majorNumeral
     default:
@@ -227,8 +277,10 @@ export async function resolveDegree(keyContext, concreteChord) {
   const degree = rootToDegree(tonicSemitone, scale.intervals, chordRootSemitone)
   if (!degree) return null
 
-  const quality = qualityForDegree(scale.intervals, degree)
-  return formatRomanNumeral(degree, quality)
+  // The chord's own spelling outranks the scale; the scale only fills the gap.
+  const explicit = parseChordQuality(concreteChord)
+  const quality = explicit ? explicit.triad : qualityForDegree(scale.intervals, degree)
+  return formatRomanNumeral(degree, quality, explicit?.seventh)
 }
 
 /**
@@ -254,8 +306,9 @@ export async function resolveDegreeInfo(keyContext, concreteChord) {
   const degree = rootToDegree(tonicSemitone, scale.intervals, chordRootSemitone)
   if (!degree) return null
 
-  const quality = qualityForDegree(scale.intervals, degree)
-  const numeral = formatRomanNumeral(degree, quality)
+  const explicit = parseChordQuality(concreteChord)
+  const quality = explicit ? explicit.triad : qualityForDegree(scale.intervals, degree)
+  const numeral = formatRomanNumeral(degree, quality, explicit?.seventh)
 
   return { degree, numeral, quality, scaleId: scale.id }
 }
