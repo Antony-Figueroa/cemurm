@@ -12,9 +12,10 @@ import * as comments from '../data/repositories/comments.js'
 import * as substitutions from '../data/repositories/substitutions.js'
 import * as feedback from '../data/repositories/feedback.js'
 import { listSongs } from '../data/repositories/songs.js'
-import { pendingOps, removeOps } from './queue.js'
+import { pendingOps, removeOps, patchOps, quarantineOps } from './queue.js'
 import { offlineGet, offlineSet, offlineRemove } from './cache.js'
 import { reconcileSetlistOp } from '../domain/setlist/collab.js'
+import { decideDrainOutcome, DRAIN_ACTION, DRAIN_KIND, quarantineNotice } from '../domain/offline/drainFailure.js'
 
 /**
  * A queued op row, aliased from queue.js (which owns the shape) so the
@@ -120,6 +121,12 @@ export async function clearSyncNotices(userId) {
 /** @type {string | null} */
 let knownUserId = null
 
+/** Online check, guarded for node (no navigator ⇒ online). */
+function isOnline() {
+  if (typeof navigator === 'undefined') return true
+  return navigator.onLine !== false
+}
+
 let draining = false
 
 export function startOfflineSync() {
@@ -210,6 +217,7 @@ export async function drainPending(userId) {
   if (draining) return
   draining = true
   let drained = 0
+  let setAside = 0
   const notices = []
   try {
     const ops = await pendingOps(target)
@@ -238,8 +246,8 @@ export async function drainPending(userId) {
       } catch (e) {
         // A superseded first-wins accept is not an error for the queue: the
         // position was covered by someone else before the sync, so the queued
-        // intent is moot. Drop it with a notice and keep draining. Every other
-        // rejection stops the queue to preserve order.
+// intent is moot. Drop it with a notice and keep draining. Every other
+        // rejection is classified below.
         const superseded = SUPERSEDED_ERRORS[op.name]?.test(String(/** @type {Error} */ (e)?.message || ''))
         if (superseded) {
           notices.push('A substitution you accepted was already covered before your sync.')
@@ -247,11 +255,43 @@ export async function drainPending(userId) {
           drained += 1
           continue
         }
-        // Still offline or server rejected — stop and keep the rest in order.
-        console.warn(`offline sync: op ${op.name} failed, retrying on next reconnect`, /** @type {Error} */ (e)?.message || e)
-        break
+// R6: classify the failure before reacting. The old code broke out on
+        // every error, so one op the server rejects deterministically (an RLS
+        // denial, a validation guard, a 409) stalled every later op forever —
+        // app-wide, because the queue is shared by unrelated features. A bare
+        // `continue` is the opposite trap: it retries a doomed op on every
+        // drain, forever. So: retry only what might still succeed, set aside
+        // what provably cannot, and keep draining either way.
+        const outcome = decideDrainOutcome(e, { online: isOnline(), attempts: op.attempts || 0 })
+        if (outcome.action === DRAIN_ACTION.RETRY) {
+          // No verdict from the server (offline, gateway fault) or a failure we
+          // could not classify. Keep the op and stop here: the ops behind it
+          // may depend on this one, and they are replayed in seq order.
+          // patchOps only records the attempt count for unclassified failures,
+          // which is what bounds the retry of a permanently broken op.
+          const attempts = (op.attempts || 0) + 1
+          if (outcome.kind === DRAIN_KIND.UNKNOWN) {
+            await patchOps(target, new Set([op.seq]), { attempts, lastFailedAt: Date.now() })
+          }
+          console.warn(
+            `offline sync: op ${op.name} failed (${outcome.reason}), retrying on next reconnect`,
+            outcome.detail || e,
+          )
+          break
+        }
+        // The server rejected this exact op and will reject it again. Move it
+        // to the quarantine — kept on the device, not dropped — and keep
+        // draining so the rest of the queue is not held hostage to it.
+        console.warn(
+          `offline sync: op ${op.name} rejected (${outcome.reason}), set aside`,
+          outcome.detail || e,
+        )
+        await quarantineOps(target, new Set([op.seq]), outcome)
+        setAside += 1
+        drained += 1
       }
     }
+    if (setAside > 0) notices.push(quarantineNotice(setAside))
     if (notices.length) await appendNotices(target, notices)
   } finally {
     draining = false
