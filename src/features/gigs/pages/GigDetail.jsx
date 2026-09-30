@@ -82,7 +82,7 @@ export default function GigDetail() {
               <button type="button" onClick={() => runAction(reopenGig)} className={`${btn} border border-cem-emerald/40 text-cem-emerald hover:bg-cem-emerald/10`}>Reopen</button>
             )}
             {gig.status !== 'cancelled' && (
-              <button type="button" onClick={() => runAction(cancelGig)} className={`${btn} border border-cem-elevated text-cem-secondary hover:bg-cem-elevated`}>Cancel</button>
+              <button type="button" onClick={() => runAction(cancelGig)} className={`${btn} border border-cem-elevated text-cem-secondary-elevated hover:bg-cem-elevated`}>Cancel</button>
             )}
             <button type="button" onClick={() => { setEditing(true); setError('') }} className={outlined}>Edit</button>
           </div>
