@@ -233,22 +233,35 @@ export function applyLock(locks, payload) {
  */
 export function reconcileSetlistOp(op, server) {
   // `op.args?.` guarded a missing `args` but not a missing `op`, so a null op
-  // threw on the way in. There is nothing to reconcile, so replay is the
-  // outcome: a caller with no op has no write to lose.
+  // threw on the way in. That crash is finding 6 in this review and is fixed by
+  // its own change (fix-unspecified-crashes), deliberately not inside this one:
+  // two changes that must be reviewed apart. The guard below is that change's
+  // work; the setlist-op check after it is this change's.
   if (!op) return { drop: false }
+  const isSetlistOp = op.name === 'addSongToSetlist' || op.name === 'removeSongFromSetlist'
+  if (!isSetlistOp) return { drop: false }
+
   const songId = /** @type {string} */ (op.args?.[2])
-  const queuedAt = op.queuedAt || 0
   const present = (server?.itemIds || []).includes(songId)
-  const serverNewer = !!server?.updatedAt && new Date(server.updatedAt).getTime() > queuedAt
+
+  // A song id the queue never recorded is not a conflict, and not a no-op
+  // either — it is an operation this client cannot identify. Dropping it as
+  // "superseded" would tell the user their edit lost to someone else when
+  // nobody looked at it. Scoped to the two setlist ops: an unrecognised op has
+  // no positional args to be short, and replays unconditionally.
+  if (songId == null) return { drop: true, notice: true, reason: 'malformed' }
+
   if (op.name === 'addSongToSetlist') {
     if (present) return { drop: true }
-    if (serverNewer) return { drop: true, notice: true }
+    // A missing queuedAt is unknown age, NOT old. `|| 0` used to make every
+    // server timestamp beat it, so a queue row that lost its timestamp was
+    // reported as superseded.
+    if (op.queuedAt == null) return { drop: true, notice: true, reason: 'unknown-age' }
+    const serverNewer = !!server?.updatedAt && new Date(server.updatedAt).getTime() > op.queuedAt
+    if (serverNewer) return { drop: true, notice: true, reason: 'superseded' }
     return { drop: false }
   }
-  if (op.name === 'removeSongFromSetlist') {
-    return { drop: !present }
-  }
-  return { drop: false }
+  return { drop: !present }
 }
 
 // Self-check: node -e "import('./src/domain/setlist/collab.js').then(m => m.demo())"

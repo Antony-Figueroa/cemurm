@@ -164,19 +164,32 @@ async function decideReplay(userId, op) {
   const decision = reconcileSetlistOp(setlistOp, server)
   if (!decision.drop) return { replay: true }
   if (!decision.notice) return { replay: false }
-  return { replay: false, notice: await buildNotice(userId, op) }
+  return { replay: false, notice: await buildNotice(userId, op, decision.reason) }
 }
 
 /**
- * "removed before your sync" line (R7). The actor is unknowable — a
- * postgres_changes payload carries no user id (D5) — so the notice names the
- * song instead. The song lookup is cosmetic: a failure falls back to the
- * generic line rather than losing the notice.
+ * The notice line (R7). The actor is unknowable — a postgres_changes payload
+ * carries no user id (D5) — so the line names the song instead. The song lookup
+ * is cosmetic: a failure falls back to the generic line rather than losing the
+ * notice.
+ *
+ * `reason` decides the wording, and it matters more than the branch name. Only
+ * a genuine supersession may claim someone else got there first; an operation
+ * this client cannot identify must not blame a collaborator for a write the
+ * client simply failed to replay.
+ *
  * @param {string} userId
  * @param {QueuedOp} op
+ * @param {string} [reason]
  * @returns {Promise<string>}
  */
-async function buildNotice(userId, op) {
+async function buildNotice(userId, op, reason) {
+  if (reason === 'malformed') {
+    return 'A queued change to the setlist could not be read and was not applied. Please make the change again.'
+  }
+  if (reason === 'unknown-age') {
+    return 'A queued change to the setlist lost its timestamp and was not applied. Please make the change again.'
+  }
   const songId = op.args?.[2]
   let title = null
   try {
@@ -246,7 +259,7 @@ export async function drainPending(userId) {
       } catch (e) {
         // A superseded first-wins accept is not an error for the queue: the
         // position was covered by someone else before the sync, so the queued
-// intent is moot. Drop it with a notice and keep draining. Every other
+        // intent is moot. Drop it with a notice and keep draining. Every other
         // rejection is classified below.
         const superseded = SUPERSEDED_ERRORS[op.name]?.test(String(/** @type {Error} */ (e)?.message || ''))
         if (superseded) {
@@ -255,7 +268,7 @@ export async function drainPending(userId) {
           drained += 1
           continue
         }
-// R6: classify the failure before reacting. The old code broke out on
+        // R6: classify the failure before reacting. The old code broke out on
         // every error, so one op the server rejects deterministically (an RLS
         // denial, a validation guard, a 409) stalled every later op forever —
         // app-wide, because the queue is shared by unrelated features. A bare
