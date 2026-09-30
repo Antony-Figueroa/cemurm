@@ -192,9 +192,10 @@ export function filterSongs(songs, { query = '', key = '', tempo } = {}) {
  * Public library catalog filter (AND): free-text over title/artist/genre +
  * exact license match. S4.1 — mirrors the client-side "ponytail" used in
  * Songs.jsx: bounded catalog, no server-side composition yet.
- * @param {CatalogEntry[] | null | undefined} entries
+ * @template {CatalogEntry} T
+ * @param {T[] | null | undefined} entries
  * @param {CatalogFilters} [filters]
- * @returns {CatalogEntry[]}
+ * @returns {T[]}
  */
 export function filterPublicEntries(entries, { query = '', license = '' } = {}) {
   const q = String(query ?? '').trim().toLowerCase()
