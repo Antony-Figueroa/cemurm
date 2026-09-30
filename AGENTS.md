@@ -34,11 +34,11 @@ fails hard against Vite 5.4.21. Do not bump it without moving Vite first.
 `.github/workflows/ci.yml` (push to `main` + every PR) runs pnpm 11 / Node 22:
 
 ```
-pnpm install --frozen-lockfile → pnpm lint → pnpm test → pnpm build
+pnpm install --frozen-lockfile → pnpm lint → bash scripts/check-visual-contract.sh → pnpm test → pnpm build
 ```
 
 **`pnpm typecheck` is absent from CI.** Type errors ship with a green check. Run it locally
-before you claim a change is done. CI also runs **no tests** — M0b adds that step.
+before you claim a change is done.
 
 ## Type checking is per-file opt-in
 
@@ -83,9 +83,11 @@ docker exec -i supabase_db_cemurm psql -U postgres -d postgres -X -f - < scripts
 
 **Local, not hosted.** `docs/local-dev.md` is authoritative: this project is NOT linked to a hosted Supabase project. `README.md` and `docs/technical-spec.md` still name a hosted project URL — that text is stale, ignore it.
 
-Migrations: **27 files on `main`**, highest `0028_import_pipeline.sql`. The `0020`–`0022` window
-is **no longer free**: `0020_review_batch1.sql` (#172) and `0022_projection.sql` (#181) are on
-`main`. **Only `0021` is still unclaimed**, and `0029` is the next number after `0028`.
+Migrations: **32 files on `main`**, highest `0033_feedback.sql`. The `0020`–`0022` window is
+**closed** — `0020_review_batch1.sql`, `0021_plan_freeze.sql` and `0022_projection.sql` are all on
+`main`. `0029` is taken as well (`0029_fail_closed_minors.sql`). `0032` is **claimed but not
+landed**: `0032_overlay_access_token.sql` rides in #225, so the next free number after `0033` is
+`0034` unless #225 lands first and takes it.
 
 Before adding a migration, check every branch for a collision:
 `git branch -r | xargs -I{} git ls-tree --name-only {} -- supabase/migrations/`. Two cautions on
@@ -93,26 +95,27 @@ that check, both learned the hard way:
 
 - It reports collisions on **superseded** branches. `feat/hito5-in-app-feedback` still carries
   `0020_feedback.sql`, which collides with `main`'s `0020_review_batch1.sql` — but that branch is
-  closed and superseded by `feat/m2-feedback-data`, which renumbered the same migration to
-  `0029_feedback.sql`. A collision there is not live. Check the PR's state, not just the branch.
-- The window closes as migrations land. `0021` was free for the whole life of the four Hito 5
-  branches, which is why `0021_plan_freeze.sql` can keep its number and merge without a
-  renumber. (`#179`, which carries it, is still open.)
+  closed and superseded. Check the PR's state, not just the branch. Read the renumbering trail
+  before trusting a number: the same feedback migration moved `0020` → `0029` and then on to
+  `0033_feedback.sql`, while `0029` was taken in the meantime by an unrelated migration. "It was
+  free when I looked" was true twice and false both times.
+- A number free on `main` is not free *for you*. `0021` stayed free for the whole life of the four
+  Hito 5 branches, which is why `0021_plan_freeze.sql` merged without a renumber — and that merge
+  is what closed it. A slot is consumed when the PR carrying it lands, not when you pick it.
 
-Filename order is the dependency order, so placement depends on what a migration needs:
+Filename order is the dependency order, so placement is a constraint, not a formality: `supabase db
+reset` executes *every* `.sql` in `supabase/migrations/` in filename order, so a migration that
+creates what an earlier one references must sort **before** it.
 
-- Depends on tables from `0019` or earlier → place it at **`0021`** while that is free. Do not
-  put it at `0029`: `supabase db reset` executes in filename order, so a migration that creates
-  what an earlier one references will fail if it sorts after it.
-- `0021` is taken → the correct placement is **`0029`+**, and renumbering is not a violation.
-  `0029_feedback.sql` is the precedent. It is entirely self-contained — it creates its own
-  `public.feedback` table and references only `auth.users(id)`, so it depends on nothing any
-  migration creates and its position in the order does not matter. It took `0029` because `0020`
-  and `0022` were already claimed.
+- **Self-contained** (creates its own tables, references only `auth.users(id)`) → position does not
+  matter, so take the next free number, `0034` today. `0033_feedback.sql` is the precedent for
+  renumbering when the natural slot is gone; it is self-contained, so `0033` cost nothing.
+- **Must sort before an existing migration** → you cannot simply take `0034`. Land it in a genuinely
+  free earlier slot, or renumber what it depends on. `0032` is the only free-looking number below
+  `0033` and it is claimed by #225, so this case needs a decision rather than a guess.
 
-`supabase db reset` executes *every* `.sql` in `supabase/migrations/`, so never commit an
-ad-hoc query script there (that's why `scripts/smoke/` is a sibling directory). Never push the
-seed with `supabase db push`.
+Never commit an ad-hoc query script in `supabase/migrations/` (that's why `scripts/smoke/` is a
+sibling directory). Never push the seed with `supabase db push`.
 
 `supabase/seed.sql` is idempotent (`on conflict do nothing` everywhere) and defines the fixture every smoke test depends on. Three confirmed users, **all password `password1234`**:
 
