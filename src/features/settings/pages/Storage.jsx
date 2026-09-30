@@ -231,7 +231,7 @@ export default function Storage() {
 
       <div className="mt-4 overflow-hidden rounded-lg border border-cem-elevated">
         <table className="w-full text-sm">
-          <thead className="bg-cem-elevated text-left text-xs uppercase tracking-wide text-cem-secondary">
+          <thead className="bg-cem-elevated text-left text-xs uppercase tracking-wide text-cem-secondary-elevated">
             <tr>
               <th className="px-4 py-2 font-medium">Category</th>
               <th className="px-4 py-2 text-right font-medium">Used</th>

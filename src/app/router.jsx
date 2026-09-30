@@ -26,6 +26,7 @@ import Overlay from '../features/stage/pages/Overlay.jsx'
 import Projection from '../features/projection/pages/Projection.jsx'
 import ProjectionDisplay from '../features/projection/pages/ProjectionDisplay.jsx'
 import Auth from '../features/auth/pages/Auth.jsx'
+import GuardianConfirm from '../features/auth/pages/GuardianConfirm.jsx'
 import Practice from '../features/repertoire/pages/Practice.jsx'
 import PublicLibrary from '../features/library/pages/PublicLibrary.jsx'
 import Profile from '../features/library/pages/Profile.jsx'
@@ -85,6 +86,13 @@ const router = createBrowserRouter([
       // it renders "Projection ready — waiting for the operator" without
       // redirecting to /auth.
       { path: '/projection/display', element: <ProjectionDisplay /> },
+      // The guardian's confirm link (Hito 4, 0031). Deliberately OUTSIDE
+      // RequireAuth and outside RequireGuardianConsent: a guardian has no
+      // account and no session, so either guard would bounce them to /auth and
+      // dead-end the emailed link exactly as it was dead before this page
+      // existed. Inside AppLayout, beside /auth, because it is an ordinary
+      // signed-out page that happens to carry a one-shot capability.
+      { path: '/guardian/confirm', element: <GuardianConfirm /> },
       { path: '*', element: <NotFound /> },
     ],
   },
