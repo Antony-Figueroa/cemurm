@@ -326,7 +326,7 @@ export default function SongForm({ initial, onSubmit, onCancel, submitLabel }) {
             type="button"
             onClick={() => handleSourceChange('chordpro')}
             disabled={submitting}
-            className={`rounded px-3 py-1 text-sm font-medium disabled:opacity-60 ${source === 'chordpro' ? 'bg-cem-amber text-cem-base' : 'text-cem-secondary hover:bg-cem-elevated'}`}
+            className={`rounded px-3 py-1 text-sm font-medium disabled:opacity-60 ${source === 'chordpro' ? 'bg-cem-amber text-cem-base' : 'text-cem-secondary-elevated hover:bg-cem-elevated'}`}
           >
             ChordPro text
           </button>
@@ -334,7 +334,7 @@ export default function SongForm({ initial, onSubmit, onCancel, submitLabel }) {
             type="button"
             onClick={() => handleSourceChange('pdf')}
             disabled={submitting}
-            className={`rounded px-3 py-1 text-sm font-medium disabled:opacity-60 ${source === 'pdf' ? 'bg-cem-amber text-cem-base' : 'text-cem-secondary hover:bg-cem-elevated'}`}
+            className={`rounded px-3 py-1 text-sm font-medium disabled:opacity-60 ${source === 'pdf' ? 'bg-cem-amber text-cem-base' : 'text-cem-secondary-elevated hover:bg-cem-elevated'}`}
           >
             PDF scan
           </button>

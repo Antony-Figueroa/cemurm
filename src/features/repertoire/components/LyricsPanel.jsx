@@ -63,7 +63,7 @@ export default function LyricsPanel({ song, version, enrichment }) {
               type="button"
               onClick={discard}
               disabled={state === 'applying'}
-              className="rounded-md border border-cem-elevated px-3 py-1.5 text-xs font-medium text-cem-secondary hover:bg-cem-elevated disabled:opacity-60"
+              className="rounded-md border border-cem-elevated px-3 py-1.5 text-xs font-medium text-cem-secondary-elevated hover:bg-cem-elevated disabled:opacity-60"
             >
               Discard
             </button>

@@ -99,7 +99,7 @@ export default function PdfChartViewer({ title, objectPath, sizeBytes, blobUrl }
               onClick={() => setZoom(p)}
               disabled={!showInline}
               className={`rounded border px-2 py-0.5 text-xs font-medium disabled:opacity-40 ${
-                zoom === p ? 'border-cem-amber bg-cem-amber/10 text-cem-amber' : 'border-cem-elevated text-cem-secondary hover:bg-cem-elevated'
+                zoom === p ? 'border-cem-amber bg-cem-amber/10 text-cem-amber' : 'border-cem-elevated text-cem-secondary-elevated hover:bg-cem-elevated'
               }`}
             >
               {Math.round(p * 100)}%

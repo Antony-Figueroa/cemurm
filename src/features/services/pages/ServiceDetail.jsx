@@ -36,12 +36,12 @@ const outlinedBtn = `${btn} border border-cem-elevated text-cem-text hover:bg-ce
 const miniBtnClass =
   'rounded-md border border-cem-elevated px-2 py-1 text-xs font-medium text-cem-text hover:bg-cem-elevated disabled:opacity-60'
 const arrowBtn =
-  'rounded border border-cem-elevated px-1.5 py-0.5 text-xs text-cem-secondary hover:bg-cem-elevated disabled:opacity-40'
+  'rounded border border-cem-elevated px-1.5 py-0.5 text-xs text-cem-secondary-elevated hover:bg-cem-elevated disabled:opacity-40'
 const dangerBtn =
   'rounded-md border border-cem-elevated px-2 py-1 text-xs font-medium text-cem-rose hover:bg-cem-elevated'
 const miniInputClass =
   'w-full rounded-md border border-cem-elevated bg-cem-surface px-2 py-1.5 text-sm text-cem-text placeholder:text-cem-secondary focus:border-cem-amber focus:outline-none focus:ring-1 focus:ring-cem-amber'
-const keyBadge = 'rounded bg-cem-elevated px-1.5 py-0.5 text-xs text-cem-secondary'
+const keyBadge = 'rounded bg-cem-elevated px-1.5 py-0.5 text-xs text-cem-secondary-elevated'
 
 // Warning kind → dot color (validate_service_plan kinds: overrun, uncovered,
 // overlap, needs_work — messages render verbatim).
@@ -330,7 +330,7 @@ function BlockCard({ block, service, assignments, members, setlists, songs, isLe
             {assignments.map((a) => (
               <li key={a.id} className="flex flex-wrap items-center gap-2 text-sm">
                 <span className="text-cem-text">{a.memberName || '(unknown member)'}</span>
-                <span className="rounded bg-cem-elevated px-1.5 py-0.5 text-xs text-cem-secondary">{a.part}</span>
+                <span className="rounded bg-cem-elevated px-1.5 py-0.5 text-xs text-cem-secondary-elevated">{a.part}</span>
                 {a.isSubstitute && (
                   <span className="rounded bg-cem-amber/10 px-1.5 py-0.5 text-xs text-cem-amber">substitute</span>
                 )}
@@ -557,7 +557,7 @@ export default function ServiceDetail() {
       {topError && <p className="mt-3 rounded-md bg-cem-rose/10 px-3 py-2 text-sm text-cem-rose">{topError}</p>}
 
       {completed && (
-        <p className="mt-3 rounded-md bg-cem-elevated px-3 py-2 text-sm text-cem-secondary">
+        <p className="mt-3 rounded-md bg-cem-elevated px-3 py-2 text-sm text-cem-text">
           Archived service (read-only)
         </p>
       )}
@@ -629,13 +629,13 @@ export default function ServiceDetail() {
                     className={`rounded-lg border p-4 shadow-sm ${active ? 'border-cem-elevated bg-cem-surface' : 'border-cem-elevated bg-cem-base'}`}>
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-sm font-semibold text-cem-text">{req.part}</span>
-                      <span className="rounded bg-cem-elevated px-1.5 py-0.5 text-xs text-cem-secondary">{req.original_name || 'member'}</span>
+                      <span className="rounded bg-cem-elevated px-1.5 py-0.5 text-xs text-cem-secondary-elevated">{req.original_name || 'member'}</span>
                       <span className={`rounded px-1.5 py-0.5 text-xs font-medium ${
                         req.status === 'covered'
                           ? 'bg-cem-emerald/10 text-cem-emerald'
                           : req.status === 'open'
                             ? 'bg-cem-amber/10 text-cem-amber'
-                            : 'bg-cem-elevated text-cem-secondary'
+                            : 'bg-cem-elevated text-cem-secondary-elevated'
                       }`}>
                         {req.status}{req.scope === 'event' ? ' · event' : ''}
                       </span>
@@ -661,7 +661,7 @@ export default function ServiceDetail() {
                               r.status === 'accepted'
                                 ? 'bg-cem-emerald/10 text-cem-emerald'
                                 : r.status === 'declined'
-                                  ? 'bg-cem-elevated text-cem-secondary'
+                                  ? 'bg-cem-elevated text-cem-secondary-elevated'
                                   : 'bg-cem-amber/10 text-cem-amber'
                             }`}>{r.status}</span>
                           </li>
@@ -817,7 +817,7 @@ export default function ServiceDetail() {
                 <li key={b.id} className="rounded-lg border border-cem-amber/40 bg-cem-surface p-4 shadow-sm">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-sm font-medium text-cem-text">{b.name}</span>
-                    <span className="rounded bg-cem-elevated px-1.5 py-0.5 text-xs text-cem-secondary">{b.part}</span>
+                    <span className="rounded bg-cem-elevated px-1.5 py-0.5 text-xs text-cem-secondary-elevated">{b.part}</span>
                     <span className="text-xs text-cem-secondary">You are on the shortlist.</span>
                   </div>
                   <div className="mt-2 flex gap-2">
