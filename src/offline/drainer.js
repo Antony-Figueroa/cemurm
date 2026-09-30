@@ -142,7 +142,15 @@ async function decideReplay(userId, op) {
   } catch {
     return { replay: true }
   }
-  const decision = reconcileSetlistOp(op, server)
+  // Unsound by construction, and deliberately labelled as such: the queue is
+  // generic (`args: unknown[]`) but only the two reconciled setlist ops reach
+  // this line, and their args are positional string ids. Narrowing happens at
+  // the call site rather than by widening QueuedOp, which would un-honest the
+  // rest of the queue. Mirrors the webMidi sendProgramChange precedent.
+  // Structural, not an import(): QueuedSetlistOp is a module-local typedef in
+  // collab.js and is deliberately not exported.
+  const setlistOp = /** @type {{ name: string, args?: string[], queuedAt?: number }} */ (op)
+  const decision = reconcileSetlistOp(setlistOp, server)
   if (!decision.drop) return { replay: true }
   if (!decision.notice) return { replay: false }
   return { replay: false, notice: await buildNotice(userId, op) }
