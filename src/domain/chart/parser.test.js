@@ -80,32 +80,61 @@ describe('parseChordPro — metadata directives', () => {
   })
 })
 
-// ── sectional key: DEAD CODE ─────────────────────────────────────────────────
+// ── sectional key ───────────────────────────────────────────────────────────
 
 describe('parseChordPro — sectional key contexts', () => {
-  it('sectionKeyContexts is ALWAYS empty, even for a chart that modulates', () => {
-    // FINDING (behaviour, do not "fix"): the `if (directive.name === 'key')`
-    // branch at parser.js:73 is unreachable. KNOWN_META already contains 'key',
-    // so the branch above it matches first, assigns meta.key and `continue`s.
-    const modSample = `{title: ModSong}
+  const modSample = `{title: ModSong}
 {key: C}
 {section: Verse}
 [C]Verse in C
 {section: Chorus}
 {key: G}
 [G]Chorus in G`
+
+  it('records a mid-chart {key} as a sectional override', () => {
+    // The assertion this replaces asserted `sectionKeyContexts` was ALWAYS
+    // empty. KNOWN_META contained 'key', so the generic meta branch matched
+    // first and `continue`d before the sectional branch could run.
     const parsed = parseChordPro(modSample)
+    expect(parsed.sectionKeyContexts).toEqual([{ sectionIndex: 2, key: 'G' }])
+  })
+
+  it('keeps the song key as the FIRST {key}, not the last', () => {
+    // The module doc comment claims "the song-level key is the first {key}
+    // directive"; the code took the last one, so a modulating chart reported
+    // its chorus key as the song's key.
+    const parsed = parseChordPro(modSample)
+    expect(parsed.key).toBe('C')
+  })
+
+  it('points the override at the section it was written in, inventing none', () => {
+    // The branch used to call ensureSection('lyrics') first, which pushed a new
+    // section and then recorded THAT index rather than the section the
+    // modulation belongs to. Here {key: G} sits between the Chorus header and
+    // the Chorus lyric, so it belongs to the Chorus header at index 2 — and
+    // the section count is unchanged, which is the half that was actually wrong.
+    const parsed = parseChordPro(modSample)
+    expect(parsed.sections).toHaveLength(4)
+    expect(parsed.sections[2].type).toBe('section')
+    expect(parsed.sections[2].lines[0].text).toBe('Chorus')
+    expect(parsed.sectionKeyContexts[0].sectionIndex).toBe(2)
+  })
+
+  it('ignores a second {key} that arrives before any section opened', () => {
+    // Not a modulation — no section to modulate — so it records nothing and
+    // leaves the song key alone. A sectionIndex of -1 would be meaningless.
+    const parsed = parseChordPro('{key: C}\n{key: D}\n{verse}\n[C]x')
+    expect(parsed.key).toBe('C')
     expect(parsed.sectionKeyContexts).toEqual([])
   })
 
-  it('a second {key} OVERWRITES the song key instead of recording a modulation', () => {
-    // FINDING: the module doc comment claims "the song-level key is the first
-    // {key} directive"; the code takes the last one.
-    const parsed = parseChordPro('{key: C}\n{section: Verse}\n[C]x\n{key: G}')
-    expect(parsed.key).toBe('G')
+  it('still reads a single {key} as the song key', () => {
+    for (const key of ['G', 'Em', 'F', 'Gb']) {
+      expect(parseChordPro(`{key: ${key}}\n[G]x`).key).toBe(key)
+    }
   })
 
-  it('is empty for every real seed chart', () => {
+  it('records no sectional key for a chart that never modulates', () => {
     for (const key of ['G', 'Em', 'F']) {
       expect(parseChordPro(`{key: ${key}}\n[G]x`).sectionKeyContexts).toEqual([])
     }
@@ -348,13 +377,18 @@ describe('demo()', () => {
     vi.restoreAllMocks()
   })
 
-  it('THROWS on its sectional-key assert — the shipped self-check is broken', () => {
-    // FINDING: demo() asserts `parsed.key === 'C'` for a two-{key} sample and
-    // `sectionKeyContexts.length === 1`. Both fail, because the sectional-key
-    // branch is dead code (see the suite above). The very first assert to trip
-    // is the song-level key one, so demo() can never reach its console.log.
-    vi.spyOn(console, 'log').mockImplementation(() => {})
-    expect(() => demo()).toThrow(/song-level key is first directive/)
-    expect(() => demo()).toThrow(/expected "C", got "G"/)
+  it('demo() now PASSES its own sectional-key asserts', () => {
+    // The assertion this replaces asserted demo() MUST throw, and that it throw
+    // /expected "C", got "G"/ — a test that pinned the bug by demanding the
+    // shipped self-check stay broken. demo() asserts `key === 'C'` for a
+    // two-{key} sample and one recorded sectional key; both now hold, so
+    // demo() reaches its console.log instead of dying on the first assert.
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {})
+    try {
+      expect(() => demo()).not.toThrow()
+      expect(log).toHaveBeenCalled()
+    } finally {
+      log.mockRestore()
+    }
   })
 })

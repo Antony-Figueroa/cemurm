@@ -1,3 +1,4 @@
+// @ts-check
 // Community moderation data layer (Hito 4 — community-moderation).
 // Handles report intake, case consolidation, moderator decisions, appeals,
 // and takedown propagation. All case writes are ONLINE-ONLY server RPCs
@@ -9,6 +10,91 @@
 // Scenario coverage: features/community-moderation.feature
 
 import { supabase } from '../supabase.js'
+
+/**
+ * Report grounds — the report_reason enum (0001) and the REPORT_REASONS list
+ * below are the same vocabulary.
+ * @typedef {'copyright_violation' | 'offensive_content' | 'spam_duplicate' | 'wrong_metadata'} ReportReason
+ */
+
+/**
+ * Decision vocabulary — the values decide_moderation_case (0015) raises; the
+ * client gates on the same set before calling the RPC.
+ * @typedef {'keep' | 'remove' | 'escalate'} ModerationDecision
+ */
+
+/**
+ * Report lifecycle — 'pending' on insert, 'consolidated' once the 0015 RPC
+ * folds it into a case, 'closed' by a decision.
+ * @typedef {'pending' | 'consolidated' | 'closed'} ReportStatus
+ */
+
+/**
+ * Raw moderation_cases row (explicit select list in getModerationQueue,
+ * select '*' in getAppeals). created_at is added by 0015, not by 0001.
+ * @typedef {object} RawCaseRow
+ * @property {string} id
+ * @property {string} public_song_id
+ * @property {Record<string, number>} reason_counts
+ * @property {string[]} grounds
+ * @property {string | null} decision
+ * @property {string | null} decider_id
+ * @property {string | null} appeal_of
+ * @property {string | null} decided_at
+ * @property {string | null} notes
+ * @property {string} created_at
+ */
+
+/**
+ * Raw reports row (select list in getModerationQueue).
+ * @typedef {object} RawReportRow
+ * @property {string} id
+ * @property {string} public_song_id
+ * @property {string} reporter_id
+ * @property {ReportReason} reason
+ * @property {ReportStatus} status
+ * @property {string} created_at
+ */
+
+/**
+ * Raw public_library_entries catalog row (the subset the queue selects).
+ * @typedef {object} RawEntryRow
+ * @property {string} id
+ * @property {string} title
+ * @property {string | null} artist
+ * @property {string | null} genre
+ * @property {string} contributor_id
+ * @property {string | null} contributor_name
+ * @property {'public-domain' | 'CC-BY-4.0' | 'proprietary'} license
+ */
+
+/**
+ * Raw moderation_cases row as the dashboard summary projects it.
+ * @typedef {object} RawReportedEntryRow
+ * @property {string} id
+ * @property {string} public_song_id
+ * @property {Record<string, number>} reason_counts
+ * @property {string[]} grounds
+ * @property {string} created_at
+ */
+
+/**
+ * One queue item: the case spread as read, plus its catalog entry (null when
+ * the entry is no longer readable) and the consolidated reports.
+ * @typedef {object} ModerationQueueItem
+ * @property {string} id
+ * @property {string} public_song_id
+ * @property {Record<string, number>} reason_counts
+ * @property {string[]} grounds
+ * @property {string | null} decision
+ * @property {string | null} decider_id
+ * @property {string | null} appeal_of
+ * @property {string | null} decided_at
+ * @property {string | null} notes
+ * @property {string} created_at
+ * @property {RawEntryRow | null} entry
+ * @property {RawReportRow[]} reports
+ */
 
 const USER_ERRORS = new Set([
   'Already reported.',
@@ -23,6 +109,12 @@ const USER_ERRORS = new Set([
   'Only the contributor can appeal.',
 ])
 
+/**
+ * Re-throws known user-facing errors (and the UNIQUE race that means a
+ * duplicate filing); everything else maps to a generic message. Never returns.
+ * @param {Error} error
+ * @returns {never}
+ */
 function handleError(error) {
   const msg = error?.message || ''
   if (USER_ERRORS.has(msg)) throw error
@@ -30,8 +122,13 @@ function handleError(error) {
   throw new Error('Something went wrong. Please try again.')
 }
 
+/**
+ * @template T
+ * @param {() => Promise<T>} fn
+ * @returns {Promise<T>}
+ */
 async function withErrorMapping(fn) {
-  try { return await fn() } catch (e) { handleError(e) }
+  try { return await fn() } catch (e) { handleError(/** @type {Error} */ (e)) }
 }
 
 // ── REPORT INTAKE ─────────────────────────────────────────────────────────────
@@ -51,6 +148,9 @@ export { REPORT_REASONS }
  * (0015) which folds pending reports into one open moderation case. The
  * UNIQUE (public_song_id, reason, reporter_id) constraint blocks duplicate
  * filings — the client error maps to "Already reported."
+ * @param {string} publicSongId
+ * @param {ReportReason} reason
+ * @returns {Promise<boolean>}
  */
 export function reportPublicSong(publicSongId, reason) {
   return withErrorMapping(async () => {
@@ -85,6 +185,7 @@ export function reportPublicSong(publicSongId, reason) {
 /**
  * Get the moderation queue: open cases (decision IS NULL) grouped by entry.
  * Returns an array of cases with entry details and report info.
+ * @returns {Promise<ModerationQueueItem[]>}
  */
 export async function getModerationQueue() {
   const { data: cases, error } = await supabase
@@ -116,8 +217,9 @@ export async function getModerationQueue() {
     .in('id', songIds)
   if (entriesError) throw entriesError
 
+  /** @type {Record<string, RawEntryRow>} */
   const entryMap = {}
-  for (const entry of entries || []) {
+  for (const entry of /** @type {RawEntryRow[]} */ (entries || [])) {
     entryMap[entry.id] = entry
   }
 
@@ -131,14 +233,15 @@ export async function getModerationQueue() {
   if (reportsError) throw reportsError
 
   // Group reports by public_song_id
+  /** @type {Record<string, RawReportRow[]>} */
   const reportsByEntry = {}
-  for (const report of reports || []) {
+  for (const report of /** @type {RawReportRow[]} */ (reports || [])) {
     const key = report.public_song_id
     if (!reportsByEntry[key]) reportsByEntry[key] = []
     reportsByEntry[key].push(report)
   }
 
-  return cases.map((c) => ({
+  return cases.map((/** @type {RawCaseRow} */ c) => ({
     ...c,
     entry: entryMap[c.public_song_id] || null,
     reports: reportsByEntry[c.public_song_id] || [],
@@ -147,6 +250,7 @@ export async function getModerationQueue() {
 
 /**
  * List entries with pending reports (for moderator dashboard summary).
+ * @returns {Promise<RawReportedEntryRow[]>}
  */
 export async function getReportedEntries() {
   const { data, error } = await supabase
@@ -169,6 +273,8 @@ export async function getReportedEntries() {
 /**
  * Check if a user is a community moderator (has the community_moderator
  * role in user_roles). Org admins do NOT get community moderation powers.
+ * @param {string | null | undefined} userId
+ * @returns {Promise<boolean>}
  */
 export async function isModerator(userId) {
   if (!userId) return false
@@ -190,6 +296,10 @@ export async function isModerator(userId) {
  * different-decider check, case update, report closing, takedown
  * propagation, restriction counter, and notifications are all definer work.
  * Online-only — an RPC call, never queued.
+ * @param {string} caseId
+ * @param {ModerationDecision} decision
+ * @param {string} [notes]
+ * @returns {Promise<boolean>}
  */
 export function decideCase(caseId, decision, notes = '') {
   return withErrorMapping(async () => {
@@ -217,6 +327,9 @@ export function decideCase(caseId, decision, notes = '') {
  * File an appeal against a decided case. Server-side (0015 file_appeal):
  * only the entry's contributor may appeal, and the appeal case is created
  * with appeal_of so a DIFFERENT moderator must review it.
+ * @param {string} caseId
+ * @param {string} appealReason
+ * @returns {Promise<boolean>}
  */
 export function fileAppeal(caseId, appealReason) {
   return withErrorMapping(async () => {
@@ -235,6 +348,8 @@ export function fileAppeal(caseId, appealReason) {
 
 /**
  * Get appeal cases for a specific original case.
+ * @param {string} caseId
+ * @returns {Promise<RawCaseRow[]>}
  */
 export async function getAppeals(caseId) {
   const { data, error } = await supabase
@@ -251,6 +366,9 @@ export async function getAppeals(caseId) {
 /**
  * Check if the current user has already reported a specific entry for a
  * specific reason (prevents duplicate filings).
+ * @param {string} publicSongId
+ * @param {ReportReason} reason
+ * @returns {Promise<boolean>}
  */
 export async function hasReported(publicSongId, reason) {
   const { data: { user } } = await supabase.auth.getUser()

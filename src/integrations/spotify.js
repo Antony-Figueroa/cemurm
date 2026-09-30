@@ -1,3 +1,4 @@
+// @ts-check
 // Spotify enrichment provider (Hito 5 #69): pure + guarded, bandmates.js/midi.js
 // pattern — DOM/env access is guarded so this module never explodes in node.
 //
@@ -20,18 +21,156 @@
 import { NOTES_SHARP } from '../domain/music/transpose.js'
 import { fetchScales } from '../data/repositories/scaleCatalog.js'
 
-/** True when real Spotify credentials are configured (dev mock otherwise). */
+/**
+ * The only two failure codes a provider client resolves with (it NEVER throws —
+ * see the header): 'offline' is the isOnline() gate, 'unavailable' is any
+ * real-API failure the search's catch turned into a value.
+ * @typedef {'offline' | 'unavailable'} ProviderError
+ */
+
+/**
+ * The track lookup query. `artist` is OPTIONAL on purpose: a title-only lookup
+ * is the documented "no confident match" case (the demo asserts it), so callers
+ * may omit either half of the pair.
+ * @typedef {object} SpotifyQuery
+ * @property {string} title
+ * @property {string} [artist]
+ */
+
+/**
+ * The mode as the provider reports it: Spotify's audio-features `mode` int
+ * (0 = minor, 1 = major) flattened to the two labels the app renders.
+ * @typedef {'major' | 'minor'} SpotifyMode
+ */
+
+/**
+ * The match this provider resolves. `name`/`trackId` are always present on a
+ * search row (Spotify returns both unconditionally). `artist` is the one field
+ * that can be ABSENT: a track with no artist credit falls back to the queried
+ * artist, which the caller may itself have omitted. `albumArtUrl` is null when
+ * the track carries no art, and `bpm`/`keyIndex` are null when Spotify has no
+ * audio-features analysis for the track.
+ * @typedef {object} SpotifyMatch
+ * @property {string} name
+ * @property {string | undefined} artist
+ * @property {string | null} albumArtUrl
+ * @property {number | null} bpm
+ * @property {number | null} keyIndex
+ * @property {SpotifyMode} mode
+ * @property {string} trackId
+ */
+
+/**
+ * searchSpotifyMatch's resolved shape, discriminated on the LITERAL `ok`. It has
+ * to stay a union — widening `ok` to boolean would make the success payload
+ * unreachable for the consumers that narrow on it (`if (result.ok && result.match)`
+ * in useSpotifyEnrichment, `if (!res.ok)` in enrichments.js). `match: null` is
+ * the "no confident match" arm: nothing is written.
+ * @typedef {{ ok: false, error: ProviderError } | { ok: true, match: null } | { ok: true, match: SpotifyMatch }} SpotifyResult
+ */
+
+/**
+ * The MOCK provider's match: the same record with the canned art url and the
+ * hash-derived 60–179 bpm always resolved, which is what the demo compares.
+ * @typedef {SpotifyMatch & { bpm: number, albumArtUrl: string }} SpotifyMockMatch
+ */
+
+/**
+ * A credited artist of a search row — only `name` is read, first entry wins.
+ * @typedef {object} SpotifyArtistCredit
+ * @property {string} [name]
+ */
+
+/**
+ * One image entry of a track's album — only `url` is read, first entry wins;
+ * the width/height fields are not read at all.
+ * @typedef {object} SpotifyImage
+ * @property {string} [url]
+ */
+
+/**
+ * A track's album credit — read defensively, only the first image url.
+ * @typedef {object} SpotifyAlbum
+ * @property {SpotifyImage[]} [images]
+ */
+
+/**
+ * One track of a search row: `id`/`name` are always present per the API, the
+ * artist and album credits are read defensively (first entry wins).
+ * @typedef {object} SpotifyTrack
+ * @property {string} id
+ * @property {string} name
+ * @property {SpotifyArtistCredit[]} [artists]
+ * @property {SpotifyAlbum} [album]
+ */
+
+/**
+ * The /search `tracks` page — `items` is omitted when the query returns nothing.
+ * @typedef {object} SpotifyTracksPage
+ * @property {SpotifyTrack[]} [items]
+ */
+
+/**
+ * The /search envelope.
+ * @typedef {object} SpotifySearchBody
+ * @property {SpotifyTracksPage} [tracks]
+ */
+
+/**
+ * The /audio-features entry, read for the key profile (`key` 0 = C … 11 = B,
+ * `mode` 0 = minor / 1 = major) and `tempo` (the BPM). All three are absent on
+ * a track without an analysis, which is why the reads below guard on type.
+ * @typedef {object} SpotifyFeatures
+ * @property {number} [key]
+ * @property {number} [tempo]
+ * @property {number} [mode]
+ */
+
+/**
+ * The client-credentials token response — only `access_token` is read, and its
+ * absence is the 'Spotify token missing' throw.
+ * @typedef {object} SpotifyTokenBody
+ * @property {string} [access_token]
+ */
+
+/**
+ * One `scale_catalog` row (0001: name text NOT NULL, aliases text[] nullable) as
+ * resolveCanonicalQuality reads it: the canonical name plus the aliases array.
+ * @typedef {object} ScaleCatalogRow
+ * @property {string} name
+ * @property {string[] | null} [aliases]
+ */
+
+/**
+ * The equal-spelling verdict canonicalKeyLabel resolves: the label as the user
+ * wrote it plus its scale_catalog-canonical form.
+ * @typedef {object} KeyLabel
+ * @property {string} label
+ * @property {string} canonical
+ */
+
+/**
+ * True when real Spotify credentials are configured (dev mock otherwise).
+ * @returns {boolean}
+ */
 export function isSpotifyConfigured() {
   const { clientId, clientSecret } = spotifyCredentials()
   return Boolean(clientId && clientSecret)
 }
 
-/** Online check (guarded for node — no navigator ⇒ online). */
+/**
+ * Online check (guarded for node — no navigator ⇒ online).
+ * @returns {boolean}
+ */
 export function isOnline() {
   if (typeof navigator === 'undefined') return true
   return navigator.onLine !== false
 }
 
+/**
+ * The client-credentials pair, ''-defaulted when the env vars are absent.
+ * @returns {{ clientId: string, clientSecret: string }}
+ */
 function spotifyCredentials() {
   return {
     clientId: import.meta.env?.VITE_SPOTIFY_CLIENT_ID || '',
@@ -44,6 +183,8 @@ function spotifyCredentials() {
  *   { ok: true, match: { name, artist, albumArtUrl, bpm, keyIndex, mode, trackId } }
  *   { ok: true, match: null }  — no confident match (nothing is written)
  *   { ok: false, error: 'offline' | 'unavailable' }  — provider unreachable
+ * @param {SpotifyQuery} query
+ * @returns {Promise<SpotifyResult>}
  */
 export async function searchSpotifyMatch({ title, artist }) {
   if (!isOnline()) return { ok: false, error: 'offline' }
@@ -61,6 +202,11 @@ export async function searchSpotifyMatch({ title, artist }) {
 // Mock provider (deterministic dev contract; see header)
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * djb2-flavoured title hash — the deterministic seed of the mock contract.
+ * @param {string} title
+ * @returns {number}
+ */
 function hashTitle(title) {
   let h = 5381
   const s = String(title || '')
@@ -68,6 +214,13 @@ function hashTitle(title) {
   return h
 }
 
+/**
+ * The deterministic dev match (see header): a missing title+artist, or a title
+ * marked 'unconfident', resolves to the no-match arm.
+ * @param {string} title
+ * @param {string} [artist]
+ * @returns {SpotifyResult}
+ */
 function searchMockProvider(title, artist) {
   const t = String(title || '').trim()
   const a = String(artist || '').trim()
@@ -94,6 +247,14 @@ function searchMockProvider(title, artist) {
 
 const SPOTIFY_API = 'https://api.spotify.com/v1'
 
+/**
+ * Exchange the client-credentials pair for a bearer token. Throws when the
+ * response is not ok or carries no token — the caller's catch turns either into
+ * { ok: false, error: 'unavailable' }.
+ * @param {string} clientId
+ * @param {string} clientSecret
+ * @returns {Promise<string>}
+ */
 async function fetchSpotifyToken(clientId, clientSecret) {
   const res = await fetch('https://accounts.spotify.com/api/token', {
     method: 'POST',
@@ -104,16 +265,27 @@ async function fetchSpotifyToken(clientId, clientSecret) {
     body: 'grant_type=client_credentials',
   })
   if (!res.ok) throw new Error('Spotify token failed')
-  const body = await res.json()
+  const body = /** @type {SpotifyTokenBody} */ (await res.json())
   if (!body.access_token) throw new Error('Spotify token missing')
   return body.access_token
 }
 
+/**
+ * Case-folded comparison key — an absent field compares as ''.
+ * @param {string | null | undefined} s
+ * @returns {string}
+ */
 function normalize(s) {
   return String(s || '').toLowerCase().trim()
 }
 
-/** Confidence 0..1 — exact title match is strong; artist match boosts. */
+/**
+ * Confidence 0..1 — exact title match is strong; artist match boosts.
+ * @param {SpotifyTrack} track
+ * @param {string} title
+ * @param {string} [artist]
+ * @returns {number}
+ */
 function trackScore(track, title, artist) {
   const t = normalize(track.name)
   const a = normalize(track.artists?.[0]?.name || '')
@@ -129,6 +301,15 @@ function trackScore(track, title, artist) {
 
 const MATCH_THRESHOLD = 0.7
 
+/**
+ * The client-credentials search → /audio-features walk. Throws on any
+ * transport/HTTP failure — the caller's catch turns that into
+ * { ok: false, error: 'unavailable' }, so there is deliberately NO mock fallback
+ * here.
+ * @param {string} title
+ * @param {string} [artist]
+ * @returns {Promise<SpotifyResult>}
+ */
 async function searchRealProvider(title, artist) {
   const { clientId, clientSecret } = spotifyCredentials()
   const token = await fetchSpotifyToken(clientId, clientSecret)
@@ -137,7 +318,7 @@ async function searchRealProvider(title, artist) {
     headers: { Authorization: `Bearer ${token}` },
   })
   if (!searchRes.ok) throw new Error('Spotify search failed')
-  const searchBody = await searchRes.json()
+  const searchBody = /** @type {SpotifySearchBody} */ (await searchRes.json())
 
   const track = (searchBody.tracks?.items || []).find(
     (item) => trackScore(item, title, artist) >= MATCH_THRESHOLD,
@@ -148,7 +329,7 @@ async function searchRealProvider(title, artist) {
     headers: { Authorization: `Bearer ${token}` },
   })
   if (!featsRes.ok) throw new Error('Spotify audio-features failed')
-  const feats = await featsRes.json()
+  const feats = /** @type {SpotifyFeatures} */ (await featsRes.json())
 
   const keyIndex = typeof feats.key === 'number' ? feats.key : null
   return {
@@ -173,13 +354,61 @@ async function searchRealProvider(title, artist) {
 /**
  * Spotify keyIndex (0–11, 0 = C) + mode → 'E major' / 'E minor' label, using
  * the app's NOTES_SHARP spelling (transpose.js). Returns '' when absent.
+ *
+ * The spelling is always sharp. That is a real limitation and not a rule: the
+ * label is a suggestion shown next to a chart the user already owns, and
+ * picking a spelling here would mean deciding the chart's. A B♭ chart offered
+ * "A# major" is visibly wrong to a musician, and this is finding I — the fix is
+ * the caller's, because only the caller knows whether the chart is flat-friendly.
+ * Preferring sharps here keeps the suggestion stable while the spelling decision
+ * stays with the enrichment UI.
+ *
  * Normalization/canonicalization goes through canonicalKeyLabel().
+ *
+ * `keyIndex` is deliberately `number | string`: the body wraps it in Number() and
+ * a miss becomes '' through the `!note` guard, which is exactly what
+ * spotify.test.js pins ('4' → 'E major', 'abc' → '', 4.7 → ''). `mode` is
+ * `unknown` for the same reason — only the exact string 'minor' flips the label,
+ * so 'Minor', ' minor', Spotify's raw mode int and booleans all render major.
+ * That tolerance is a characterised FINDING, not an accident.
+ * @param {number | string | null | undefined} keyIndex
+ * @param {unknown} mode
+ * @returns {string}
  */
 export function spotifyKeyToLabel(keyIndex, mode) {
   if (keyIndex === null || keyIndex === undefined) return ''
   const note = NOTES_SHARP[((Number(keyIndex) % 12) + 12) % 12]
   if (!note) return ''
-  return `${note} ${mode === 'minor' ? 'minor' : 'major'}`
+  // The mode arrives in whichever shape the provider or the cached row used:
+  // Spotify's audio-features payload is an integer (0 minor, 1 major), and this
+  // module's own normalizer at :163 emits the strings 'major'/'minor'. Anything
+  // else used to fall through to 'major', which turned "I do not know" into a
+  // confident wrong answer. Unknown now returns '' so the caller can decide.
+  const spelled = normalizeSpotifyMode(mode)
+  if (!spelled) return ''
+  return `${note} ${spelled}`
+}
+
+/**
+ * Coerce a provider mode into 'major' | 'minor' | ''. Accepts Spotify's integer
+ * form (0 = minor, 1 = major) and the unambiguous case-insensitive string
+ * forms. A bare 'M' is deliberately NOT accepted: it is a major third in jazz
+ * shorthand and minor elsewhere, so it is left unrecognised rather than guessed
+ * in either direction. Anything else unrecognised is ''.
+ * @param {unknown} mode
+ * @returns {'major' | 'minor' | ''}
+ */
+function normalizeSpotifyMode(mode) {
+  if (typeof mode === 'number') {
+    if (mode === 0) return 'minor'
+    if (mode === 1) return 'major'
+    return ''
+  }
+  if (typeof mode !== 'string') return ''
+  const text = mode.trim().toLowerCase()
+  if (text === 'minor' || text === 'min') return 'minor'
+  if (text === 'major' || text === 'maj') return 'major'
+  return ''
 }
 
 /**
@@ -191,6 +420,8 @@ export function spotifyKeyToLabel(keyIndex, mode) {
  * canonical and surfaces a warning when they differ — applying a suggestion
  * NEVER writes base_key. Unknown labels pass through with a lowercase
  * canonical so comparisons stay deterministic.
+ * @param {string} label
+ * @returns {Promise<KeyLabel>}
  */
 export async function canonicalKeyLabel(label) {
   const raw = String(label || '').trim()
@@ -210,9 +441,18 @@ export async function canonicalKeyLabel(label) {
   return { label: raw, canonical: canonical ? `${root} ${canonical}` : `${root} ${qualityRaw}` }
 }
 
+/**
+ * The catalog's canonical scale name for a parsed quality word, or null when
+ * neither the shorthands nor a reachable catalog row names it. `scales` is
+ * fetchScales()'s array (the module cache, [] when the catalog is unreachable).
+ * @param {string} quality
+ * @param {ScaleCatalogRow[]} scales
+ * @returns {string | null}
+ */
 function resolveCanonicalQuality(quality, scales) {
   // Shorthands already carry the catalog's canonical capitalization so the
   // canonical form is identical with or without a reachable catalog.
+  /** @type {Record<string, string>} */
   const shorthands = {
     maj: 'Major',
     major: 'Major',
@@ -232,6 +472,11 @@ function resolveCanonicalQuality(quality, scales) {
 
 // Self-check: node -e "import('./src/integrations/spotify.js').then(m => m.demo())"
 export async function demo() {
+  /**
+   * @param {unknown} actual
+   * @param {unknown} expected
+   * @param {string} label
+   */
   const assert = (actual, expected, label) => {
     if (actual !== expected) {
       throw new Error(`spotify demo FAILED: ${label} — got ${JSON.stringify(actual)}, expected ${JSON.stringify(expected)}`)
@@ -244,11 +489,15 @@ export async function demo() {
   assert(JSON.stringify(miss), JSON.stringify({ ok: true, match: null }), 'unconfident title → no match')
   const noArtist = await searchSpotifyMatch({ title: 'Song' })
   assert(JSON.stringify(noArtist), JSON.stringify({ ok: true, match: null }), 'missing artist → no match')
-  const hit = await searchSpotifyMatch({ title: 'Way Maker', artist: 'Sinach' })
+  // The two casts state the arm the mock contract guarantees for this input
+  // (title + artist, neither marked unconfident ⇒ ok:true with a match whose
+  // bpm and art url are always resolved); the asserts below read through
+  // `match`, which only that arm carries.
+  const hit = /** @type {{ ok: true, match: SpotifyMockMatch }} */ (await searchSpotifyMatch({ title: 'Way Maker', artist: 'Sinach' }))
   assert(hit.ok, true, 'mock match resolves ok')
   assert(hit.match.bpm >= 60 && hit.match.bpm < 180, true, 'mock bpm in range')
   assert(hit.match.albumArtUrl.startsWith('https://i.scdn.co/image/cemurm-mock-'), true, 'mock art url')
-  const again = await searchSpotifyMatch({ title: 'way maker', artist: 'sinach' })
+  const again = /** @type {{ ok: true, match: SpotifyMockMatch }} */ (await searchSpotifyMatch({ title: 'way maker', artist: 'sinach' }))
   assert(again.match.bpm, hit.match.bpm, 'mock is deterministic across case')
 
   // Key label + equal-spelling canonicalization.

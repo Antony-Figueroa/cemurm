@@ -57,7 +57,7 @@ flag. Baseline history: `odd/tasks/ts-checkjs-baseline.md`.
 wrong `include` leaves `tsc` checking one untyped file and still exiting 0.
 
 ```bash
-npx tsc --noEmit --listFiles | grep -c 'cemurm/src/'   # must be > 1; was 1, now 41
+npx tsc --noEmit --listFiles | grep -c 'cemurm/src/'   # must be > 1; was 1, now 48
 ```
 
 TypeScript is **7.0.2** (not 5.x). Two quirks already cost time:
@@ -83,15 +83,39 @@ docker exec -i supabase_db_cemurm psql -U postgres -d postgres -X -f - < scripts
 
 **Local, not hosted.** `docs/local-dev.md` is authoritative: this project is NOT linked to a hosted Supabase project. `README.md` and `docs/technical-spec.md` still name a hosted project URL — that text is stale, ignore it.
 
-Migrations: 27 files on `main`, highest `0028_import_pipeline.sql`. `0020_review_batch1.sql`
-and `0022_projection.sql` are on `main`; **only `0021` is absent, and that is a numbering race
-between parallel branches, not a reservation** — nothing reserves that number, and several open
-branches already claim `0021_plan_freeze.sql`. Before adding a migration, check every open
-branch for a collision: `git branch -r | xargs -I{} git ls-tree --name-only {} -- supabase/migrations/`.
-Filename order is the dependency order, so a migration that depends on tables from `0019` or
-earlier belongs at `0021`, **not** renumbered to `0029`. `supabase db reset` executes
-*every* `.sql` in `supabase/migrations/`, so never commit an ad-hoc query script there (that's
-why `scripts/smoke/` is a sibling directory). Never push the seed with `supabase db push`.
+Migrations: **32 files on `main`**, highest `0033_feedback.sql`. The `0020`–`0022` window is
+**closed** — `0020_review_batch1.sql`, `0021_plan_freeze.sql` and `0022_projection.sql` are all on
+`main`. `0029` is taken as well (`0029_fail_closed_minors.sql`). `0032` is **claimed but not
+landed**: `0032_overlay_access_token.sql` rides in #225, so the next free number after `0033` is
+`0034` unless #225 lands first and takes it.
+
+Before adding a migration, check every branch for a collision:
+`git branch -r | xargs -I{} git ls-tree --name-only {} -- supabase/migrations/`. Two cautions on
+that check, both learned the hard way:
+
+- It reports collisions on **superseded** branches. `feat/hito5-in-app-feedback` still carries
+  `0020_feedback.sql`, which collides with `main`'s `0020_review_batch1.sql` — but that branch is
+  closed and superseded. Check the PR's state, not just the branch. Read the renumbering trail
+  before trusting a number: the same feedback migration moved `0020` → `0029` and then on to
+  `0033_feedback.sql`, while `0029` was taken in the meantime by an unrelated migration. "It was
+  free when I looked" was true twice and false both times.
+- A number free on `main` is not free *for you*. `0021` stayed free for the whole life of the four
+  Hito 5 branches, which is why `0021_plan_freeze.sql` merged without a renumber — and that merge
+  is what closed it. A slot is consumed when the PR carrying it lands, not when you pick it.
+
+Filename order is the dependency order, so placement is a constraint, not a formality: `supabase db
+reset` executes *every* `.sql` in `supabase/migrations/` in filename order, so a migration that
+creates what an earlier one references must sort **before** it.
+
+- **Self-contained** (creates its own tables, references only `auth.users(id)`) → position does not
+  matter, so take the next free number, `0034` today. `0033_feedback.sql` is the precedent for
+  renumbering when the natural slot is gone; it is self-contained, so `0033` cost nothing.
+- **Must sort before an existing migration** → you cannot simply take `0034`. Land it in a genuinely
+  free earlier slot, or renumber what it depends on. `0032` is the only free-looking number below
+  `0033` and it is claimed by #225, so this case needs a decision rather than a guess.
+
+Never commit an ad-hoc query script in `supabase/migrations/` (that's why `scripts/smoke/` is a
+sibling directory). Never push the seed with `supabase db push`.
 
 `supabase/seed.sql` is idempotent (`on conflict do nothing` everywhere) and defines the fixture every smoke test depends on. Three confirmed users, **all password `password1234`**:
 
@@ -187,6 +211,14 @@ The maintainer set this working agreement on 2026-09-27. It is standing, not per
 3. **Fix what breaks to make it correct.** Invasive refactors, signature changes, updating dependent call sites and docs are pre-authorized when they are required to land the unit honestly. Do not let a failing gate defer the decision.
 4. **Merge stays human.** You open the PR; the maintainer approves and merges. Never merge or push to `main` directly.
 5. Report honestly: if a check fails, a gate was weakened, or a spec conflict was found, say so in the PR body. Do not present a green run as covering something it does not.
+6. **Notify, do not wait silently.** A PR that sits at `REVIEW_REQUIRED` with nobody notified is indistinguishable from a PR nobody opened. So:
+   - **Always request a reviewer when you open the PR**: `gh pr edit <n> --add-reviewer davidjesus516`. The review request is itself the notification, and it fires without any extra step.
+   - **When you push new commits onto a PR that already has an approval**, leave a comment mentioning `@davidjesus516` explaining what changed and why. GitHub does not re-notify a reviewer for later pushes.
+   - **When a check goes red**, say so in the same thread. Do not let a failing gate sit in the checks tab.
+
+   The repo's ruleset sets `require_last_push_approval`, so the last pusher cannot approve their own
+   PR. **That is deliberate and correct — approval on `main` must be a second pair of eyes.** It does
+   not remove the obligation to make the request, or to say so out loud when the branch moves.
 
 The one limit on clause 3: **a failing characterization test is fixed in the source, never in the assertion.** Once the suite lands (M0b), it records current behaviour on purpose (`odd/tasks/cemurm-brand-landing.md` §12.1). Editing a test to go green, loosening a threshold, or adding a skip to clear a gate hides a regression. If a test genuinely encodes a wrong expectation, that is a finding to report, not to silently rewrite. The same rule governs any future test: a red test is information, not an obstacle.
 

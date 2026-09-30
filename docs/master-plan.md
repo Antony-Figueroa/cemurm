@@ -107,9 +107,18 @@ which is the opposite of the order they were authored for. In filename order the
 
 **Resolution for `0020`:** one of the two renumbers. Give `0020` to
 `0020_review_batch1.sql` — it carries the security fixes and should land first — and rename
-`0020_feedback.sql` to `0029_feedback.sql`, which is safe because it references nothing from
+the feedback migration, which is safe because it references nothing from
 `0023`–`0028`. This depends on the `fix/hito4-review-batch1` decision (§5): if that branch is
 never merged, `0020` is free and no renumber is needed at all.
+
+**Superseded 2026-09-28: the feedback migration is `0033_feedback.sql`, not `0029_feedback.sql`.**
+`0029` turned out to be claimed by a *second* unrelated change — the guardian branch family carries
+a contiguous `0029_fail_closed_minors.sql` / `0030_date_of_birth_step.sql` /
+`0031_guardian_consent_email.sql` run. `supabase db reset` executes migrations in **filename
+order**, so two files sharing a version prefix have an arbitrary relative order, and the migration
+ledger is keyed on that version. It moved again to `0033` because the feedback migration is
+standalone, whereas renumbering inside a three-file run is the more invasive move; `0032` is taken by
+`0032_overlay_access_token.sql`. Recorded as item 8 in `docs/engineering-review-backlog.md`.
 
 ### 🔴 `0019:184` IS a chain-breaker — an earlier revision of this plan was wrong
 
