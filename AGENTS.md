@@ -57,7 +57,7 @@ flag. Baseline history: `odd/tasks/ts-checkjs-baseline.md`.
 wrong `include` leaves `tsc` checking one untyped file and still exiting 0.
 
 ```bash
-npx tsc --noEmit --listFiles | grep -c 'cemurm/src/'   # must be > 1; was 1, now 41
+npx tsc --noEmit --listFiles | grep -c 'cemurm/src/'   # must be > 1; was 1, now 48
 ```
 
 TypeScript is **7.0.2** (not 5.x). Two quirks already cost time:
@@ -83,14 +83,36 @@ docker exec -i supabase_db_cemurm psql -U postgres -d postgres -X -f - < scripts
 
 **Local, not hosted.** `docs/local-dev.md` is authoritative: this project is NOT linked to a hosted Supabase project. `README.md` and `docs/technical-spec.md` still name a hosted project URL — that text is stale, ignore it.
 
-Migrations: 25 files on `main`, highest `0028_import_pipeline.sql`. **0020–0022 are absent, and
-that is a numbering race between parallel branches, not a reservation** — nothing reserves those
-numbers, and four branches already claim them. Before adding a migration, check every open
-branch for a collision: `git branch -r | xargs -I{} git ls-tree --name-only {} -- supabase/migrations/`.
-Filename order is the dependency order, so a migration that depends on tables from `0019` or
-earlier belongs at `0020`–`0022`, **not** renumbered to `0029`. `supabase db reset` executes
-*every* `.sql` in `supabase/migrations/`, so never commit an ad-hoc query script there (that's
-why `scripts/smoke/` is a sibling directory). Never push the seed with `supabase db push`.
+Migrations: **27 files on `main`**, highest `0028_import_pipeline.sql`. The `0020`–`0022` window
+is **no longer free**: `0020_review_batch1.sql` (#172) and `0022_projection.sql` (#181) are on
+`main`. **Only `0021` is still unclaimed**, and `0029` is the next number after `0028`.
+
+Before adding a migration, check every branch for a collision:
+`git branch -r | xargs -I{} git ls-tree --name-only {} -- supabase/migrations/`. Two cautions on
+that check, both learned the hard way:
+
+- It reports collisions on **superseded** branches. `feat/hito5-in-app-feedback` still carries
+  `0020_feedback.sql`, which collides with `main`'s `0020_review_batch1.sql` — but that branch is
+  closed and superseded by `feat/m2-feedback-data`, which renumbered the same migration to
+  `0029_feedback.sql`. A collision there is not live. Check the PR's state, not just the branch.
+- The window closes as migrations land. `0021` was free for the whole life of the four Hito 5
+  branches, which is why `0021_plan_freeze.sql` can keep its number and merge without a
+  renumber. (`#179`, which carries it, is still open.)
+
+Filename order is the dependency order, so placement depends on what a migration needs:
+
+- Depends on tables from `0019` or earlier → place it at **`0021`** while that is free. Do not
+  put it at `0029`: `supabase db reset` executes in filename order, so a migration that creates
+  what an earlier one references will fail if it sorts after it.
+- `0021` is taken → the correct placement is **`0029`+**, and renumbering is not a violation.
+  `0029_feedback.sql` is the precedent. It is entirely self-contained — it creates its own
+  `public.feedback` table and references only `auth.users(id)`, so it depends on nothing any
+  migration creates and its position in the order does not matter. It took `0029` because `0020`
+  and `0022` were already claimed.
+
+`supabase db reset` executes *every* `.sql` in `supabase/migrations/`, so never commit an
+ad-hoc query script there (that's why `scripts/smoke/` is a sibling directory). Never push the
+seed with `supabase db push`.
 
 `supabase/seed.sql` is idempotent (`on conflict do nothing` everywhere) and defines the fixture every smoke test depends on. Three confirmed users, **all password `password1234`**:
 
