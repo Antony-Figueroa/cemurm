@@ -16,7 +16,7 @@ import ImportUrlDialog from '../components/ImportUrlDialog.jsx'
 const STATUS_STYLES = {
   ready: 'bg-cem-emerald/10 text-cem-emerald',
   draft: 'bg-cem-amber/10 text-cem-amber',
-  retired: 'bg-cem-elevated text-cem-secondary',
+  retired: 'bg-cem-elevated text-cem-secondary-elevated',
 }
 
 function StatusBadge({ status }) {
@@ -206,14 +206,14 @@ export default function Songs() {
         <button
           type="button"
           onClick={() => setRetiredView(false)}
-          className={`rounded px-3 py-1 text-sm font-medium ${!retiredView ? 'bg-cem-amber text-cem-base' : 'text-cem-secondary hover:bg-cem-elevated'}`}
+          className={`rounded px-3 py-1 text-sm font-medium ${!retiredView ? 'bg-cem-amber text-cem-base' : 'text-cem-secondary-elevated hover:bg-cem-elevated'}`}
         >
           Active
         </button>
         <button
           type="button"
           onClick={() => setRetiredView(true)}
-          className={`rounded px-3 py-1 text-sm font-medium ${retiredView ? 'bg-cem-amber text-cem-base' : 'text-cem-secondary hover:bg-cem-elevated'}`}
+          className={`rounded px-3 py-1 text-sm font-medium ${retiredView ? 'bg-cem-amber text-cem-base' : 'text-cem-secondary-elevated hover:bg-cem-elevated'}`}
         >
           Retired
         </button>

@@ -23,7 +23,7 @@ export default function Moderation() {
     return (
       <div className="mx-auto max-w-2xl">
         <h1 className="text-2xl font-bold text-cem-text">Moderation</h1>
-        <p className="mt-3 rounded-md bg-cem-elevated px-3 py-2 text-sm text-cem-secondary">
+        <p className="mt-3 rounded-md bg-cem-elevated px-3 py-2 text-sm text-cem-text">
           Only system-appointed community moderators can access the moderation queue.
           Organization admins manage only their own organization&apos;s repertoire.
         </p>
