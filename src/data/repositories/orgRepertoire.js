@@ -1,5 +1,5 @@
 // Organizational repertoire (Hito 4, org-repertoire-model): data layer for
-// src/pages/Organizations.jsx — my org memberships (org + branch nested) and
+// src/features/orgs/pages/Organizations.jsx — my org memberships (org + branch nested) and
 // thin RPC wrappers for promote/demote/leave. RLS is the source of truth:
 // reads just query and render what comes back, and the RPCs enforce the
 // business rules server-side (migration 0016). Known user-facing errors are
