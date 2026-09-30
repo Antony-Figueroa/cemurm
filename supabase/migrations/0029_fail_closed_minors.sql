@@ -1,8 +1,7 @@
 -- CEMURM 0029 — Fail-closed minors: an unknown date of birth is NOT adulthood
 --
--- Slice: feat/auth-fail-closed-social — work unit 1 (server side only) of the
--- change "Auth — fail-closed minors + social signup + guardian email"
--- (odd/tasks/auth-fail-closed-social.md, tasks T1.1 + T1.2).
+-- Slice: fix/fail-closed-minors — the server half of the fail-closed minors
+-- work. Record: odd/tasks/minors-fail-closed-db.md.
 -- Business contract (features/minors-and-guardian-consent.feature):
 --  · public-sharing gate (scenario 4): a KNOWN minor is still blocked with the
 --    unchanged wording 'Guardian approval required for public sharing' until an
