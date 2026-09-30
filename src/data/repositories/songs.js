@@ -256,6 +256,9 @@ const isPdf = chart?.format === 'pdf'
   // render ChordPro vs PDF per version.
   const versions = versionRows.map((v) => {
     const vChart = v.chart_file_id ? charts.find((c) => c.id === v.chart_file_id) : null
+    const vIsPdf = vChart?.format === 'pdf'
+    const vBody = vChart?.content || ''
+    const vSizeBytes = vChart?.size_bytes ?? 0
     return {
       id: v.id,
       name: v.name,
@@ -263,14 +266,24 @@ const isPdf = chart?.format === 'pdf'
       key: v.base_key || '',
       bpm: v.base_tempo ?? null,
       durationSeconds: v.duration_seconds ?? null,
+      // song-lifecycle.feature:34 — readiness is per version, so this is
+      // computed from this version's own key and chart, not inherited from the
+      // song. `is_ready` is what the column stores; `readiness` is what the
+      // rules say right now, and the two can disagree until a recompute runs.
+      readiness: computeReadiness({
+        key: v.base_key || '',
+        body: vBody,
+        hasPdfChart: vIsPdf,
+        sizeBytes: vSizeBytes,
+      }),
       isReady: v.is_ready,
       // #69: version metadata flows through (album-art/provenance jsonb home).
       metadata: v.metadata || {},
-      body: vChart?.content || '',
+      body: vBody,
       // #76: per-version chart identity (pdf scan vs chordpro text).
       format: vChart?.format || 'chordpro',
       objectKey: vChart?.object_key || '',
-      sizeBytes: vChart?.size_bytes ?? 0,
+      sizeBytes: vSizeBytes,
     }
   })
 
