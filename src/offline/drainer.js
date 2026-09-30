@@ -10,6 +10,7 @@ import * as gigs from '../data/repositories/gigs.js'
 import * as bandmates from '../data/repositories/bandmates.js'
 import * as comments from '../data/repositories/comments.js'
 import * as substitutions from '../data/repositories/substitutions.js'
+import * as feedback from '../data/repositories/feedback.js'
 import { listSongs } from '../data/repositories/songs.js'
 import { pendingOps, removeOps } from './queue.js'
 import { offlineGet, offlineSet, offlineRemove } from './cache.js'
@@ -70,6 +71,9 @@ const WRITE_OPS = {
   // covered a SUPERSEDED outcome, not a drain-stopping failure — the drain
   // drops it with a notice below.
   respondSubstitution: substitutions.respondSubstitution,
+  // Hito 5 feedback: the offline path replays the SAME self-scoped insert —
+  // RLS still binds user_id to the session at replay time (0029).
+  submitFeedback: feedback.submitFeedback,
 }
 
 // Ops whose replay rejection is a designed supersession (first-wins): when
