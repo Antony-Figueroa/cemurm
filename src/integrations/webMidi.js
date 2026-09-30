@@ -1,3 +1,4 @@
+// @ts-check
 // MIDI integration data layer (Hito 5 #56): pure Web MIDI helpers plus the
 // browser-local performance setting (selected output device). The Web MIDI
 // surface is DOM-only (navigator.requestMIDIAccess, output.send) — everything
@@ -17,14 +18,58 @@
 //   0-127. Channel is fixed at 0 (channel 1) for this slice — the spec never
 //   names channels; the constant is exported for a future setting.
 
+/**
+ * Browser-local MIDI settings: the selected output device, the program-change
+ * channel, and the persisted Web MIDI permission flag (localStorage — a
+ * per-browser/per-hardware fact, unlike account-scope user_preferences).
+ * @typedef {object} MidiSettings
+ * @property {string} outputDeviceId
+ * @property {number} channel
+ * @property {boolean} permissionGranted
+ */
+
+/**
+ * The output-port surface these helpers actually read: `send`, `id`, `name`.
+ *
+ * Deliberately NOT the DOM `MIDIOutput`. A real port always has every field,
+ * but these helpers are documented (and used) against partial fakes — demo()
+ * passes `{}` and `{ name: 'MIDI 1' }`, and node passes a `{ send(bytes) }`
+ * stub — so a port is structurally "whatever subset happens to be present".
+ * Every field is therefore optional, which keeps a real `MIDIOutput` from
+ * `MIDIAccess.outputs` assignable without a cast while still accepting the
+ * fakes. Only the three members below are read; the rest of MIDIPort
+ * (`state`, `connection`, `version`, …) is never touched, so it is not here.
+ * @typedef {object} MidiOutputLike
+ * @property {string} [id]
+ * @property {string | null} [name]
+ * @property {(data: Uint8Array) => void} [send]
+ */
+
+/**
+ * One program change request. `program` stays loose on purpose: the caller's
+ * raw value (form string, DB integer, null) is normalized before the bytes.
+ * @typedef {object} ProgramChangeOptions
+ * @property {string | number | null} [program]
+ * @property {number} [channel]
+ */
+
 export const SETTINGS_KEY = 'cemurm:midi:settings'
+/** @type {MidiSettings} */
 export const DEFAULT_MIDI_SETTINGS = {
   outputDeviceId: '',
   channel: 0,
   permissionGranted: false,
 }
 
-/** True when the runtime exposes Web MIDI (browser only; false in node). */
+/**
+ * True when the runtime exposes Web MIDI (browser only; false in node).
+ *
+ * No cast is needed on the guard: `navigator.requestMIDIAccess` IS declared on
+ * `Navigator` in this TypeScript's lib.dom.d.ts, so the `typeof` probe is
+ * fully typed. The probe itself is the contract — it is what keeps node (no
+ * `requestMIDIAccess`) from ever reaching the DOM — and it is left untouched.
+ * @returns {boolean}
+ */
 export function isMidiSupported() {
   return typeof navigator !== 'undefined' && typeof navigator.requestMIDIAccess === 'function'
 }
@@ -34,6 +79,8 @@ export function isMidiSupported() {
  * Accepts ''/null/undefined/NaN and integers 0-127 (string or number).
  * Anything else — 128+, negatives, floats, prose — is invalid and maps to
  * null ("no patch"), so a malformed value never produces a bad MIDI message.
+ * @param {string | number | null | undefined} value
+ * @returns {number | null}
  */
 export function normalizeProgram(value) {
   if (value === null || value === undefined || value === '') return null
@@ -44,10 +91,26 @@ export function normalizeProgram(value) {
   return n
 }
 
+/**
+ * A settings blob exactly as it comes back out of `JSON.parse` — UNVALIDATED
+ * user-writable localStorage content. It is deliberately NOT typed as
+ * `MidiSettings`: claiming the blob is already valid would hide the very
+ * validation this function exists to perform. The members stay `any` so the
+ * existing `typeof` / `Number.isInteger` guards below remain the sole deciders,
+ * exactly as they are at runtime for `null`, a bare number, or an array.
+ * @typedef {Record<string, any>} RawSettingsBlob
+ */
+
+/**
+ * Re-validate a persisted settings blob field by field; anything unparseable
+ * falls back to the defaults. `raw` is `null` when the key is absent.
+ * @param {string | null} raw
+ * @returns {MidiSettings}
+ */
 function safeParseSettings(raw) {
   if (!raw) return { ...DEFAULT_MIDI_SETTINGS }
   try {
-    const parsed = JSON.parse(raw)
+    const parsed = /** @type {RawSettingsBlob} */ (JSON.parse(raw))
     return {
       outputDeviceId: typeof parsed.outputDeviceId === 'string' ? parsed.outputDeviceId : '',
       channel:
@@ -61,12 +124,23 @@ function safeParseSettings(raw) {
   }
 }
 
-/** Browser-local MIDI settings (output + channel + permission flag). */
+/**
+ * Browser-local MIDI settings (output + channel + permission flag).
+ * @returns {MidiSettings}
+ */
 export function loadMidiSettings() {
   if (typeof localStorage === 'undefined') return { ...DEFAULT_MIDI_SETTINGS }
   return safeParseSettings(localStorage.getItem(SETTINGS_KEY))
 }
 
+/**
+ * Merge a partial settings patch over the defaults, persist it, and return it.
+ * Undefined when there is no localStorage to write to. Both real call sites
+ * (useMidi.js) pass a partial — `{ permissionGranted, outputDeviceId }` and
+ * `{ outputDeviceId }` — hence `Partial`, not the full shape.
+ * @param {Partial<MidiSettings> | null | undefined} settings
+ * @returns {MidiSettings | undefined}
+ */
 export function saveMidiSettings(settings) {
   if (typeof localStorage === 'undefined') return
   const next = { ...DEFAULT_MIDI_SETTINGS, ...safeParseSettings(JSON.stringify(settings || {})) }
@@ -78,6 +152,9 @@ export function saveMidiSettings(settings) {
  * MIDI 1.0 Program Change message: [0xC0 | channel, program].
  * Throws on invalid input — callers normalizeProgram() first; this is the
  * bytes constructor and must never silently emit a malformed message.
+ * @param {number} channel
+ * @param {number} program
+ * @returns {Uint8Array}
  */
 export function programChangeBytes(channel, program) {
   if (!Number.isInteger(channel) || channel < 0 || channel > 15) {
@@ -94,26 +171,54 @@ export function programChangeBytes(channel, program) {
  * (null when there is no output — a silent no-op so offline/absent devices
  * never break performance mode). Pure enough for node: with a fake output
  * { send(bytes) } it accepts and returns bytes.
+ * @param {MidiOutputLike | null | undefined} output
+ * @param {ProgramChangeOptions} [options]
+ * @returns {Uint8Array | null}
  */
 export function sendProgramChange(output, { program, channel = 0 } = {}) {
   if (!output || typeof output.send !== 'function') return null
-  const bytes = programChangeBytes(channel, normalizeProgram(program) ?? program)
+  // The cast below is UNSOUND, and knowingly so. `normalizeProgram()` returns
+  // `number | null`, so `?? program` has the runtime type `number | string`:
+  // when the caller's program is invalid the RAW value is forwarded on purpose
+  // so that programChangeBytes() throws rather than silently sending nothing
+  // (see its docstring — that throw is the intended contract, not a bug, and
+  // useMidi.js wraps this call in try/catch for exactly that reason). JSDoc
+  // cannot spell "a number, or something that throws", and widening
+  // programChangeBytes()'s public `program: number` to admit a string would
+  // hide misuse by real callers, so the narrow assertion is kept and the
+  // unsoundness is recorded here rather than papered over.
+  const bytes = programChangeBytes(channel, /** @type {number} */ (normalizeProgram(program) ?? program))
   output.send(bytes)
   return bytes
 }
 
-/** Does this output match the persisted selection? (restore on reconnect.) */
+/**
+ * Does this output match the persisted selection? (restore on reconnect.)
+ * @param {MidiOutputLike | null | undefined} output
+ * @param {string} outputDeviceId
+ * @returns {boolean}
+ */
 export function isCurrentOutput(output, outputDeviceId) {
   return !!output && typeof output.id === 'string' && output.id === outputDeviceId
 }
 
-/** Display label for a device, falling back to its raw id. */
+/**
+ * Display label for a device, falling back to its raw id. The `||` chain is
+ * the real null guard: MIDIPort.name is `string | null` and both fields are
+ * optional on a fake, so no field is dereferenced unchecked.
+ * @param {MidiOutputLike | null | undefined} output
+ * @returns {string}
+ */
 export function describeOutput(output) {
   if (!output) return ''
   return output.name || output.id || 'MIDI output'
 }
 
-/** 'No patch' for an unmapped song, else `Program ${n}`. */
+/**
+ * 'No patch' for an unmapped song, else `Program ${n}`.
+ * @param {string | number | null | undefined} program
+ * @returns {string}
+ */
 export function describeProgram(program) {
   const n = normalizeProgram(program)
   return n === null ? 'No patch' : `Program ${n}`
@@ -124,12 +229,21 @@ export function describeProgram(program) {
 // message bytes, settings guard, labels.
 // ─────────────────────────────────────────────────────────────────────────
 export function demo() {
+  /**
+   * @param {unknown} actual
+   * @param {unknown} expected
+   * @param {string} label
+   */
   const assert = (actual, expected, label) => {
     const a = actual instanceof Uint8Array ? Array.from(actual) : actual
     if (JSON.stringify(a) !== JSON.stringify(expected)) {
       throw new Error(`midi demo FAILED: ${label} — got ${JSON.stringify(a)}, expected ${JSON.stringify(expected)}`)
     }
   }
+  /**
+   * @param {() => void} fn
+   * @param {string} label
+   */
   const throws = (fn, label) => {
     let threw = false
     try {
@@ -171,8 +285,11 @@ export function demo() {
   // Send: null output → silent null (offline/absent never throws); fake output
   // → returns the exact bytes.
   assert(sendProgramChange(null, { program: 45 }), null, 'no output → null no-op')
+  /** @type {number[][]} */
   const sent = []
-  const fakeOutput = { send: (bytes) => sent.push(Array.from(bytes)) }
+  // The stub's `send` receives the exact bytes this module produces, so the
+  // param is annotated rather than asserting the stub is a real MIDIOutput.
+  const fakeOutput = { send: (/** @type {Uint8Array} */ bytes) => sent.push(Array.from(bytes)) }
   const returned = sendProgramChange(fakeOutput, { program: 45, channel: 0 })
   assert(returned, [0xc0, 45], 'send returns bytes')
   assert(sent, [[0xc0, 45]], 'fake output received bytes')
