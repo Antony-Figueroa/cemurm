@@ -12,8 +12,8 @@ const inputClass =
 const RSVP_STYLES = {
   confirmed: 'bg-cem-emerald/10 text-cem-emerald',
   declined: 'bg-cem-rose/10 text-cem-rose',
-  invited: 'bg-cem-elevated text-cem-secondary',
-  undecided: 'bg-cem-elevated text-cem-secondary',
+  invited: 'bg-cem-elevated text-cem-secondary-elevated',
+  undecided: 'bg-cem-elevated text-cem-secondary-elevated',
 }
 
 const OUTCOME_LABELS = {
@@ -212,7 +212,7 @@ export default function RehearsalDetail() {
       {notice && <p className="mt-3 rounded-md bg-cem-amber/10 px-3 py-2 text-sm text-cem-amber">{notice}</p>}
 
       {completed && (
-        <p className="mt-3 rounded-md bg-cem-elevated px-3 py-2 text-sm text-cem-secondary">
+        <p className="mt-3 rounded-md bg-cem-elevated px-3 py-2 text-sm text-cem-text">
           Archived rehearsal (read-only)
         </p>
       )}
@@ -241,7 +241,7 @@ export default function RehearsalDetail() {
               type="button"
               onClick={handleComplete}
               disabled={busy}
-              className={`${btn} border border-cem-elevated text-cem-secondary hover:bg-cem-elevated disabled:opacity-60`}
+              className={`${btn} border border-cem-elevated text-cem-secondary-elevated hover:bg-cem-elevated disabled:opacity-60`}
             >
               Mark completed
             </button>

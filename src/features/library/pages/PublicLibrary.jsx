@@ -28,8 +28,8 @@ const LICENSE_OPTIONS = [
 
 const LICENSE_STYLES = {
   'public-domain': 'bg-cem-amber/10 text-cem-amber',
-  'CC-BY-4.0': 'bg-cem-elevated text-cem-secondary',
-  proprietary: 'bg-cem-elevated text-cem-secondary',
+  'CC-BY-4.0': 'bg-cem-elevated text-cem-secondary-elevated',
+  proprietary: 'bg-cem-elevated text-cem-secondary-elevated',
 }
 
 function LicenseBadge({ license }) {
@@ -71,7 +71,7 @@ function PublicSongCard({ entry, pending, added, mine, onAdd, onReport }) {
           type="button"
           onClick={() => onReport(entry)}
           disabled={Boolean(mine)}
-          className="rounded-md border border-cem-elevated px-3 py-1.5 text-sm font-medium text-cem-secondary hover:bg-cem-elevated disabled:opacity-40"
+          className="rounded-md border border-cem-elevated px-3 py-1.5 text-sm font-medium text-cem-secondary-elevated hover:bg-cem-elevated disabled:opacity-40"
         >
           Report
         </button>
@@ -81,7 +81,7 @@ function PublicSongCard({ entry, pending, added, mine, onAdd, onReport }) {
           disabled={Boolean(pending || added)}
           className={`rounded-md px-3 py-1.5 text-sm font-medium ${
             added
-              ? 'bg-cem-elevated text-cem-secondary'
+              ? 'bg-cem-elevated text-cem-secondary-elevated'
               : 'bg-cem-amber text-cem-base hover:bg-cem-amber/90 disabled:opacity-50'
           }`}
         >

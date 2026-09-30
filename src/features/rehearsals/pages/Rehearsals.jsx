@@ -7,7 +7,7 @@ import * as rehearsalStore from '../../../data/repositories/rehearsals.js'
 export const REHEARSAL_STATUS_STYLES = {
   planned: 'bg-cem-amber/10 text-cem-amber',
   published: 'bg-cem-sky/10 text-cem-sky',
-  completed: 'bg-cem-elevated text-cem-secondary',
+  completed: 'bg-cem-elevated text-cem-secondary-elevated',
 }
 
 export function StatusBadge({ status }) {

@@ -71,14 +71,52 @@ describe('spotifyKeyToLabel', () => {
     expect(spotifyKeyToLabel('0', 'major')).toBe('C major')
   })
 
-  it('labels minor ONLY for the exact string "minor" — everything else is major', () => {
-    // FINDING: the check is `mode === 'minor'`, so a capitalised, spaced or
-    // numeric mode silently becomes major. A caller passing Spotify's raw
-    // mode int (0 = minor) gets a wrong label with no error.
-    for (const mode of ['Minor', 'MINOR', 'minor ', ' minor', 'm', 1, 0, '', null, undefined, true, false]) {
-      expect(spotifyKeyToLabel(4, mode)).toBe('E major')
+  it('reads the mode in every shape the provider and this module actually send', () => {
+    // The assertion this replaces read "labels minor ONLY for the exact string
+    // 'minor' — everything else is major", and asserted that 'Minor', 'MINOR',
+    // 'minor ', 'm', 1 and 0 ALL produce 'E major'. That is the bug: the module
+    // itself normalizes the provider int to a string at spotify.js:163, and
+    // Spotify's audio-features payload is the int, so a caller holding either
+    // shape got a confident wrong answer with no error.
+    for (const mode of ['minor', 'Minor', 'MINOR', 'minor ', ' minor', 'min', 0]) {
+      expect(spotifyKeyToLabel(4, mode), String(mode)).toBe('E minor')
     }
-    expect(spotifyKeyToLabel(4, 'minor')).toBe('E minor')
+    for (const mode of ['major', 'Major', 'MAJOR', 'major ', 'maj', 1]) {
+      expect(spotifyKeyToLabel(4, mode), String(mode)).toBe('E major')
+    }
+  })
+
+  it('refuses to guess a mode it does not recognise', () => {
+    // The other half of the fix. "Not minor" and "not a mode I know" are
+    // different facts, and collapsing them is what produced the wrong label.
+    // Unrecognised input returns '' so the caller can decide, rather than
+    // becoming a confident major. Both call sites already guard on the empty
+    // string — enrichments.js:158 skips the row, useSpotifyEnrichment.js:223
+    // passes '' through as no suggestion — so '' is a real value here, not a
+    // shape change that would reach the UI as 'E major'.
+    for (const mode of ['', ' ', 'lydian', 'dorian', 'bogus', 'minor.', 'M', 2, -1, null, undefined, true, false, {}, []]) {
+      expect(spotifyKeyToLabel(4, mode), JSON.stringify(mode) ?? String(mode)).toBe('')
+    }
+  })
+
+  it('does not read a bare "M" as a mode, because it is ambiguous', () => {
+    // 'M' is a major third in jazz shorthand and minor in some other systems.
+    // Guessing either way is how the original defect happened, so it is left
+    // unrecognised on purpose — the same reason canonicalKeyLabel's own
+    // shorthands table at spotify.js:256 maps 'm' but never 'M'.
+    expect(spotifyKeyToLabel(4, 'M')).toBe('')
+    expect(spotifyKeyToLabel(4, 'maj')).toBe('E major')
+    expect(spotifyKeyToLabel(4, 'min')).toBe('E minor')
+  })
+
+  it('keeps the sharp spelling, and says so rather than guessing flats', () => {
+    // Finding I. The label is a suggestion next to a chart the user already
+    // owns, so the spelling belongs to the caller — only it knows whether the
+    // chart is flat-friendly. What is NOT acceptable is "B major" for a B♭
+    // chart, and that remains unfixed here by design: it needs a caller change.
+    expect(spotifyKeyToLabel(10, 'major')).toBe('A# major')
+    expect(spotifyKeyToLabel(3, 'major')).toBe('D# major')
+    expect(spotifyKeyToLabel(8, 'major')).toBe('G# major')
   })
 
   it('does not vary with the mode when the keyIndex is absent', () => {

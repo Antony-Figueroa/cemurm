@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 export const GIG_STATUS_STYLES = {
   planned: 'bg-cem-amber/10 text-cem-amber',
   confirmed: 'bg-cem-emerald/10 text-cem-emerald',
-  cancelled: 'bg-cem-elevated text-cem-secondary',
+  cancelled: 'bg-cem-elevated text-cem-secondary-elevated',
   completed: 'bg-cem-sky/10 text-cem-sky',
 }
 

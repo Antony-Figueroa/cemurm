@@ -35,7 +35,7 @@ export default function SlideView({ slide, settings }) {
         <span className="text-5xl font-semibold text-cem-text">{slide.title}</span>
         {slide.artist ? <span className={subLine}>{slide.artist}</span> : null}
         {slide.key ? (
-          <span className="rounded bg-cem-elevated px-2 py-0.5 text-sm text-cem-secondary">
+          <span className="rounded bg-cem-elevated px-2 py-0.5 text-sm text-cem-secondary-elevated">
             Key {slide.key}
           </span>
         ) : null}

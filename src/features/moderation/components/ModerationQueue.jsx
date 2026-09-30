@@ -82,7 +82,7 @@ export default function ModerationQueue({ queue, loading, error, onDecide, decid
                   {Object.entries(item.reason_counts || {}).map(([reason, count]) => (
                     <span
                       key={reason}
-                      className="rounded bg-cem-elevated px-1.5 py-0.5 text-[10px] font-medium text-cem-secondary"
+                      className="rounded bg-cem-elevated px-1.5 py-0.5 text-[10px] font-medium text-cem-secondary-elevated"
                     >
                       {REASON_LABELS[reason] || reason}: {count}
                     </span>
