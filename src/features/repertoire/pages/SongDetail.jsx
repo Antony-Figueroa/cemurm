@@ -114,7 +114,7 @@ function CommentCard({ comment, userId, isRoot, onReply, onResolve, onDelete, on
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             rows={2}
-            className="w-full rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text focus:border-cem-amber focus:outline-none focus:ring-1 focus:ring-cem-amber"
+            className="w-full rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text focus:border-cem-amber focus:outline-none focus:ring-2 focus:ring-cem-amber focus:ring-offset-2 focus:ring-offset-transparent"
           />
           <div className="flex gap-2">
             <button
@@ -836,7 +836,7 @@ export default function SongDetail() {
             id="song-version"
             value={versionId || ''}
             onChange={(e) => setVersionId(e.target.value)}
-            className="rounded-md border border-cem-elevated bg-cem-surface px-3 py-1.5 text-sm text-cem-text focus:border-cem-amber focus:outline-none focus:ring-1 focus:ring-cem-amber"
+            className="rounded-md border border-cem-elevated bg-cem-surface px-3 py-1.5 text-sm text-cem-text focus:border-cem-amber focus:outline-none focus:ring-2 focus:ring-cem-amber focus:ring-offset-2 focus:ring-offset-transparent"
           >
             {versions.map((v) => (
               <option key={v.id} value={v.id}>
@@ -927,7 +927,7 @@ export default function SongDetail() {
             onChange={(e) => setBody(e.target.value)}
             rows={12}
             placeholder={`{title: ${song.title}}\n[C]Lyric line with [G7]chords…`}
-            className="w-full rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 font-mono text-sm text-cem-text placeholder:text-cem-secondary focus:border-cem-amber focus:outline-none focus:ring-1 focus:ring-cem-amber"
+            className="w-full rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 font-mono text-sm text-cem-text placeholder:text-cem-secondary focus:border-cem-amber focus:outline-none focus:ring-2 focus:ring-cem-amber focus:ring-offset-2 focus:ring-offset-transparent"
           />
           {error && <p className="text-sm text-cem-rose">{error}</p>}
           <div className="flex gap-2">
@@ -1058,7 +1058,7 @@ export default function SongDetail() {
             onChange={(e) => setCommentDraft(e.target.value)}
             rows={2}
             placeholder="Comment for the band — e.g. slow the intro in the chorus…"
-            className="w-full rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text placeholder:text-cem-secondary focus:border-cem-amber focus:outline-none focus:ring-1 focus:ring-cem-amber"
+            className="w-full rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text placeholder:text-cem-secondary focus:border-cem-amber focus:outline-none focus:ring-2 focus:ring-cem-amber focus:ring-offset-2 focus:ring-offset-transparent"
           />
           <button
             type="submit"
@@ -1115,7 +1115,7 @@ export default function SongDetail() {
               id="publish-license"
               value={publishLicense}
               onChange={(e) => setPublishLicense(e.target.value)}
-              className="mt-1 w-full rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text focus:border-cem-amber focus:outline-none focus:ring-1 focus:ring-cem-amber"
+              className="mt-1 w-full rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text focus:border-cem-amber focus:outline-none focus:ring-2 focus:ring-cem-amber focus:ring-offset-2 focus:ring-offset-transparent"
             >
               <option value="public-domain">Public domain</option>
               <option value="CC-BY-4.0">CC BY 4.0</option>
