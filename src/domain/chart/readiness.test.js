@@ -82,11 +82,22 @@ describe('computeReadiness — missing base key', () => {
     )
   })
 
-  it('throws a TypeError when key is a truthy non-string (it calls .trim blindly)', () => {
-    // FINDING: `!song.key || !song.key.trim()` guards falsy values but not
-    // truthy non-strings, so a numeric base_key crashes the readiness read.
-    expect(() => computeReadiness({ key: 123, body: '[C]Hello' })).toThrow(TypeError)
-    expect(() => computeReadiness({ key: {}, body: '[C]Hello' })).toThrow(TypeError)
+  it('treats a truthy non-string key as a missing key rather than crashing', () => {
+    // The assertion this replaces asserted that both of these THROW, and said
+    // the throw is why the case is recorded. A crash is the bug: readiness is
+    // read on a list render, so one malformed key takes the whole page down
+    // rather than one badge.
+    //
+    // `song_versions.base_key` is `text` (0001_init.sql), so a non-string key
+    // is not a shape this schema produces — but the guard belongs to the
+    // reader, and the reader is what runs first.
+    for (const key of [123, {}, true, [], Symbol('k')]) {
+      expect(computeReadiness({ key, body: '[C]Hello' }).status, String(key)).toBe('draft')
+      expect(computeReadiness({ key, body: '[C]Hello' }).reason, String(key)).toBe(`${NOT_READY}missing base key`)
+    }
+    // A null song is still tolerated, as before.
+    expect(computeReadiness(null).status).toBe('draft')
+    expect(computeReadiness(undefined).status).toBe('draft')
   })
 })
 
@@ -243,12 +254,37 @@ describe('computeReadiness — return contract', () => {
     expect([...seen].sort()).toEqual(['draft', 'ready'])
   })
 
-  it('is version-blind: it takes one flat song, so per-version readiness is not here', () => {
-    // "Readiness is tracked per version, not per version of a song" scenario
-    // cannot be exercised through this signature.
-    const version = { id: 'v1', key: 'C', body: '[C]complete' }
-    expect(computeReadiness(version)).toEqual(READY)
-    expect(computeReadiness({ ...version, body: 'no chords' })).toEqual(DRAFT(`${NOT_READY}no chord chart`))
+  it('is per version: two versions of one song answer independently', () => {
+    // The assertion this replaces was named "is version-blind: it takes one flat
+    // song, so per-version readiness is not here" and said the scenario could not
+    // be exercised through this signature. song-lifecycle.feature:34 requires
+    // per-version readiness, and song_versions.is_ready exists for it, so the
+    // signature moved instead of the requirement.
+    //
+    // The spec's own example: "Original (artist)" is ready, "Pedro's
+    // arrangement" is missing its bridge.
+    const original = { id: 'v1', name: 'Original (artist)', key: 'C', body: '[C]Amazing grace' }
+    const pedros = { id: 'v2', name: "Pedro's arrangement", key: 'C', body: 'no chords here' }
+    expect(computeReadiness(original)).toEqual(READY)
+    expect(computeReadiness(pedros)).toEqual(DRAFT(`${NOT_READY}no chord chart`))
+  })
+
+  it('reads only the version it is given, never a sibling', () => {
+    // Two versions that differ ONLY in key, so a per-song implementation could
+    // not tell them apart and would have to blend them.
+    const withKey = { id: 'v1', key: 'C', body: '[C]x' }
+    const withoutKey = { id: 'v2', key: '', body: '[C]x' }
+    expect(computeReadiness(withKey)).toEqual(READY)
+    expect(computeReadiness(withoutKey)).toEqual(DRAFT(`${NOT_READY}missing base key`))
+  })
+
+  it('reads the version own PDF scan, not the song current chart', () => {
+    // Per-version chart identity (#76): one version scanned, one still
+    // ChordPro. A per-song implementation answered for both from one chart.
+    const scanned = { id: 'v1', key: 'C', body: '', hasPdfChart: true, sizeBytes: 4096 }
+    const text = { id: 'v2', key: 'C', body: '', hasPdfChart: false, sizeBytes: 0 }
+    expect(computeReadiness(scanned)).toEqual(READY)
+    expect(computeReadiness(text)).toEqual(DRAFT(`${NOT_READY}no chord chart`))
   })
 })
 

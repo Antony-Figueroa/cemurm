@@ -16,7 +16,7 @@ import ImportUrlDialog from '../components/ImportUrlDialog.jsx'
 const STATUS_STYLES = {
   ready: 'bg-cem-emerald/10 text-cem-emerald',
   draft: 'bg-cem-amber/10 text-cem-amber',
-  retired: 'bg-cem-elevated text-cem-secondary',
+  retired: 'bg-cem-elevated text-cem-secondary-elevated',
 }
 
 function StatusBadge({ status }) {
@@ -206,14 +206,14 @@ export default function Songs() {
         <button
           type="button"
           onClick={() => setRetiredView(false)}
-          className={`rounded px-3 py-1 text-sm font-medium ${!retiredView ? 'bg-cem-amber text-cem-base' : 'text-cem-secondary hover:bg-cem-elevated'}`}
+          className={`rounded px-3 py-1 text-sm font-medium ${!retiredView ? 'bg-cem-amber text-cem-base' : 'text-cem-secondary-elevated hover:bg-cem-elevated'}`}
         >
           Active
         </button>
         <button
           type="button"
           onClick={() => setRetiredView(true)}
-          className={`rounded px-3 py-1 text-sm font-medium ${retiredView ? 'bg-cem-amber text-cem-base' : 'text-cem-secondary hover:bg-cem-elevated'}`}
+          className={`rounded px-3 py-1 text-sm font-medium ${retiredView ? 'bg-cem-amber text-cem-base' : 'text-cem-secondary-elevated hover:bg-cem-elevated'}`}
         >
           Retired
         </button>
@@ -226,12 +226,12 @@ export default function Songs() {
             value={search}
             onChange={handleSearch}
             placeholder="Search by title or chord…"
-            className="w-full max-w-md rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text placeholder:text-cem-secondary focus:border-cem-amber focus:outline-none focus:ring-1 focus:ring-cem-amber"
+            className="w-full max-w-md rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text placeholder:text-cem-secondary focus:border-cem-amber focus:outline-none focus:ring-2 focus:ring-cem-amber focus:ring-offset-2 focus:ring-offset-transparent"
           />
           <select
             value={keyFilter}
             onChange={(e) => setKeyFilter(e.target.value)}
-            className="rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text focus:border-cem-amber focus:outline-none focus:ring-1 focus:ring-cem-amber"
+            className="rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text focus:border-cem-amber focus:outline-none focus:ring-2 focus:ring-cem-amber focus:ring-offset-2 focus:ring-offset-transparent"
           >
             <option value="">All keys</option>
             {keys.map((k) => (
@@ -243,7 +243,7 @@ export default function Songs() {
             value={tempo}
             onChange={handleTempo}
             placeholder="Tempo range, e.g. 70-100"
-            className="w-44 rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text placeholder:text-cem-secondary focus:border-cem-amber focus:outline-none focus:ring-1 focus:ring-cem-amber"
+            className="w-44 rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text placeholder:text-cem-secondary focus:border-cem-amber focus:outline-none focus:ring-2 focus:ring-cem-amber focus:ring-offset-2 focus:ring-offset-transparent"
           />
           {keyFilter && (
             <span className="rounded-md bg-cem-amber/10 px-2 py-1 text-xs font-medium text-cem-amber">

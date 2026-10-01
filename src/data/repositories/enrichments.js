@@ -1,3 +1,4 @@
+// @ts-check
 // Spotify enrichment data layer (Hito 5 #69): provenance rows in
 // external_enrichments (migration 0026) + the user's external_connections
 // row. supabase.js pattern; the connection state is mirrored to localStorage
@@ -21,11 +22,139 @@
 
 import { spotifyKeyToLabel } from '../../integrations/spotify.js'
 
+/**
+ * Local mirror of src/integrations/spotify.js's spotifyKeyToLabel. Deliberately
+ * NOT imported as a type: that module is untyped on this branch (it is
+ * annotated in the sibling integrations slice, PR #251), so an imported
+ * typedef would silently degrade to `any` and the call below would be checked
+ * against nothing. Same reason importQueue.js (S05) mirrors the OnSong parser
+ * instead of importing it. What the code actually does:
+ * - keyIndex is deliberately tolerant: `Number(keyIndex)` means the numeric
+ *   string '4' labels 'E major', while NaN ('abc', 4.7, NaN) misses the table
+ *   and the `if (!note) return ''` guard swallows it (spotify.js:180-181).
+ * - mode is compared ONLY against the exact string 'minor' (spotify.js:182), so
+ *   'Minor', 1, 0, '', null and true all render as major — hence `unknown`.
+ * Pinned by the characterization test in src/integrations/spotify.test.js.
+ * @typedef {(keyIndex: number | string | null | undefined, mode: unknown) => string} SpotifyKeyToLabel
+ */
+
+/**
+ * The user's external_connections row (0026:29-36), as the three selects below
+ * project it. provider/status are plain text columns whose declared vocabulary
+ * is the inline comment on 0026:32-33; this module only ever writes 'spotify'.
+ * @typedef {object} ConnectionRow
+ * @property {string} id
+ * @property {string} user_id
+ * @property {'spotify'} provider
+ * @property {'connected' | 'revoked'} status
+ * @property {string} created_at
+ */
+
+/**
+ * What this module actually hands around as a connection: the fresh row when
+ * the DB read wins, or the offline mirror (and the inline revoke fallback
+ * disconnectSpotify builds when the UPDATE matched nothing) which carries no
+ * server-owned id/created_at. Settings.jsx widens it the same way
+ * (`row || { status: 'revoked' }`).
+ * @typedef {Partial<ConnectionRow> & { user_id: string, provider: 'spotify', status: 'connected' | 'revoked' }} ConnectionSnapshot
+ */
+
+/**
+ * external_enrichments.source — the 0001:146 vocabulary, kept verbatim by 0028
+ * (which only widened the INSERT whitelist, 0028:116-124, no DDL).
+ * @typedef {'spotify' | 'musicbrainz' | 'lrclib'} EnrichmentSource
+ */
+
+/**
+ * external_enrichments.field — the 0001:147 vocabulary. Title/artist are NOT
+ * here: they live in UI state only.
+ * @typedef {'bpm' | 'key' | 'album_art' | 'lyrics' | 'genre' | 'year'} EnrichmentField
+ */
+
+/**
+ * The jsonb payload (external_enrichments.value, 0001:148 NOT NULL) each field
+ * carries — one key, the persistable value of that field.
+ * @typedef {{ bpm: number } | { key: string } | { album_art: { url: string, trackId: string | null } } | { year: number } | { genre: string } | { lyrics: string }} EnrichmentValue
+ */
+
+/**
+ * A staged insert: the four declared columns plus the two the 0026 insert
+ * policy demands (applied_by = auth.uid(), state = 'suggested', 0026:78-86).
+ * @typedef {object} EnrichmentInsert
+ * @property {string} song_id
+ * @property {EnrichmentSource} source
+ * @property {EnrichmentField} field
+ * @property {EnrichmentValue} value
+ * @property {'suggested'} state
+ * @property {string} applied_by
+ */
+
+/**
+ * A stored row, as listEnrichments projects it (the 0001:143-152 columns;
+ * applied_by is a plain nullable reference — 0001:150 carries no NOT NULL).
+ * @typedef {object} EnrichmentRow
+ * @property {string} id
+ * @property {string} song_id
+ * @property {EnrichmentSource} source
+ * @property {EnrichmentField} field
+ * @property {EnrichmentValue} value
+ * @property {'suggested' | 'applied' | 'discarded'} state
+ * @property {string | null} applied_by
+ * @property {string} created_at
+ */
+
+/**
+ * The provider match handed to suggestEnrichment. Every field is optional
+ * because the three providers carry different subsets: spotify supplies
+ * bpm/keyIndex/mode/albumArtUrl/trackId, musicbrainz year/genre, lrclib lyrics
+ * (Songs.jsx calls it with year/genre only). keyIndex is the raw Spotify index
+ * (0 = C); the label is derived, never stored as written.
+ * @typedef {object} EnrichmentMatch
+ * @property {number | null} [bpm]
+ * @property {number | null} [keyIndex]
+ * @property {'major' | 'minor'} [mode]
+ * @property {string | null} [albumArtUrl]
+ * @property {string | null} [trackId]
+ * @property {number | null} [year]
+ * @property {string} [genre]
+ * @property {string} [lyrics]
+ */
+
+/**
+ * song_versions.metadata (0001:112, jsonb NOT NULL DEFAULT '{}') as the
+ * enrichment helpers write it. The index signature is load-bearing: the same
+ * column also carries the import pipeline's metadata.import / metadata.conflict
+ * (0028) and whatever else a caller already stored — these helpers MERGE, they
+ * never replace (songs.js owns the equivalent cast at updateSong).
+ * @typedef {object} VersionMetadata
+ * @property {{ url?: string, source: string, at: string, trackId?: string | null }} [album_art]
+ * @property {{ text: string, source: string, at: string }} [lyrics]
+ * @property {Record<string, ProvenanceEntry>} [provenance]
+ * @property {unknown} [import]
+ * @property {unknown} [conflict]
+ */
+
+/**
+ * A provenance entry: which path wrote a declared value and when. The same
+ * shape songs.js records for key/bpm/artist/genre/year.
+ * @typedef {{ source: string, at: string }} ProvenanceEntry
+ */
+
+/**
+ * markManualProvenance's return: provenance is assigned unconditionally before
+ * the return, so the key is always present even when neither flag was passed.
+ * @typedef {VersionMetadata & { provenance: Record<string, ProvenanceEntry> }} VersionMetadataWithProvenance
+ */
+
 const CONNECTION_PREFIX = 'cemurm:spotify:connection:'
 
 // Lazy-imported Supabase client (same pattern as annotations.js/scaleCatalog:
 // this module stays import-safe in node — every DB helper resolves it on use).
+/** @type {typeof import('../supabase.js').supabase | null} */
 let supabaseClient = null
+/**
+ * @returns {Promise<import('@supabase/supabase-js').SupabaseClient>}
+ */
 async function supabase() {
   if (!supabaseClient) supabaseClient = (await import('../supabase.js')).supabase
   return supabaseClient
@@ -35,6 +164,10 @@ async function supabase() {
 // localStorage mirror (guarded, best-effort — midi.js/overlay.js pattern)
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * @param {string | null} userId
+ * @returns {ConnectionSnapshot | null}
+ */
 function loadConnectionMirror(userId) {
   if (typeof localStorage === 'undefined' || !userId) return null
   try {
@@ -45,6 +178,11 @@ function loadConnectionMirror(userId) {
   }
 }
 
+/**
+ * @param {string | null} userId
+ * @param {ConnectionSnapshot} row
+ * @returns {void}
+ */
 function saveConnectionMirror(userId, row) {
   if (typeof localStorage === 'undefined' || !userId) return
   try {
@@ -63,6 +201,8 @@ function saveConnectionMirror(userId, row) {
  * the source of truth; a mirror fill-in only happens when the read FAILS
  * (network down) — a successful read that finds no row wins over a stale
  * mirror so a revoked/absent connection never comes back to life.
+ * @param {string} userId
+ * @returns {Promise<ConnectionSnapshot | null>}
  */
 export async function getSpotifyConnection(userId) {
   const mirrored = loadConnectionMirror(userId)
@@ -84,6 +224,8 @@ export async function getSpotifyConnection(userId) {
 /**
  * Upsert the connection row to 'connected' — the implicit connect on first
  * enrichment. Mirrors the row; throws only on a hard write failure.
+ * @param {string} userId
+ * @returns {Promise<ConnectionSnapshot>}
  */
 export async function ensureSpotifyConnected(userId) {
   const { data, error } = await (await supabase())
@@ -102,7 +244,10 @@ export async function ensureSpotifyConnected(userId) {
 /**
  * Revoke: UPDATE status='revoked' — the row persists and applied enrichment
  * metadata REMAINS on the songs (no delete of rows anywhere). The mirror is
- * updated so the offline Settings page renders Revoked.
+ * updated so the offline Settings page renders Revoked. Resolves null when no
+ * row existed — Settings.jsx then falls back to { status: 'revoked' }.
+ * @param {string} userId
+ * @returns {Promise<ConnectionSnapshot | null>}
  */
 export async function disconnectSpotify(userId) {
   const { data, error } = await (await supabase())
@@ -120,6 +265,9 @@ export async function disconnectSpotify(userId) {
 /**
  * Connected check. `connection` (a fresh row) wins; falls back to the
  * localStorage mirror so the offline gate still says Connected/Revoked.
+ * @param {ConnectionSnapshot | null | undefined} connection
+ * @param {string | null} userId
+ * @returns {boolean}
  */
 export function isSpotifyConnected(connection, userId) {
   if (connection?.status) return connection.status === 'connected'
@@ -141,8 +289,14 @@ export function isSpotifyConnected(connection, userId) {
  * Title/artist are NEVER persisted (the 0001 field enum has no title/artist —
  * they live in UI state only). Returns the created rows (empty when the match
  * carried no persistable fields).
+ * @param {string} userId
+ * @param {string} songId
+ * @param {EnrichmentMatch} match
+ * @param {EnrichmentSource} source
+ * @returns {Promise<EnrichmentRow[]>}
  */
 export async function suggestEnrichment(userId, songId, match, source = 'spotify') {
+  /** @type {EnrichmentInsert[]} */
   const rows = []
   if (typeof match.bpm === 'number' && Number.isFinite(match.bpm)) {
     rows.push({
@@ -154,7 +308,7 @@ export async function suggestEnrichment(userId, songId, match, source = 'spotify
       applied_by: userId,
     })
   }
-  const keyLabel = spotifyKeyToLabel(match.keyIndex, match.mode)
+  const keyLabel = /** @type {SpotifyKeyToLabel} */ (spotifyKeyToLabel)(match.keyIndex, match.mode)
   if (keyLabel) {
     rows.push({
       song_id: songId,
@@ -218,6 +372,10 @@ export async function suggestEnrichment(userId, songId, match, source = 'spotify
  * Flip owned suggested rows to 'applied'. The CALLER persists the applied
  * values (BPM via updateSong with provenanceSource 'spotify'; album art via
  * the song_versions.metadata merge below). Key never writes base_key.
+ * @param {string} userId
+ * @param {string} songId
+ * @param {EnrichmentRow[] | null} enrichmentRows
+ * @returns {Promise<EnrichmentRow[]>}
  */
 export async function applySuggestions(userId, songId, enrichmentRows) {
   const ids = (enrichmentRows || []).map((r) => r.id).filter(Boolean)
@@ -234,6 +392,11 @@ export async function applySuggestions(userId, songId, enrichmentRows) {
 }
 
 /** Flip owned rows to 'discarded' — the song itself stays untouched. */
+/**
+ * @param {string} userId
+ * @param {string[] | null} ids
+ * @returns {Promise<EnrichmentRow[]>}
+ */
 export async function discardSuggestions(userId, ids) {
   const clean = (ids || []).filter(Boolean)
   if (!clean.length) return []
@@ -250,6 +413,9 @@ export async function discardSuggestions(userId, ids) {
  * All enrichment rows for a song (field-ordered, oldest first) — drives the
  * provenance display ("Auto-filled from Spotify"). RLS filters to the rows
  * this user may see (own action rows + applied rows on owned songs).
+ * @param {string} userId
+ * @param {string} songId
+ * @returns {Promise<EnrichmentRow[]>}
  */
 export async function listEnrichments(userId, songId) {
   const { data, error } = await (await supabase())
@@ -271,8 +437,13 @@ export async function listEnrichments(userId, songId) {
  *   metadata.album_art = { url, source: 'spotify', at: ISO }
  * Preserves whatever else lives on the version row (existing provenance,
  * manual flags). The version row is owned by the caller (owner_id policy).
+ * @param {string} versionId
+ * @param {VersionMetadata | null} metadata
+ * @param {{ url?: string, trackId?: string | null }} [art]
+ * @returns {Promise<VersionMetadata>}
  */
 export async function saveAlbumArt(versionId, metadata, { url, trackId = null } = {}) {
+  /** @type {VersionMetadata & { album_art: { url?: string, source: string, at: string, trackId?: string | null } }} */
   const next = { ...(metadata || {}), album_art: { url, source: 'spotify', at: new Date().toISOString() } }
   if (trackId) next.album_art.trackId = trackId
   const { error } = await (await supabase())
@@ -289,6 +460,10 @@ export async function saveAlbumArt(versionId, metadata, { url, trackId = null } 
  * Mirrors saveAlbumArt — preserves whatever else lives on the version row
  * (existing provenance, album art). The version row is owned by the caller
  * (owner_id policy).
+ * @param {string} versionId
+ * @param {VersionMetadata | null} metadata
+ * @param {{ text?: string }} [lyric]
+ * @returns {Promise<VersionMetadata>}
  */
 export async function saveLyrics(versionId, metadata, { text } = {}) {
   const next = {
@@ -308,19 +483,30 @@ export async function saveLyrics(versionId, metadata, { text } = {}) {
  * merges metadata.provenance = { key|bpm: { source:'manual', at } } alongside
  * existing auto-filled entries. Pure function — the caller persists it
  * through updateSong/version metadata (the songs.js editor path).
+ * @param {VersionMetadata | null} metadata
+ * @param {{ key?: boolean, bpm?: boolean }} [flags]
+ * @returns {VersionMetadataWithProvenance}
  */
 export function markManualProvenance(metadata, { key, bpm } = {}) {
+  /** @type {VersionMetadata} */
   const next = { ...(metadata || {}) }
+  /** @type {Record<string, ProvenanceEntry>} */
   const provenance = { ...(next.provenance || {}) }
   const at = new Date().toISOString()
   if (key) provenance.key = { source: 'manual', at }
   if (bpm) provenance.bpm = { source: 'manual', at }
   next.provenance = provenance
-  return next
+  return /** @type {VersionMetadataWithProvenance} */ (next)
 }
 
 // Self-check: node -e "import('./src/data/repositories/enrichments.js').then(m => m.demo())"
 export async function demo() {
+  /**
+   * @param {unknown} actual
+   * @param {unknown} expected
+   * @param {string} label
+   * @returns {void}
+   */
   const assert = (actual, expected, label) => {
     const a = JSON.stringify(actual)
     const e = JSON.stringify(expected)

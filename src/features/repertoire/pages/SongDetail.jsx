@@ -26,7 +26,7 @@ import { PDF_SIZE_MESSAGE, PDF_TYPE_MESSAGE, validatePdfFile } from '../../../da
 const STATUS_STYLES = {
   ready: 'bg-cem-emerald/10 text-cem-emerald',
   draft: 'bg-cem-amber/10 text-cem-amber',
-  retired: 'bg-cem-elevated text-cem-secondary',
+  retired: 'bg-cem-elevated text-cem-secondary-elevated',
 }
 
 // S10: import-license labels — the songs_license_check vocabulary (0028).
@@ -114,7 +114,7 @@ function CommentCard({ comment, userId, isRoot, onReply, onResolve, onDelete, on
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             rows={2}
-            className="w-full rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text focus:border-cem-amber focus:outline-none focus:ring-1 focus:ring-cem-amber"
+            className="w-full rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text focus:border-cem-amber focus:outline-none focus:ring-2 focus:ring-cem-amber focus:ring-offset-2 focus:ring-offset-transparent"
           />
           <div className="flex gap-2">
             <button
@@ -716,7 +716,7 @@ export default function SongDetail() {
                 means replacing it with a new scan (scenario 7 mirror). */}
             {openIsPdf && (
               <span
-                className="ml-1.5 rounded bg-cem-elevated px-1.5 py-0.5 align-middle text-[10px] font-medium text-cem-secondary"
+                className="ml-1.5 rounded bg-cem-elevated px-1.5 py-0.5 align-middle text-[10px] font-medium text-cem-secondary-elevated"
                 title="PDF scans carry no chord data — change key with a new scan"
               >
                 PDF scans need a new scan to change key
@@ -767,7 +767,7 @@ export default function SongDetail() {
               type="button"
               onClick={handleWithdraw}
               disabled={library.withdrawingEntryId === myEntry.id}
-              className="rounded-md border border-cem-elevated px-3 py-1.5 text-sm font-medium text-cem-secondary hover:bg-cem-elevated disabled:opacity-50"
+              className="rounded-md border border-cem-elevated px-3 py-1.5 text-sm font-medium text-cem-secondary-elevated hover:bg-cem-elevated disabled:opacity-50"
             >
               {library.withdrawingEntryId === myEntry.id ? 'Withdrawing…' : 'Withdraw from library'}
             </button>
@@ -817,7 +817,7 @@ export default function SongDetail() {
             <button
               type="button"
               onClick={handleRetire}
-              className="rounded-md border border-cem-elevated px-3 py-1.5 text-sm font-medium text-cem-secondary hover:bg-cem-elevated"
+              className="rounded-md border border-cem-elevated px-3 py-1.5 text-sm font-medium text-cem-secondary-elevated hover:bg-cem-elevated"
             >
               Retire
             </button>
@@ -836,7 +836,7 @@ export default function SongDetail() {
             id="song-version"
             value={versionId || ''}
             onChange={(e) => setVersionId(e.target.value)}
-            className="rounded-md border border-cem-elevated bg-cem-surface px-3 py-1.5 text-sm text-cem-text focus:border-cem-amber focus:outline-none focus:ring-1 focus:ring-cem-amber"
+            className="rounded-md border border-cem-elevated bg-cem-surface px-3 py-1.5 text-sm text-cem-text focus:border-cem-amber focus:outline-none focus:ring-2 focus:ring-cem-amber focus:ring-offset-2 focus:ring-offset-transparent"
           >
             {versions.map((v) => (
               <option key={v.id} value={v.id}>
@@ -853,7 +853,7 @@ export default function SongDetail() {
 
       {transitions.length > 0 && (
         <div className="mt-4 rounded-md bg-cem-elevated px-3 py-2">
-          <p className="mb-1 text-xs font-medium text-cem-secondary">Transition history</p>
+          <p className="mb-1 text-xs font-medium text-cem-secondary-elevated">Transition history</p>
           <ul className="space-y-0.5">
             {[...transitions].reverse().map((t, i) => (
               <TransitionLine key={i} t={t} />
@@ -864,7 +864,7 @@ export default function SongDetail() {
 
       {playedAt.length > 0 && (
         <div className="mt-4 rounded-md bg-cem-elevated px-3 py-2">
-          <p className="mb-1 text-xs font-medium text-cem-secondary">
+          <p className="mb-1 text-xs font-medium text-cem-secondary-elevated">
             Played at · demand {playedAt.length}
           </p>
           <ul className="space-y-0.5">
@@ -927,7 +927,7 @@ export default function SongDetail() {
             onChange={(e) => setBody(e.target.value)}
             rows={12}
             placeholder={`{title: ${song.title}}\n[C]Lyric line with [G7]chords…`}
-            className="w-full rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 font-mono text-sm text-cem-text placeholder:text-cem-secondary focus:border-cem-amber focus:outline-none focus:ring-1 focus:ring-cem-amber"
+            className="w-full rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 font-mono text-sm text-cem-text placeholder:text-cem-secondary focus:border-cem-amber focus:outline-none focus:ring-2 focus:ring-cem-amber focus:ring-offset-2 focus:ring-offset-transparent"
           />
           {error && <p className="text-sm text-cem-rose">{error}</p>}
           <div className="flex gap-2">
@@ -964,7 +964,7 @@ export default function SongDetail() {
               className={`mb-3 rounded-md border px-3 py-1 text-xs font-medium transition-colors ${
                 degreeView
                   ? 'border-cem-amber bg-cem-amber/10 text-cem-amber'
-                  : 'border-cem-elevated text-cem-secondary hover:bg-cem-elevated'
+                  : 'border-cem-elevated text-cem-secondary-elevated hover:bg-cem-elevated'
               }`}
             >
               {degreeView ? 'Showing: Roman numerals' : 'Show roman numerals'}
@@ -1058,7 +1058,7 @@ export default function SongDetail() {
             onChange={(e) => setCommentDraft(e.target.value)}
             rows={2}
             placeholder="Comment for the band — e.g. slow the intro in the chorus…"
-            className="w-full rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text placeholder:text-cem-secondary focus:border-cem-amber focus:outline-none focus:ring-1 focus:ring-cem-amber"
+            className="w-full rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text placeholder:text-cem-secondary focus:border-cem-amber focus:outline-none focus:ring-2 focus:ring-cem-amber focus:ring-offset-2 focus:ring-offset-transparent"
           />
           <button
             type="submit"
@@ -1115,7 +1115,7 @@ export default function SongDetail() {
               id="publish-license"
               value={publishLicense}
               onChange={(e) => setPublishLicense(e.target.value)}
-              className="mt-1 w-full rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text focus:border-cem-amber focus:outline-none focus:ring-1 focus:ring-cem-amber"
+              className="mt-1 w-full rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text focus:border-cem-amber focus:outline-none focus:ring-2 focus:ring-cem-amber focus:ring-offset-2 focus:ring-offset-transparent"
             >
               <option value="public-domain">Public domain</option>
               <option value="CC-BY-4.0">CC BY 4.0</option>

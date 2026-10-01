@@ -377,7 +377,7 @@ export default function SetlistDetail() {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="rounded-md border border-cem-elevated bg-cem-surface px-3 py-1.5 text-lg font-bold text-cem-text focus:border-cem-amber focus:outline-none focus:ring-1 focus:ring-cem-amber"
+              className="rounded-md border border-cem-elevated bg-cem-surface px-3 py-1.5 text-lg font-bold text-cem-text focus:border-cem-amber focus:outline-none focus:ring-2 focus:ring-cem-amber focus:ring-offset-2 focus:ring-offset-transparent"
             />
             <button
               type="submit"
@@ -801,7 +801,7 @@ export default function SetlistDetail() {
                       onClick={() => handleMove(index, 0)}
                       disabled={index === 0}
                       title="Move to top"
-                      className="rounded border border-cem-elevated px-2 py-0.5 text-xs text-cem-secondary hover:bg-cem-elevated disabled:opacity-40"
+                      className="rounded border border-cem-elevated px-2 py-0.5 text-xs text-cem-secondary-elevated hover:bg-cem-elevated disabled:opacity-40"
                     >
                       ↑ top
                     </button>
@@ -810,7 +810,7 @@ export default function SetlistDetail() {
                       onClick={() => handleMove(index, index - 1)}
                       disabled={index === 0}
                       title="Move up"
-                      className="rounded border border-cem-elevated px-2 py-0.5 text-xs text-cem-secondary hover:bg-cem-elevated disabled:opacity-40"
+                      className="rounded border border-cem-elevated px-2 py-0.5 text-xs text-cem-secondary-elevated hover:bg-cem-elevated disabled:opacity-40"
                     >
                       ↑
                     </button>
@@ -819,7 +819,7 @@ export default function SetlistDetail() {
                       onClick={() => handleMove(index, index + 1)}
                       disabled={index === itemIds.length - 1}
                       title="Move down"
-                      className="rounded border border-cem-elevated px-2 py-0.5 text-xs text-cem-secondary hover:bg-cem-elevated disabled:opacity-40"
+                      className="rounded border border-cem-elevated px-2 py-0.5 text-xs text-cem-secondary-elevated hover:bg-cem-elevated disabled:opacity-40"
                     >
                       ↓
                     </button>

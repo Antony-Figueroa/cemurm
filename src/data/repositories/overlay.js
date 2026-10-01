@@ -1,3 +1,4 @@
+// @ts-check
 // OBS overlay data layer (Hito 5 #66): server-backed session for the
 // streaming overlay. An OBS Browser Source runs in a SEPARATE Chromium/CEF
 // process, so BroadcastChannel and localStorage (External Display /
@@ -33,12 +34,43 @@ import { supabase } from '../supabase.js'
 /** Overlay poll cadence (ms) — disable mid-stream reflects within one poll. */
 export const STATE_POLL_MS = 2000
 
-/** Relative overlay URL for an access token — the OBS Browser Source path. */
+/**
+ * The performance snapshot the operator pushes for the stream to render. All
+ * fields are optional: the stage pushes whichever slice changed, and an
+ * enable writes the row before any of them are known.
+ * @typedef {object} OverlaySnapshot
+ * @property {number} [song_index]
+ * @property {number} [song_total]
+ * @property {string} [song_title]
+ * @property {string | null} [song_key]
+ * @property {string | null} [chart_body]
+ */
+
+/**
+ * The subset of overlay_sessions the owner reads back for URL recovery.
+ * `access_token` came with 0032: it is the URL credential, so it is read back
+ * alongside the row id rather than kept only in the local mirror.
+ * @typedef {object} OverlaySession
+ * @property {string} id
+ * @property {string} access_token
+ * @property {string} status
+ * @property {string} mode
+ */
+
+/**
+ * Relative overlay URL for an access token — the OBS Browser Source path.
+ * @param {string} token
+ * @returns {string}
+ */
 export const OVERLAY_URL = (token) => `/overlay/${token}`
 
 const TOKEN_PREFIX = 'cemurm:obs:token:'
 
-/** Local mirror of the overlay access token (null when absent/unavailable). */
+/**
+ * Local mirror of the overlay access token (null when absent/unavailable).
+ * @param {string} setlistId
+ * @returns {string | null}
+ */
 export function loadOverlayToken(setlistId) {
   if (typeof localStorage === 'undefined') return null
   try {
@@ -48,7 +80,12 @@ export function loadOverlayToken(setlistId) {
   }
 }
 
-/** Persist the access token so the URL survives reloads (best-effort). */
+/**
+ * Persist the access token so the URL survives reloads (best-effort).
+ * @param {string} setlistId
+ * @param {string} token
+ * @returns {void}
+ */
 export function saveOverlayToken(setlistId, token) {
   if (typeof localStorage === 'undefined') return
   try {
@@ -67,6 +104,9 @@ export function saveOverlayToken(setlistId, token) {
  * The upsert payload deliberately does NOT carry access_token: re-enabling must
  * keep the same token, or the "stable overlay URL" contract would break on
  * every stream. A new row takes the column default instead.
+ * @param {string} setlistId
+ * @param {OverlaySnapshot} snapshot
+ * @returns {Promise<{ id: string, accessToken: string }>}
  */
 export async function enableOverlay(setlistId, snapshot) {
   const {
@@ -108,6 +148,8 @@ export async function enableOverlay(setlistId, snapshot) {
  * signed in, when no overlay row exists for the setlist, or when the write
  * fails, and the caller surfaces that. RLS scopes the update to the owner, so a
  * foreign row is never reachable.
+ * @param {string} setlistId
+ * @returns {Promise<string>}
  */
 export async function rotateOverlayToken(setlistId) {
   const {
@@ -132,6 +174,8 @@ export async function rotateOverlayToken(setlistId) {
  * Flip the session to inactive; the row (and its token) stays put. The row id
  * comes from the DB — the source of truth — so a stale local value can never
  * leave the stream pretending to be off.
+ * @param {string} setlistId
+ * @returns {Promise<void>}
  */
 export async function disableOverlay(setlistId) {
   const id = (await getOverlaySession(setlistId))?.id
@@ -143,7 +187,12 @@ export async function disableOverlay(setlistId) {
   if (error) throw error
 }
 
-/** Operator override: 'title' (spotlight) or 'chords' (title + chart). */
+/**
+ * Operator override: 'title' (spotlight) or 'chords' (title + chart).
+ * @param {string} setlistId
+ * @param {string} mode
+ * @returns {Promise<void>}
+ */
 export async function setOverlayMode(setlistId, mode) {
   if (mode !== 'title' && mode !== 'chords') {
     throw new Error(`Invalid overlay mode: ${mode}`)
@@ -162,6 +211,9 @@ export async function setOverlayMode(setlistId, mode) {
  * song_key, chart_body }). BEST-EFFORT, mirroring midi.js: failures are
  * swallowed so a hiccup never blocks the performance — the next poll simply
  * serves the last state that made it to the database.
+ * @param {string} setlistId
+ * @param {OverlaySnapshot} snapshot
+ * @returns {Promise<void>}
  */
 export async function pushOverlayState(setlistId, snapshot) {
   const id = (await getOverlaySession(setlistId))?.id
@@ -177,7 +229,11 @@ export async function pushOverlayState(setlistId, snapshot) {
   }
 }
 
-/** Owner read of the session row for URL recovery after a reload. */
+/**
+ * Owner read of the session row for URL recovery after a reload.
+ * @param {string} setlistId
+ * @returns {Promise<OverlaySession | null>}
+ */
 export async function getOverlaySession(setlistId) {
   const { data, error } = await supabase
     .from('overlay_sessions')

@@ -1,3 +1,4 @@
+// @ts-check
 // Pure guards + activity labels + lock/reconcile rules for shared-setlist
 // collaboration (Hito 3 PR#2a tasks 2.1/2.3 and PR#2b tasks 2.5/2.6). Zero
 // imports, so this module is bare-node safe and the demo runs under node
@@ -8,9 +9,101 @@
 // surfaces.
 
 /**
+ * Collaborator surface shareTargets reads: the normalized SetlistCollaborator
+ * ({userId, canEdit, acceptedAt}) this layer is handed from setlists.js.
+ * @typedef {object} ShareTargetCollaborator
+ * @property {string} userId
+ */
+
+/**
+ * Collaborator surface guardTransfer reads — the guard accepts BOTH the raw
+ * setlist_collaborators row ({user_id, accepted_at}) and the normalized one
+ * ({userId, ...}), so every key it touches is optional.
+ * @typedef {object} TransferCollaboratorRow
+ * @property {string} [user_id]
+ * @property {string | null} [accepted_at]
+ * @property {string} [userId]
+ */
+
+/**
+ * Feed row the activity panel emits ({actor, action, ts}); `action` is the
+ * broadcast op name, free-form for unknown ops (describeActivity degrades to
+ * "actor action").
+ * @typedef {object} ActivityEvent
+ * @property {string} actor
+ * @property {string} action
+ * @property {string} ts
+ */
+
+/**
+ * One song's advisory lock (2.5): who holds it, their display name for the
+ * "being edited by" notice, and the heartbeat timestamp staleness reads.
+ * @typedef {object} SongLock
+ * @property {string} userId
+ * @property {string | null} actor
+ * @property {number} ts
+ */
+
+/**
+ * Staleness input: only the heartbeat timestamp decides, so the guard reads
+ * the bare {ts} stamp — a lock whose holder is gone still ages out.
+ * @typedef {object} LockStamp
+ * @property {number} [ts]
+ */
+
+/**
+ * Lock broadcast payload (2.5): the holder, the song, and whether this is an
+ * acquire (locked) or a release. ts rides along for cross-tab comparison.
+ * @typedef {object} LockPayload
+ * @property {string} userId
+ * @property {string} songId
+ * @property {boolean} locked
+ * @property {number} [ts]
+ * @property {string | null} [actor]
+ */
+
+/**
+ * Queued setlist-item op as offlineQueue stores it: {name, args, queuedAt}.
+ * args are positional ids — [userId, setlistId, songId] for the add/remove
+ * ops this module reconciles.
+ * @typedef {object} QueuedSetlistOp
+ * @property {string} name
+ * @property {string[]} [args]
+ * @property {number} [queuedAt]
+ */
+
+/**
+ * Server setlist read fresh at drain time ({itemIds, updatedAt}); null when
+ * the read failed (the caller then replays unconditionally).
+ * @typedef {object} ReconcileServer
+ * @property {string[]} [itemIds]
+ * @property {string} [updatedAt]
+ */
+
+/**
+ * Replay decision for one queued op: drop it, and tell the user why when the
+ * online change that beats it needs surfacing (R7).
+ *
+ * `reason` is present only alongside `notice`, and it says WHICH kind of drop
+ * this is, because the wording differs and only one of them may blame someone
+ * else: 'superseded' (the server is genuinely newer), 'malformed' (this client
+ * cannot identify the op) and 'unknown-age' (the op lost its timestamp). The
+ * last two are this client's blind spots, not a collaborator's win, and the
+ * notice is worded to say exactly that.
+ * @typedef {object} ReconcileDecision
+ * @property {boolean} drop
+ * @property {boolean} [notice]
+ * @property {'superseded' | 'malformed' | 'unknown-age'} [reason]
+ */
+
+/**
  * Visibility values the spec allows: 'private' | 'shared' | 'public'
  * ('org'/'branch' are reserved for Hito 4). Returns an error message or
  * null when valid.
+ */
+/**
+ * @param {string} value
+ * @returns {string | null}
  */
 export function guardVisibility(value) {
   return ['private', 'shared', 'public'].includes(value)
@@ -24,6 +117,12 @@ export function guardVisibility(value) {
  * hold a collaborator row, then dedupes (setlist_collaborators is PK
  * (setlist_id, user_id) — a duplicate insert would 23505).
  */
+/**
+ * @param {string} ownerId
+ * @param {string[] | null | undefined} bandmateIds
+ * @param {ShareTargetCollaborator[] | null | undefined} collaborators
+ * @returns {string[]}
+ */
 export function shareTargets(ownerId, bandmateIds, collaborators) {
   const existing = new Set((collaborators || []).map((c) => c.userId))
   return [...new Set(bandmateIds || [])].filter((id) => id !== ownerId && !existing.has(id))
@@ -36,6 +135,11 @@ export function shareTargets(ownerId, bandmateIds, collaborators) {
  * hand the setlist to someone who cannot even open it. Accepts lib rows
  * ({user_id, accepted_at}) and normalized rows ({userId, ...}).
  */
+/**
+ * @param {TransferCollaboratorRow[] | null | undefined} collaborators
+ * @param {string} candidateId
+ * @returns {string | null}
+ */
 export function guardTransfer(collaborators, candidateId) {
   const row = (collaborators || []).find((c) => (c.user_id || c.userId) === candidateId)
   if (!row) return 'Only an accepted collaborator can take ownership.'
@@ -43,6 +147,7 @@ export function guardTransfer(collaborators, candidateId) {
   return null
 }
 
+/** @type {Record<string, (actor: string) => string>} */
 const ACTIVITY_LABELS = {
   share: (actor) => `${actor} shared with the band`,
   'reorder': (actor) => `${actor} reordered the setlist`,
@@ -52,6 +157,10 @@ const ACTIVITY_LABELS = {
 /**
  * Feed row {actor, action, ts} → "who did what" line (S11/S12). Unknown
  * actions degrade gracefully to "actor action".
+ */
+/**
+ * @param {ActivityEvent} event
+ * @returns {string}
  */
 export function describeActivity(event) {
   const label = ACTIVITY_LABELS[event.action]
@@ -68,6 +177,11 @@ export function describeActivity(event) {
 export const LOCK_TTL_MS = 30000
 
 /** True when a lock is missing or stale enough to be overwritten/released. */
+/**
+ * @param {LockStamp | null | undefined} lock
+ * @param {number} [now]
+ * @returns {boolean}
+ */
 export function isLockStale(lock, now = Date.now()) {
   return !lock || now - (lock.ts || 0) > LOCK_TTL_MS
 }
@@ -78,8 +192,13 @@ export function isLockStale(lock, now = Date.now()) {
  * late unlock from a previous holder must not clear the current holder's
  * lock. Acquisitions never steal an ACTIVE foreign lock.
  */
+/**
+ * @param {Record<string, SongLock> | null | undefined} locks
+ * @param {LockPayload} payload
+ * @returns {Record<string, SongLock>}
+ */
 export function applyLock(locks, payload) {
-  const next = { ...(locks || {}) }
+  const next = /** @type {Record<string, SongLock>} */ ({ ...(locks || {}) })
   const songId = payload.songId
   const now = Date.now()
   if (payload.locked === false) {
@@ -115,24 +234,51 @@ export function applyLock(locks, payload) {
  * notice: true means the caller must surface the "removed before your sync"
  * message (the actor name is unknowable — postgres_changes carries none, D5).
  */
+/**
+ * @param {QueuedSetlistOp} op
+ * @param {ReconcileServer | null | undefined} server
+ * @returns {ReconcileDecision}
+ */
 export function reconcileSetlistOp(op, server) {
-  const songId = op.args?.[2]
-  const queuedAt = op.queuedAt || 0
+  // `op.args?.` guarded a missing `args` but not a missing `op`, so a null op
+  // threw on the way in. That crash is finding 6 in this review and is fixed by
+  // its own change (fix-unspecified-crashes), deliberately not inside this one:
+  // two changes that must be reviewed apart. The guard below is that change's
+  // work; the setlist-op check after it is this change's.
+  if (!op) return { drop: false }
+  const isSetlistOp = op.name === 'addSongToSetlist' || op.name === 'removeSongFromSetlist'
+  if (!isSetlistOp) return { drop: false }
+
+  const songId = /** @type {string} */ (op.args?.[2])
   const present = (server?.itemIds || []).includes(songId)
-  const serverNewer = !!server?.updatedAt && new Date(server.updatedAt).getTime() > queuedAt
+
+  // A song id the queue never recorded is not a conflict, and not a no-op
+  // either — it is an operation this client cannot identify. Dropping it as
+  // "superseded" would tell the user their edit lost to someone else when
+  // nobody looked at it. Scoped to the two setlist ops: an unrecognised op has
+  // no positional args to be short, and replays unconditionally.
+  if (songId == null) return { drop: true, notice: true, reason: 'malformed' }
+
   if (op.name === 'addSongToSetlist') {
     if (present) return { drop: true }
-    if (serverNewer) return { drop: true, notice: true }
+    // A missing queuedAt is unknown age, NOT old. `|| 0` used to make every
+    // server timestamp beat it, so a queue row that lost its timestamp was
+    // reported as superseded.
+    if (op.queuedAt == null) return { drop: true, notice: true, reason: 'unknown-age' }
+    const serverNewer = !!server?.updatedAt && new Date(server.updatedAt).getTime() > op.queuedAt
+    if (serverNewer) return { drop: true, notice: true, reason: 'superseded' }
     return { drop: false }
   }
-  if (op.name === 'removeSongFromSetlist') {
-    return { drop: !present }
-  }
-  return { drop: false }
+  return { drop: !present }
 }
 
 // Self-check: node -e "import('./src/domain/setlist/collab.js').then(m => m.demo())"
 export function demo() {
+  /**
+   * @param {unknown} actual
+   * @param {unknown} expected
+   * @param {string} label
+   */
   const assert = (actual, expected, label) => {
     if (actual !== expected) {
       throw new Error(`setlistCollab demo FAILED: ${label} — got ${JSON.stringify(actual)}, expected ${JSON.stringify(expected)}`)

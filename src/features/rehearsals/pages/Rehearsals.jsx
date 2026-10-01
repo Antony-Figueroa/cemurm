@@ -7,7 +7,7 @@ import * as rehearsalStore from '../../../data/repositories/rehearsals.js'
 export const REHEARSAL_STATUS_STYLES = {
   planned: 'bg-cem-amber/10 text-cem-amber',
   published: 'bg-cem-sky/10 text-cem-sky',
-  completed: 'bg-cem-elevated text-cem-secondary',
+  completed: 'bg-cem-elevated text-cem-secondary-elevated',
 }
 
 export function StatusBadge({ status }) {
@@ -26,7 +26,7 @@ export function formatWhen(iso) {
 }
 
 const inputClass =
-  'w-full rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text placeholder:text-cem-secondary focus:border-cem-amber focus:outline-none focus:ring-1 focus:ring-cem-amber'
+  'w-full rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text placeholder:text-cem-secondary focus:border-cem-amber focus:outline-none focus:ring-2 focus:ring-cem-amber focus:ring-offset-2 focus:ring-offset-transparent'
 
 function RehearsalCard({ rehearsal }) {
   return (

@@ -7,13 +7,13 @@ import { StatusBadge, formatWhen } from './Rehearsals.jsx'
 
 const btn = 'rounded-md px-3 py-1.5 text-sm font-medium'
 const inputClass =
-  'rounded-md border border-cem-elevated bg-cem-surface px-2 py-1 text-sm text-cem-text focus:border-cem-amber focus:outline-none focus:ring-1 focus:ring-cem-amber'
+  'rounded-md border border-cem-elevated bg-cem-surface px-2 py-1 text-sm text-cem-text focus:border-cem-amber focus:outline-none focus:ring-2 focus:ring-cem-amber focus:ring-offset-2 focus:ring-offset-transparent'
 
 const RSVP_STYLES = {
   confirmed: 'bg-cem-emerald/10 text-cem-emerald',
   declined: 'bg-cem-rose/10 text-cem-rose',
-  invited: 'bg-cem-elevated text-cem-secondary',
-  undecided: 'bg-cem-elevated text-cem-secondary',
+  invited: 'bg-cem-elevated text-cem-secondary-elevated',
+  undecided: 'bg-cem-elevated text-cem-secondary-elevated',
 }
 
 const OUTCOME_LABELS = {
@@ -212,7 +212,7 @@ export default function RehearsalDetail() {
       {notice && <p className="mt-3 rounded-md bg-cem-amber/10 px-3 py-2 text-sm text-cem-amber">{notice}</p>}
 
       {completed && (
-        <p className="mt-3 rounded-md bg-cem-elevated px-3 py-2 text-sm text-cem-secondary">
+        <p className="mt-3 rounded-md bg-cem-elevated px-3 py-2 text-sm text-cem-text">
           Archived rehearsal (read-only)
         </p>
       )}
@@ -241,7 +241,7 @@ export default function RehearsalDetail() {
               type="button"
               onClick={handleComplete}
               disabled={busy}
-              className={`${btn} border border-cem-elevated text-cem-secondary hover:bg-cem-elevated disabled:opacity-60`}
+              className={`${btn} border border-cem-elevated text-cem-secondary-elevated hover:bg-cem-elevated disabled:opacity-60`}
             >
               Mark completed
             </button>
@@ -482,7 +482,7 @@ export default function RehearsalDetail() {
                       onChange={(e) => setDraftNotes((prev) => ({ ...prev, [item.id]: e.target.value }))}
                       rows={2}
                       placeholder="Rehearsal notes…"
-                      className="flex-1 rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text placeholder:text-cem-secondary focus:border-cem-amber focus:outline-none focus:ring-1 focus:ring-cem-amber"
+                      className="flex-1 rounded-md border border-cem-elevated bg-cem-surface px-3 py-2 text-sm text-cem-text placeholder:text-cem-secondary focus:border-cem-amber focus:outline-none focus:ring-2 focus:ring-cem-amber focus:ring-offset-2 focus:ring-offset-transparent"
                     />
                     <button
                       type="button"

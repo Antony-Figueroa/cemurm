@@ -14,22 +14,30 @@ Prose in this repo has drifted. These are the facts, checked against git and cod
 | Fact | Value |
 |---|---|
 | `main` | `8b66394`, in sync with `origin/main` |
-| **Test files on `main`** | **0** |
-| **`test` script on `main`** | **absent** — `package.json` has `dev`, `build`, `preview`, `lint`, `typecheck` only |
-| **CI on `main`** | `install --frozen-lockfile → lint → build`. **No test step.** |
-| `src/` layout on `main` | `App.jsx`, `main.jsx`, `components/`, `hooks/`, `lib/`, `pages/`, `utils/` (pre-relocation) |
+| **Test files on `main`** | **7** |
+| **`test` script on `main`** | **present** — `package.json` has `build`, `check:visual`, `dev`, `lint`, `preview`, `test`, `test:watch`, `typecheck` |
+| **CI on `main`** | `install --frozen-lockfile → lint → check:visual-contract.sh → test → build` |
+| `src/` layout on `main` | post-relocation: `app/`, `components/`, `data/`, `domain/`, `features/`, `hooks/`, `integrations/`, `lib/`, `offline/`, `ui/`. `src/components/` holds only `projection/SlideView.jsx`, which has no importers |
 | Feature files | **42**, 656 scenarios |
-| Migrations on `main` | 25 files, `0001`–`0019`, then a deliberate gap, then `0023`–`0028` |
+| Migrations on `main` | 27 files, `0001`–`0020`, then a gap at `0021` only, then `0022`–`0028` |
 | Hito 5 merged | 6 migrations + PRs #147, #148, #155, #156, #159, #165, #166 |
 
-**`docs/mvp-scope.md` is wrong on Hito 5.** Line 217 states "Nothing from Hito 5 is merged to
-main yet" and "Migrations 0021+ exist only on those branches". Six Hito 5 migrations and seven
-PRs are on `main`. Lines 301 and 309-310 repeat it. Fix those when this plan lands.
+**`docs/mvp-scope.md` was wrong on Hito 5.** It stated "Nothing from Hito 5 is merged to
+main yet" and "Migrations 0021+ exist only on those branches", and repeated both in its
+Milestone Summary and Progress Log. Six Hito 5 migrations and seven PRs are on `main`.
+**Corrected on `fix/stale-docs`** (2026-09-29), in the Hito 5 status line, a new Progress Log
+row for the six merged migrations, and the "Planned vs. implemented" Hito 5 bullet. The
+unmerged plan-freeze chain is still described as unmerged.
 
 ## 1. 🔴 The blocker: `main` has no regression net
 
-**There is no test runner and no test file on `main`.** CI runs lint and build, so a behaviour
-regression passes green and merges.
+> **RESOLVED.** This section described the state at `8b66394`. The net now exists: `main` carries
+> 7 test files and 235 passing tests, and CI runs them. The reasoning below is kept because it
+> explains why the plan was ordered this way, and because the atomicity failure it identifies is
+> the same rule the project now enforces on every PR.
+>
+> Original framing, at the time: "There is no test runner and no test file on `main`. CI runs lint
+> and build, so a behaviour regression passes green and merges."
 
 This inverts the priority of everything else. Until a net exists:
 
@@ -42,19 +50,21 @@ This inverts the priority of everything else. Until a net exists:
 `src/domain/**` and `src/integrations/**`, paths that only exist after the relocation. There
 is no way to take the tests without the moves.
 
-### P0 — the net (2 PRs, from the existing branch)
+### P0 — the net (2 PRs, from the existing branch) — **LANDED**
 
-| Slice | Content | Diff | Risk |
-|---|---|---|---|
-| **M0a** | PR 1a: relocate 111 modules into the ADR 0002 boundaries. Import paths only. | 111 files, renames | **None** — bundle verified byte-identical |
-| **M0b** | PR 1b-0: Vitest 3.2.7 + 293 characterization tests + `test` script + CI test step | +2086, 7 test files | **None** — no production code |
+| Slice | Content | Diff | Risk | Outcome |
+|---|---|---|---|---|
+| **M0a** | PR 1a: relocate 111 modules into the ADR 0002 boundaries. Import paths only. | 111 files, renames | **None** — bundle verified byte-identical | Landed |
+| **M0b** | PR 1b-0: Vitest 3.2.7 + characterization tests + `test` script + CI test step | 7 test files | **None** — no production code | Landed — **235 tests** |
 
-Both are already built on `feat/cemurm-brand-landing-pr1b-boundary-refactors` (pushed, PR #168
-open). They are **not yet split into separate PRs** — PR #168 currently carries 9 commits,
-132 files and +5367, which is exactly the atomicity failure this plan exists to fix.
+Both are on `main` today. The bundle is `ae14521` (M0a) and `e267b97` + `e9d41c3` (M0b).
 
-**Action:** re-cut as two PRs. M0a = `ae14521`. M0b = `e267b97` + `e9d41c3`. Neither touches
-production behaviour.
+The original plan projected **293** characterization tests; the suite that landed has **235** across
+7 files. Treat 235 as the current count.
+
+**Note:** the intermediate PR that carried these commits, #168, was **closed without merging** on
+2026-09-27; the work reached `main` by a different route. Any reference to "#168 open" below is
+historical.
 
 > Vitest is pinned to **3.2.7** deliberately: Vitest 5 declares `vite ^6.4||^7||^8` as a peer
 > and fails hard against Vite 5.4.21. Do not "upgrade Vitest" without moving Vite first.
@@ -97,9 +107,18 @@ which is the opposite of the order they were authored for. In filename order the
 
 **Resolution for `0020`:** one of the two renumbers. Give `0020` to
 `0020_review_batch1.sql` — it carries the security fixes and should land first — and rename
-`0020_feedback.sql` to `0029_feedback.sql`, which is safe because it references nothing from
+the feedback migration, which is safe because it references nothing from
 `0023`–`0028`. This depends on the `fix/hito4-review-batch1` decision (§5): if that branch is
 never merged, `0020` is free and no renumber is needed at all.
+
+**Superseded 2026-09-28: the feedback migration is `0033_feedback.sql`, not `0029_feedback.sql`.**
+`0029` turned out to be claimed by a *second* unrelated change — the guardian branch family carries
+a contiguous `0029_fail_closed_minors.sql` / `0030_date_of_birth_step.sql` /
+`0031_guardian_consent_email.sql` run. `supabase db reset` executes migrations in **filename
+order**, so two files sharing a version prefix have an arbitrary relative order, and the migration
+ledger is keyed on that version. It moved again to `0033` because the feedback migration is
+standalone, whereas renumbering inside a three-file run is the more invasive move; `0032` is taken by
+`0032_overlay_access_token.sql`. Recorded as item 8 in `docs/engineering-review-backlog.md`.
 
 ### 🔴 `0019:184` IS a chain-breaker — an earlier revision of this plan was wrong
 
