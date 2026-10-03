@@ -109,10 +109,10 @@ Each slice is its own PR, ≤400 changed lines. `pnpm check:visual` must pass on
 | ID | Slice | Depends on |
 |---|---|---|
 | **L0** | This plan + team split | ✅ `e74667e` |
-| **L1** | Additive token layer, route outside `AppLayout`, section scaffold, header + footer | ✅ `L1 landed` |
-| **L2** | Hero Stage Bus demo (the one memorable thing) | L1 + **D1** |
-| **L3** | Prose sections 3–5, 7–13 | L1 + **D1** |
-| **L4** | Section 6 (Stage Bus) + section 8 (capacities by role) | L1 + **D1** |
+| **L1** | Token layer, route outside `AppLayout`, section scaffold, header + footer | ✅ landed |
+| **L2** | Hero Stage Bus demo (the one memorable thing) | L1 |
+| **L3** | Prose sections 3–5, 7–13 | L1 |
+| **L4** | Section 6 (Stage Bus) + section 8 (capacities by role) | L1 |
 | **L5** | Code splitting: `React.lazy` + vendor chunk + fonts + PWA | L1; **B3** for the Supabase client |
 | **L6** | CTA wiring + perf verification against §7.7 | L1; **B1/B2** |
 
@@ -123,14 +123,53 @@ a side effect. See D1.
 
 ### Decisions L1 raised
 
-**D1 — the radius token layer is not adopted, and L2–L4 need it.**
-`skills/cemurm-visual-system/assets/tokens.css` declares `--cem-radius-*` (4/6/10/14/20) but is
-self-described `STATUS: proposal… Adopt it into src/index.css only after a visual pass`, and
-`src/index.css` no longer exists (it is `src/app/index.css`, which has no `--cem-*`). The
-macOS reference declares a *different* scale (4/8/12/16/22) with no exact Tailwind 3.4 step. So a
-radius is currently a number in a document, not a contract. L1 sidestepped it with one
-`rounded-full` capsule. L2/L3/L4 cannot. Gate rule 04 covers **colour** keys only, so a radius
-layer is not blocked by it — it needs a decision, not a review waiver.
+**D1 — RESOLVED: the reference's §5.2 scale is adopted.** Committed in the same slice. L2–L4 can
+now use real radii.
+
+| token | px | class | §5.2 assigns it to | min height |
+|---|---|---|---|---|
+| `radius-xs` | 4 | `rounded-cem-xs` | tag, key badge, small chip | fixed |
+| `radius-sm` | 8 | `rounded-cem-sm` | text input, icon button, segment, menu row | 32 |
+| `radius-md` | 12 | `rounded-cem-md` | button, list row, toolbar control, tab item | 44 |
+| `radius-lg` | 16 | `rounded-cem-lg` | card, panel, setlist block, dialog body | 88 |
+| `radius-xl` | 22 | `rounded-cem-xl` | sheet, modal, popover, command surface | full-bleed on one edge |
+
+**Named `cem-*` tokens, never Tailwind's default radius classes.** The defaults collide *in
+meaning*: `rounded-md` is 6px where §5.2's `radius-md` is 12px, and §5.2 assigns that token to
+buttons. `radius-xl` = 22px matches no Tailwind step at all (`rounded-3xl` is 24px). Verified in
+the built CSS that the defaults are untouched — the trap stays visible.
+
+§5.2 states outright that **Apple publishes no numeric radius**, so this scale is a
+`[CEMURM DECISION]` and adopting it is legitimate. The scale in
+`skills/cemurm-visual-system/assets/tokens.css` (4/6/10/14/20) is **not** adopted.
+
+### What L2–L4 must not forget (all from §5)
+
+1. **Same component class, same radius, always.** A per-instance radius is forbidden. Six named
+   tokens exist so there is no excuse for a one-off value.
+2. **The min heights above are a reviewer rule, not a token rule.** `border-radius` carries one
+   number; "min height 44" is a relation between that number and the element's box, and no gate
+   can see the relation. Check it by eye.
+3. **A card's radius may not exceed a control on it by more than 4px.** A `radius-xl` sheet
+   holding `radius-xs` badges reads as broken.
+4. **Never exceed one third of the short edge.** `rounded-full` on a 44px control is a pill, not a
+   button. Note there is **no `cem-full`** — reach for `rounded-full`.
+5. **Horizontal row → capsule; vertical stack → rounded rectangle.** Verbatim Apple.
+6. **Capsule is for the primary standalone action only.** "A screen with three capsules has no
+   primary action."
+7. **Tier 1 takes min-height 44; tier 3a takes 48.** Not a conflict — §7.4 deliberately raises
+   every radius and min-height by 4px for a tablet clamped to a stand.
+8. **Stage mode must not consume these tokens.** §5 rule 7 raises every token by 4px and caps
+   `radius-xl` at 28px, so `rounded-cem-md` there would be wrong by 4px. The stage scale belongs
+   in `references/tier-3-performance-surfaces.md` and is not encoded.
+
+Two inconsistencies inside §5.2 itself, resolved in favour of the table:
+
+- **Rule 1's formula cannot produce `radius-xs`.** It clamps a derived radius to `[8, 22]`, so
+  4px never falls out of `0.28 × min(w,h)`. `radius-xs` is legitimate only via the table's
+  "fixed" note.
+- The formula's clamp ceiling of 22 and the table's `radius-xl` of 22 agree, but rule 7's 28px
+  stage cap does not exist in the table. Stage owns it.
 
 **D2 — "El ciclo del servicio" → "El ciclo del culto".** Upstream §8.1 titles the section "El ciclo
 del servicio"; §8.3 bans `servicio` for a worship service because it is ambiguous for a church
@@ -221,4 +260,9 @@ whole-landing criterion and is **not** met.
 Route is `/landing`, deliberately neutral, because §6 is undecided. It sits outside `AppLayout`
 following the existing `/external-display` and `/overlay/:token` pattern.
 
-**Blocked on:** D1 (radius token layer) for L2–L4; B1–B4 with the owner for L5/L6.
+**Token layer follow-up owed:** `src/app/index.css` also declares the five utilities as plain
+rules (`.rounded-cem-md { border-radius: var(--cem-radius-md) }`) because Tailwind is JIT and
+emits nothing for a token with zero usages. Once the first component uses these tokens Tailwind
+will emit them as well and that hand-written block becomes redundant — delete it then.
+
+**Blocked on:** B1–B4 with the owner for L5/L6. **L2–L4 are unblocked.**

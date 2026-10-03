@@ -1,3 +1,77 @@
+/* ===========================================================================
+ * CEMURM radius token layer
+ * ===========================================================================
+ *
+ * Source of truth: skills/cemurm-visual-system/references/apple-macos-visual-language.md
+ * section 5.2, "The CEMURM radius scale". Adopted 2026-10-03.
+ *
+ * WHY THESE NUMBERS EXIST AT ALL. Section 5.1 states it plainly: "Apple
+ * publishes no numeric corner radius." No radius table exists on the HIG and
+ * `.../specifications` returns 404 — numeric radii ship only inside the
+ * downloadable Apple UI Kit, which is a binary, not a citable page. Every value
+ * below is therefore a `[CEMURM DECISION]`, derived from the shape vocabulary
+ * Apple does publish (circular / continuous, and the three button shapes) plus
+ * the one size ladder it does publish: HIG › Buttons › visionOS, 28 / 32 / 44 /
+ * 52 / 64 pt. They are binding once adopted; they are simply not Apple's.
+ *
+ * WHY NAMED TOKENS INSTEAD OF TAILWIND'S DEFAULT RADIUS CLASSES. This is the
+ * whole reason the layer exists, and it is a name collision, not a taste
+ * question. Tailwind 3.4's default steps are none 0, sm 2px, DEFAULT 4px,
+ * md 6px, lg 8px, xl 12px, 2xl 16px, 3xl 24px, full. Section 5.2's scale maps
+ * onto those names with the MEANING INVERTED and one step missing:
+ *
+ *     5.2 radius-xs   4px  ->  rounded      4px   exact
+ *     5.2 radius-sm   8px  ->  rounded-lg   8px   exact value, name shifted
+ *     5.2 radius-md  12px  ->  rounded-xl  12px   exact value, name shifted
+ *     5.2 radius-lg  16px  ->  rounded-2xl 16px   exact value, name shifted
+ *     5.2 radius-xl  22px  ->  (none)             3xl is 24px, off by 2
+ *
+ * So `rounded-md` is 6px while section 5.2 assigns 12px to that token's
+ * component class, and a slice reaching for "the md radius" would silently get
+ * a third of it. `cem-*` names carry no such history: `rounded-cem-md` is 12px
+ * on its face, and the value lives in one place below.
+ *
+ * UNITS ARE px, not rem, because section 5.2 states px, rule 7 raises the scale
+ * "by 4 px", and the rule-1 clamp is `[8, 22]`. Mixing units would make that
+ * arithmetic ambiguous. The trade-off is real and worth naming: a px radius does
+ * not respond to a browser text-size zoom, so a user who enlarges text sees the
+ * corners hold their size relative to the viewport rather than to the type.
+ * Section 3.5 asks that browser zoom work and that no in-app type control be
+ * shipped, so this is acceptable for now — but if the radius scale ever needs
+ * to track Dynamic Type, this block is the one place to change.
+ *
+ * `radius-full` (9999px) is deliberately NOT declared here. `rounded-full`
+ * already exists in Tailwind at exactly 9999px and is already the sanctioned
+ * capsule, so a second name for it would be a synonym with no owner. Section
+ * 5.2's "capsule / pill button, avatar, toggle track" means `rounded-full`.
+ *
+ * This block sits BEFORE `@tailwind base` on purpose. It is plain CSS, not a
+ * Tailwind layer, so it always applies — and it survives preflight either way,
+ * since preflight resets `border-width`, `border-style` and `border-color` but
+ * never custom properties or `border-radius`.
+ *
+ * STAGE MODE (section 5.2 rule 7) raises every token by 4px and caps
+ * `radius-xl` at 28px, because at 1–2 m the same radius subtends a smaller
+ * visual angle and the "eyes are drawn to corners" effect gets stronger. That
+ * is a SECOND scale and it is deliberately NOT encoded here: `cem.stage.*` is
+ * the only palette the projector surface may use (hard rule 4), so a tier-3
+ * surface must not reach for a `cem-radius-*` token at all. See
+ * references/tier-3-performance-surfaces.md.
+ * =========================================================================== */
+
+:root {
+  /* tag, key badge, small chip — fixed */
+  --cem-radius-xs: 4px;
+  /* text input, icon button, segment, menu row — min height 32 */
+  --cem-radius-sm: 8px;
+  /* button, list row, toolbar control, tab item — min height 44 */
+  --cem-radius-md: 12px;
+  /* card, panel, setlist block, dialog body — min height 88 */
+  --cem-radius-lg: 16px;
+  /* sheet, modal, popover, command surface — full-bleed on one edge */
+  --cem-radius-xl: 22px;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -11,6 +85,20 @@
     @apply bg-cem-base text-cem-text;
   }
 }
+
+/* Every `--cem-radius-*` above is declared again as a plain property, after
+   Tailwind's directives. This block has no `@apply` in it on purpose: an
+   unapplied `@apply rounded-cem-md` would emit nothing at all, because the
+   token has no usages in src/ yet and Tailwind is JIT — a 3.4 gotcha the
+   radius layer shares with the colour layer, where deleting a token kills every
+   class referencing it. Writing the declarations out keeps each token provably
+   correct while it still has zero consumers, and it doubles as the reviewer
+   rule: if a token above has no matching declaration here, the two have drifted. */
+.rounded-cem-xs { border-radius: var(--cem-radius-xs); }
+.rounded-cem-sm { border-radius: var(--cem-radius-sm); }
+.rounded-cem-md { border-radius: var(--cem-radius-md); }
+.rounded-cem-lg { border-radius: var(--cem-radius-lg); }
+.rounded-cem-xl { border-radius: var(--cem-radius-xl); }
 
 /* docs/ux-spec.md 253: reduced motion reduces transitions and animations to
    near-zero. The 0.01ms is deliberate and must not be "corrected" to 0: some
