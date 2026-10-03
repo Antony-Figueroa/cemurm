@@ -108,13 +108,56 @@ Each slice is its own PR, ≤400 changed lines. `pnpm check:visual` must pass on
 
 | ID | Slice | Depends on |
 |---|---|---|
-| **L0** | This plan + team split | — |
-| **L1** | Additive token layer, route outside `AppLayout`, section scaffold, header + footer | **#278 merged** |
-| **L2** | Hero Stage Bus demo (the one memorable thing) | L1 |
-| **L3** | Prose sections 3–5, 7–13 | L1 |
-| **L4** | Section 6 (Stage Bus) + section 8 (capacities by role) | L1 |
+| **L0** | This plan + team split | ✅ `e74667e` |
+| **L1** | Additive token layer, route outside `AppLayout`, section scaffold, header + footer | ✅ `L1 landed` |
+| **L2** | Hero Stage Bus demo (the one memorable thing) | L1 + **D1** |
+| **L3** | Prose sections 3–5, 7–13 | L1 + **D1** |
+| **L4** | Section 6 (Stage Bus) + section 8 (capacities by role) | L1 + **D1** |
 | **L5** | Code splitting: `React.lazy` + vendor chunk + fonts + PWA | L1; **B3** for the Supabase client |
 | **L6** | CTA wiring + perf verification against §7.7 | L1; **B1/B2** |
+
+**L1 delivered less than this table promised.** It was scoped to include the additive token
+layer; that part was **not built**, because adding keys to `tailwind.config.js` was outside the
+allowed edit surfaces and because it is a visual decision that should be deliberate rather than
+a side effect. See D1.
+
+### Decisions L1 raised
+
+**D1 — the radius token layer is not adopted, and L2–L4 need it.**
+`skills/cemurm-visual-system/assets/tokens.css` declares `--cem-radius-*` (4/6/10/14/20) but is
+self-described `STATUS: proposal… Adopt it into src/index.css only after a visual pass`, and
+`src/index.css` no longer exists (it is `src/app/index.css`, which has no `--cem-*`). The
+macOS reference declares a *different* scale (4/8/12/16/22) with no exact Tailwind 3.4 step. So a
+radius is currently a number in a document, not a contract. L1 sidestepped it with one
+`rounded-full` capsule. L2/L3/L4 cannot. Gate rule 04 covers **colour** keys only, so a radius
+layer is not blocked by it — it needs a decision, not a review waiver.
+
+**D2 — "El ciclo del servicio" → "El ciclo del culto".** Upstream §8.1 titles the section "El ciclo
+del servicio"; §8.3 bans `servicio` for a worship service because it is ambiguous for a church
+audience and sanctions *culto* / *junta*. The two collide on exactly this section. The hard rule
+won; it is one string in `landing.es.js:76` if the literal title is wanted instead.
+
+**D3 — the `cue` ban cannot be enforced naively.** `grep cue` matches **"frecuentes"**. Any check
+needs `\bcue\b` *and* must exclude comments, or it flags both that and the very comment that
+documents the ban. Separately, upstream §8.3 claims `cue` has "zero occurrences across all 45
+feature files" — true of `features/`, false of the repo: it is live in
+`docs/propuestas/live-engine-sesion-en-vivo.md` and `docs/architecture-current.html`.
+
+**D4 — no renderer means an invalid utility is undetectable.** A `.jsx` class that does not exist
+emits no CSS, no build warning, no lint error and no gate hit, because the gate greps class
+*names*. A `backdrop-saturate-180` was written and caught only by auditing every static class
+against the built stylesheet (Tailwind's scale stops at 150). For a repo whose entire UI
+verification is `lint` + `check:visual` + `build`, an invalid utility is indistinguishable from a
+valid one. Consider a rule that greps each `className` token against the emitted CSS.
+
+**D5 — the ratchets have ZERO headroom.** After #278, `01b` sits at 5/5 and `02` at 234/234. A
+single use of `cem-rose`, `cem-emerald`, `cem-sky` or `cem-coral` in L2–L4 **fails** the gate
+rather than warning. This constrains every later slice's colour choices.
+
+**D6 — upstream §5.3/§9.4 contradict the skill.** The plan demands "Zero `border-radius` in the
+page structure"; the skill's reference explicitly replaces that mandate and `AGENTS.md` names the
+plan's §5–§6 as superseded for visual decisions. The skill wins. Worth correcting in the plan text
+so the next reader does not "restore" zero radius.
 
 ## 8. Performance budget (§7.7) — acceptance criteria
 
@@ -147,6 +190,35 @@ Before trusting any local result, confirm the toolchain is current — the main 
 
 | ID | State | Evidence |
 |---|---|---|
-| L0 | in progress | this file |
+| L0 | done | `e74667e` |
+| L1 | done | 289 added / 0 removed, 6 files |
 
-**Blocked on:** #278 merged (visual gate green) for L1+; B1–B4 with the owner for L5/L6.
+**L1 verification** (run against the #278 base, where the gate is green):
+
+```
+pnpm check:visual   visual contract: OK  (10 rules checked, 0 failing)
+pnpm lint           exit 0
+pnpm test           307 passed (307), 9 files
+pnpm build          exit 0
+```
+
+Gate WARNs are all pre-existing at their baseline and none moved: `01b` 5/5, `02` 234/234,
+`05b` 13 report-only, `r1` 30 report-only, `r2` 17 report-only.
+
+L1 consumed only existing tokens — `cem.base`, `cem.text`, `cem.secondary`, `cem.amber` — plus
+alpha modifiers. **Zero new colour tokens**; `tailwind.config.js` was not touched. `cem-amber`
+appears exactly twice: the wordmark and the primary CTA. The header hairline is
+`border-cem-text/10`, derived from a token with an opacity modifier rather than hardcoded, which
+also keeps it clear of rule 01b (`border-white/*`).
+
+`pnpm typecheck` exits 0 and covers **none** of it — `grep -c '\.jsx$'` on the program is 0. Not
+evidence. No `// @ts-check` was added to any `.jsx`, because it is inert there.
+
+Bundle delta: **+3,514 B raw / +1,064 B gzip**. The landing is statically imported, so it lands in
+the main chunk; that is what L5's `React.lazy` + `manualChunks` exists to undo. The §7.7 budget is a
+whole-landing criterion and is **not** met.
+
+Route is `/landing`, deliberately neutral, because §6 is undecided. It sits outside `AppLayout`
+following the existing `/external-display` and `/overlay/:token` pattern.
+
+**Blocked on:** D1 (radius token layer) for L2–L4; B1–B4 with the owner for L5/L6.

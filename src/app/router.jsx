@@ -35,6 +35,7 @@ import Moderation from '../features/moderation/pages/Moderation.jsx'
 import Storage from '../features/settings/pages/Storage.jsx'
 import Settings from '../features/settings/pages/Settings.jsx'
 import NotFound from '../features/shell/pages/NotFound.jsx'
+import Landing from '../features/landing/pages/Landing.jsx'
 
 const router = createBrowserRouter([
   {
@@ -113,6 +114,21 @@ const router = createBrowserRouter([
   {
     path: '/overlay/:token',
     element: <Overlay />,
+  },
+  // Marketing landing. OUTSIDE AppLayout and outside both auth guards for the
+  // same reason as the two entries above: a public marketing surface gets no
+  // signed-in nav chrome and no session. Inside AppLayout it would inherit the
+  // 13-link nav, the sign-in state and the app's own footer — the app's
+  // furniture on a page whose job is to be read before anyone signs in.
+  //
+  // THE PATH IS DELIBERATELY NEUTRAL, not a decision. Plan section 6 leaves it
+  // open whether this page replaces `/` or lives at its own path, and option A
+  // changes signed-in navigation, so the final wiring is the owner's call. At
+  // `/landing` the page is reviewable now and that decision stays a one-line
+  // change to this object either way.
+  {
+    path: '/landing',
+    element: <Landing />,
   },
 ])
 
