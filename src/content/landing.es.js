@@ -227,11 +227,163 @@ export const landing = {
       ],
     },
     { id: 'stage-bus', eyebrow: 'Stage Bus', title: 'Stage Bus.' },
-    { id: 'split', eyebrow: 'El modelo', title: 'El chart canónico y el renderizado personal.' },
+    {
+      id: 'split',
+      eyebrow: 'El modelo',
+      title: 'El chart canónico y el renderizado personal.',
+      // Section 8.1 row 7: "Why one shared arrangement serves N musicians
+      // without forking." This closes the loop L3a's `problema` opened — that
+      // section showed one agreed key with Juan rendering A and Pedro E; this
+      // one explains the mechanism that makes it possible without anyone forking
+      // the chart.
+      //
+      // features/personal-preferences-and-adaptations.feature:151-163 ("Setlist
+      // fixes the agreed key for the band", "Toggle between agreed key and
+      // personal key"), :183-194 (annotations and chord substitutions stored per
+      // profile; the shared chart keeps the original), :196-201 ("Create version
+      // from my changes" records the source it came from).
+      // features/song-lifecycle.feature:51-79 (every chart edit creates a
+      // version entry; rollback; diff; "Version history cannot be edited").
+      // Implementation: domain/music/transpose.js `initialSemitones` (per-song
+      // override beats the global offset), `capoLabel`, `transposeParsed`;
+      // domain/music/annotations.js; and substitutions.js:542 `renderSemitones`
+      // for the per-instrument render.
+      body: [
+        'Un chart, muchas manos. El chart canónico es uno solo y el setlist fija el ' +
+          'tono acordado para todos. Cada dispositivo lo renderiza en el suyo: la ' +
+          'transposición y el capo son tuyos, y nadie necesita una copia propia.',
+        'Tus cambios también son tuyos. Una anotación o una sustitución de acorde se ' +
+          'guardan en tu perfil y no le aparecen a nadie más. Si quieres compartirlas, ' +
+          'promotes una versión nueva y queda registrada con su autor y el chart del que ' +
+          'salió.',
+        'Y nada se pierde en silencio. Cada edición deja una versión con autor, fecha y ' +
+          'qué cambió, se puede volver a una anterior, y el historial no se edita ni se ' +
+          'borra.',
+      ],
+    },
     { id: 'roles', eyebrow: 'Roles', title: 'Capacidades por rol.' },
     { id: 'organizacion', eyebrow: 'Organización', title: 'Institucional y multi-sede.' },
-    { id: 'limites', eyebrow: 'Límites', title: 'Lo que no hacemos.' },
-    { id: 'offline', eyebrow: 'Datos', title: 'Offline y datos.' },
+    {
+      id: 'limites',
+      eyebrow: 'Límites',
+      title: 'Lo que no hacemos.',
+      // Section 8.1 row 10: "The declared non-goals, each with its reason." Same
+      // technique L3a used for `alcance`, and deliberately a DIFFERENT set: the
+      // two non-goals already stated there (not a notation editor, not a gig
+      // manager with calendar/ticketing/maps) are not repeated here.
+      //
+      // All three are lifted from a NON-GOALS block the suite already declares,
+      // and each was checked against the implementation too.
+      body: [
+        // features/music-theory.feature:248-252 ("The system never guesses a
+        // song's key" — the app shows "Key not declared" and offers "Declare
+        // key" but does not infer from the chords) and :260 ("Harmonic function
+        // is never auto-assigned"). Implementation: the missing base key is a
+        // real readiness gate, not just a label —
+        // domain/chart/readiness.js via songs.js:273, and
+        // features/song-lifecycle.feature:28-32 is the scenario that proves it
+        // ("Not ready: missing base key"). A church band will be tempted to
+        // infer a key from a chord chart; refusing is the honest answer, because
+        // a wrong key silently transposes the whole service.
+        'No adivinamos el tono. Si un chart no lo declara, aparece como tono no ' +
+          'declarado y la canción no queda lista hasta que alguien lo fije. ' +
+          'Preferimos avisarte a suponer por ti y tocar medio tono abajo.',
+        // features/practice-mode.feature:186-195 ("Audio playback, recording,
+        // and shared practice are out of scope"): no playback engine, no backing
+        // tracks, no audio file import, no slow-down or loop, no recording, no
+        // shared practice session. Deliberately NOT claiming there is no
+        // metronome: there is one — features/live-performance-mode.feature:84-94
+        // and personal-preferences:237-240 put a tempo control in Stage Mode and
+        // in practice mode. This paragraph is about audio, which is a different
+        // thing from a click track.
+        'No reproducimos audio. No hay motor de reproducción, ni pistas de ' +
+          'acompañamiento, ni grabación de lo que ensayas. El ensayo guarda cómo va ' +
+          'la canción, no cómo suena.',
+        // features/community-moderation.feature "No automation, voting, legal
+        // machinery, auto-ban, or cross-org moderation": no content-scanning bot,
+        // no public voting, no built-in legal process — and, from the same file,
+        // an appeal is reviewed by a different moderator, never the original
+        // decider. Worth stating to an institutional buyer precisely because
+        // minors are in scope (features/minors-and-guardian-consent.feature): the
+        // consent ledger is a ledger, not an automation.
+        'No moderamos en automático. No hay bot que revise contenido, ni votación ' +
+          'pública: las decisiones las toman moderadores, y una revisión siempre la ' +
+          'hace alguien que no tomó la decisión original.',
+      ],
+    },
+    {
+      id: 'offline',
+      eyebrow: 'Datos',
+      title: 'Offline y datos.',
+      // Section 8.1 row 11: "What works without a connection and what does not."
+      // docs/technical-spec.md:523 names offline-first with sync as this
+      // product's DEFINING property, which is exactly why the last two paragraphs
+      // are about what it refuses to do. A section that only listed strengths
+      // would be the failure mode here: every one of the limits below is a
+      // deliberate decision in code, and a visitor who finds one out after
+      // subscribing has been told something false.
+      //
+      // The offline layer was read, not assumed: src/offline/queue.js,
+      // src/offline/drainer.js, src/offline/cache.js and
+      // src/domain/offline/drainFailure.js.
+      body: [
+        // features/live-performance-mode.feature:106-111 ("Performance mode
+        // works fully offline": navigate between songs, lyrics and chords render,
+        // transpose and tempo still work).
+        // features/offline-access.feature:6-11 (browse repertoire, open any
+        // cached song). features/congregation-projection.feature:123-127
+        // (projection keeps running offline from cached slides).
+        // Implementation: drainer.js:132 startOfflineSync drains on the `online`
+        // event; cache.js owns the IDB read cache (DB_VERSION 3).
+        'En el escenario, sin conexión, Stage Mode funciona entero: recorres el ' +
+          'setlist, la letra y los acordes se ven, y la transposición y el tempo ' +
+          'siguen respondiendo. La proyección también, desde las diapositivas guardadas.',
+        // features/offline-access.feature:13-19 ("the setlist is saved locally
+        // with a 'pending sync' flag... syncs to the server and the flag is
+        // cleared"), :21-25 (proximity code still generated offline).
+        // features/rehearsal-workflow.feature:117-122, features/gigs-and-
+        // performance-history.feature:141-148 and substitutions-and-coverage
+        // :133-138 all queue the same way. Implementation: queue.js
+        // enqueueOp/pendingOps is a client-only FIFO outbox in IndexedDB keyed by
+        // seq, and drainer.js:226 drainPending replays strictly in that order so
+        // an op never lands before the one it depends on.
+        'Lo que escribes sin conexión no se pierde: queda en el dispositivo con la ' +
+          'marca de pendiente, y al volver la red se aplica en el mismo orden en que ' +
+          'lo hiciste.',
+        // THE HONEST HALF. Read from drainer.js, not inferred.
+        // (a) Supersession: RECONCILE_OPS (drainer.js:91) reconciles only
+        //     addSongToSetlist and removeSongToSetlist against the CURRENT server
+        //     setlist, and a queued add whose song was removed elsewhere is
+        //     DROPPED with a notice (drainer.js:202). A substitution accepted
+        //     offline that someone else already took is likewise dropped
+        //     (drainer.js:266).
+        // (b) Quarantine: drainFailure.js:281 decides RETRY vs QUARANTINE. An op
+        //     the server rejected for good — an RLS denial, a validation guard, a
+        //     conflict — is set aside rather than retried forever, and
+        //     quarantineNotice (drainFailure.js:293) tells the user to make the
+        //     change again. Quarantined ops stay on the device; they are not
+        //     deleted (queue.js:240).
+        // (c) The queue can pause: drainer.js:279-293 breaks the loop on a
+        //     transient or unclassifiable failure so seq order survives, which
+        //     means one stuck op holds the ops behind it until it resolves.
+        'Ahora lo que no te prometo. Si entre tu cambio y tu sincronización otra ' +
+          'persona movió lo mismo, tu cambio se descarta y te decimos cuál fue; una ' +
+          'sustitución que ya se cubre, también. Y si el servidor rechaza un cambio ' +
+          'de plano, no lo reintentamos para siempre: lo apartamos y te pedimos que ' +
+          'lo hagas de nuevo.',
+        // drainer.js:5-6 states it outright: "the rest is last-write-wins. Upgrade
+        // when offline-edit-conflict-policy lands." So two devices that edit the
+        // same thing while both are offline do NOT merge — the later write wins
+        // and the earlier one is gone, with no notice, because the server never
+        // saw a conflict to report. That is the single most important thing a
+        // visitor can be surprised by, and it is the one clause here with no
+        // user-facing notice behind it.
+        'El resto se resuelve con la última escritura gana. Solo las altas y bajas ' +
+          'de canciones de un setlist se comparan con el servidor antes de aplicarse; ' +
+          'en lo demás, si dos dispositivos escriben lo mismo sin conexión, uno pisa ' +
+          'al otro y no te avisamos.',
+      ],
+    },
     { id: 'precios', eyebrow: 'Precios', title: 'Gratis durante la beta.' },
     { id: 'faq', eyebrow: 'Preguntas', title: 'Preguntas frecuentes.' },
     { id: 'waitlist', eyebrow: 'Acceso', title: 'Unirme a la lista de espera.' },
