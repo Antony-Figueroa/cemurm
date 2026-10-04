@@ -305,7 +305,13 @@ Before trusting any local result, confirm the toolchain is current — the main 
 | L3d | done | `organizacion`, `precios`. `faq` + `waitlist` remain empty frames |
 | L4 | done | `stage-bus`, `roles` |
 | L5 | done | code splitting — see §11. Landing budget **NOT met** (216.51 vs 120 kB), blocked on B3 |
-| L6 | not started | CTA (B1/B2), fonts, PWA |
+| L6a | done | fonts + PWA — see §12. Font target **NOT met** (94.48 kB / 4 files), CTA **NOT built** (B1) |
+
+### L6 was also split
+
+Fonts, PWA assets and §7.7 verification are assets and config, and they were doable in one
+slice. **The CTA is not, and was not attempted** — B1 is undecided and owner-gated, and §8.3
+says a CTA must say exactly what happens, so there is nothing honest to render yet.
 
 **L1 verification** (run against the #278 base, where the gate is green):
 
@@ -427,3 +433,120 @@ that no-ops a misconfigured build would be worse than a heavy one.
 
 **Blocked on:** B1–B2 with the owner for the L6 CTA. **B3 for the §7.7 landing budget.**
 **L6 alone remains.**
+
+---
+
+## 12. L6 — fonts, PWA, and the §7.7 verdict
+
+`pnpm check:visual` OK 0 failing · `pnpm lint` exit 0 · `pnpm test` 307 passed · `pnpm build` exit 0.
+Ratchets unmoved: `01b` 5/5, `02` 234/234. 62 changed lines excluding binary assets.
+
+### 12.1 Fonts (§7.4)
+
+**Measured before and after, from `dist/assets`:**
+
+| | woff2 files | woff2 bytes | woff files | woff bytes |
+|---|---:|---:|---:|---:|
+| before | 28 | 386,820 | 28 | 506,108 |
+| **after** | **4** | **96,744** | **4** | **124,560** |
+
+A **75% reduction**, and the four `.woff` fallbacks are never fetched by a woff2 browser, so the
+payload a real visit pays is the 94.48 kB of woff2.
+
+**What actually changed.** `src/app/main.jsx:3-6` imported the SUBSET-LESS
+`@fontsource/inter/{400,500,600,700}.css`, and each of those pulls five subsets in two formats.
+Swapping to the `latin-*.css` entrypoints the installed package already ships is a **subset**
+change, not a weight change: same family, same four weights, one `src` each.
+
+**`font-display: swap` was already set** by @fontsource — verified by reading
+`node_modules/@fontsource/inter/latin-400.css`, which emits it per face. Nothing to add.
+
+**The metric fallback is measured, not estimated.** `public/fonts.css` declares
+`Inter Fallback` with `size-adjust: 105.31%`, `ascent-override: 96.88%`,
+`descent-override: 24.12%`, `line-gap-override: 0%`. Those four numbers were read out of the
+shipped `inter-latin-400-normal.woff2` with fontTools 4.66 (upm 2048, hhea.ascent 1984,
+descent -494, lineGap 0, OS/2.xAvgCharWidth 1250) and compared against Liberation Sans, which
+is metric-compatible with the `Arial` named in the `src:` (xAvgCharWidth 1187 on the same upm),
+giving 1250/1187 = 105.31%. All four weights report identical ratios, so one face covers all of
+them. It lives in `public/` and is linked before the app stylesheet so it is parsed before
+first paint — the whole point of the face is to be in place before `swap` happens.
+
+**§7.4's variable font is NOT done, and could not be in this slice.**
+`@fontsource-variable/inter` is not installed and not in `pnpm-lock.yaml`; installing it means
+editing `package.json` and the lockfile, neither of which is an allowed surface here. The four
+latin files are 96,744 B against the variable font's ~45 kB, so **≈51 kB is left on the table**
+for a slice that may also spend `package.json`.
+
+### 12.2 PWA (§7.5)
+
+**What already existed in `public/`:** only `sw.js` (5,090 B, the offline service worker). No
+manifest, no icons, no favicon, no theme-color — `index.html` referenced `/vite.svg`, **which
+does not exist in the repo**, so the favicon was a broken reference before this slice.
+
+**Added:** `site.webmanifest` (1,315 B), `mark.svg` (1,632 B), `icon-192.png` (2,650 B),
+`icon-512.png` (8,343 B), `apple-touch-icon.png` (2,638 B), `fonts.css` (2,930 B). `index.html`
+gained the manifest link, `theme-color` (#0f172a = `cem.base`, already what `body` paints),
+the two `apple-mobile-web-app-*` meta tags and `viewport-fit=cover` for safe-area insets.
+
+**The mark is a PLACEHOLDER and says so in three places.** The brand mark has not been designed
+— §3 lists it as in scope and §3 defers final mascot art — so `mark.svg` is a rounded square in
+`cem.amber` on `cem.base` carrying two bars. Colours are duplicated from `tailwind.config.js`
+rather than referenced, because a static SVG in `public/` cannot read a CSS custom property from
+the page. **Rule 01a does not apply here and the gate confirms it:** `check-visual-contract.sh:202`
+sets `SRC_DIR="src"`, so `public/` is outside the scan path. No threshold was touched.
+
+### 12.3 The §7.7 table, measured
+
+| Metric | Target | Measured | Verdict |
+|---|---:|---:|---|
+| JS gzip, first visit (landing) | ≤ 120 kB | **215.47 kB** | **MISSED** by 95.5 kB |
+| JS gzip, authenticated session | ≤ 150 kB | **183.02 kB** | **MISSED** by 33.0 kB |
+| Largest single chunk | ≤ 150 kB gzip | **76.20 kB** (`vendor`) | **MET** |
+| Font payload | ≤ 45 kB / 2 files | **94.48 kB / 4 files** | **MISSED** |
+| LCP, 4G throttle, mid-tier Android | < 2.0 s | — | **UNMEASURED** |
+| CLS from fonts | 0 | — | **UNMEASURED** |
+| Non-user-triggered motion moments | 1 | **1** (hero rotation) | **MET** |
+| Runtime dependencies | 5 → 8 | **5 → 6** (`motion` added) | not reached |
+
+**The two UNMEASURED rows are honestly unmeasured.** There is no Lighthouse, no WebPageTest and
+no browser in this toolchain, and `pnpm test` covers the domain layer only. A build size is not a
+proxy for LCP and I will not present one as one. The CLS mitigation is *implemented and
+measured in intent* — the `size-adjust` face is there so the swap should not shift layout — but
+"should" is not "measured", and only a real page load settles it.
+
+Note the landing total dropped 216.51 → 215.47 kB: the font change removed no JS, and the CSS
+shrank by 1.04 kB gzip because fewer `@font-face` rules ship. **The font work is a payload win,
+not a §7.7 JS win.**
+
+### 12.4 The `motion/mini` option — a product decision, NOT taken
+
+`motion` is a single **40.58 kB gzip** chunk that only the landing reaches; `/songs` does not
+fetch it (verified by walking the built static import graph). `motion/mini` would measure
+roughly 9 kB gzip, a **saving of ~32 kB** — which would take the landing from 215.47 to ~183 kB
+and the authenticated row is unaffected either way.
+
+**Not done, deliberately.** `motion/mini` requires `LazyMotion` wrapping and a features bundle,
+so it changes §7.7's motion budget — that is a product call, not a build one. And on its own it
+does not fix anything: 183 kB is still 63 kB over the landing target. **B3 (−57.5 kB) plus
+`motion/mini` (−32 kB) plus the variable font (−51 kB) together land at ~113 kB**, which is the
+first combination that actually reaches 120. All three are owner decisions.
+
+### 12.5 The waitlist CTA IS a dead end — reported, not faked
+
+**Verified, and left alone.** The header CTA is `landing.cta = { label: 'Unirme a la lista de
+espera', href: '#waitlist' }` and the `waitlist` registry entry carries **only `eyebrow` and
+`title`** — no `body`, no `steps`. Grepping the landing for `<form`, `onSubmit` or a
+`type="email"` input returns nothing.
+
+So today a visitor clicks a button that promises "join the waitlist", scrolls to a section that
+repeats the same sentence as a heading, and finds **no way to join**. That is a dead end, and it
+is the direct consequence of B1 being undecided: there is no target to point at.
+
+**Nothing was wired to paper over it.** A form that cannot submit, or a `mailto:` to an address
+`docs/product-brief.md:89-90` says does not exist, would both violate §8.3's rule that a CTA
+says exactly what happens. **Two ways out, both owner calls:** (a) B1 lands and L6b builds the
+real form; (b) until then, hide the header CTA — but that removes the page's only conversion
+action, so it is a marketing decision, not a build one.
+
+`faq` is the second empty frame and has the same shape of problem: §8.1 row 13 wants six real
+questions from a system director, and inventing them is forbidden.
