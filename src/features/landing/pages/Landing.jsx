@@ -1,5 +1,6 @@
 import { landing } from '../../../content/landing.es.js'
 import Hero from '../components/Hero.jsx'
+import IntroLoader from '../components/IntroLoader.jsx'
 import LandingFooter from '../components/LandingFooter.jsx'
 import LandingHeader from '../components/LandingHeader.jsx'
 import Section from '../components/Section.jsx'
@@ -19,6 +20,14 @@ export default function Landing() {
 
   return (
     <div className="flex min-h-screen flex-col bg-cem-base">
+      {/* A1's intro loader. It lives INSIDE the route, not beside it in the router,
+          and that placement is load-bearing rather than tidiness: React unmounts it
+          when the visitor navigates away, and its effect cleanup releases the
+          scroll lock. Mounted at the top of the route so the curtain is the first
+          thing in document order, which matters for a screen reader reaching it
+          before the header. */}
+      <IntroLoader />
+
       <LandingHeader />
 
       <main className="flex-1">
