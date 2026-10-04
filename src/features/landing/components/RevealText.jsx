@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types -- see FeedbackForm.jsx:1 for the convention. */
 
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 
 // A2 — the clip-mask text reveal. One component with a mode, because the
@@ -164,8 +164,50 @@ export default function RevealText({
 
   const units = mode === 'word' ? text.split(' ').filter(Boolean) : splitLines(text)
   // Word mode needs a deeper reserve than the reference's 0.12em because the hero
-  // runs line-height 0.85; see the arithmetic at the top of this file.
+  // runs line-height 0.85; see the arithmetic at the bottom of this file.
   const reserve = mode === 'word' ? CLIP_RESERVE.word : CLIP_RESERVE.line
+
+  // THE BOX DISPLAY, AND WHY THE TWO MODES DIFFER. Each unit needs its own
+  // `overflow: hidden` box because the reveal is a clip mask: the inner span starts
+  // at translateY(115%) and the parent's box is what hides it until it rises. That
+  // requirement is mode-independent.
+  //
+  // What is NOT mode-independent is the display value, and getting it wrong is the
+  // single worst bug this file ever shipped. Both spans used to be `block`, which
+  // forces ONE UNIT PER LINE. In word mode that turned "Una cancion, tres lecturas."
+  // into FOUR lines, so the hero headline rendered at 245px of height instead of
+  // 61px and pushed the demo below the fold. `6781981` had already measured the
+  // string at 15.667em of advance, which fits the 1,280px measure at the clamp's
+  // 72px ceiling with 152px to spare. The measurement was right; the
+  // implementation contradicted it for three commits.
+  //
+  //   word mode -> `inline-block`, so the words flow on one line and wrap only when
+  //     the measure genuinely cannot hold them.
+  //   line mode -> `block`, unchanged. `splitLines` returns whole lines and each
+  //     one MUST start its own line, so `block` is the correct value there and
+  //     changing it would regress all 13 section headlines.
+  //
+  // `align-bottom` on the word-mode boxes: an `inline-block` with `overflow: hidden`
+  // takes its BOTTOM MARGIN EDGE as its baseline, not its text baseline, so a stack
+  // of them aligns box-bottom to box-bottom and grows 0.26em taller than the reserve
+  // alone. `vertical-align: bottom` pins every box to the line box bottom instead,
+  // which makes the reserve exactly the `pb` value below and nothing more.
+  const box = mode === 'word' ? 'inline-block align-bottom' : 'block'
+
+  // THE SEPARATOR, AND WHY IT LEFT THE CLIP BOX. It used to be rendered INSIDE the
+  // animating inner span, as a trailing text node. Two things are wrong with that:
+  //
+  //   1. A trailing space at the end of an inline-block's content is removed by
+  //      CSS white-space processing, so once the box became `inline-block` the
+  //      separator would have contributed NOTHING and the words would collide.
+  //   2. A space inside a box whose contents slide from translateY(115%) is part of
+  //      what the mask clips, so the gap would animate with the word.
+  //
+  // As a direct child of the tag it is an ordinary inter-word space in the parent's
+  // line box: not clipped, not animated, and it collapses exactly like the space in
+  // any other run of text. Line mode emits nothing, because `splitLines` already put
+  // the spaces inside each piece and the pieces are separate lines.
+  const separator = (i) => (mode === 'word' && i < units.length - 1 ? ' ' : null)
   // `motion[Tag]` rather than a hardcoded `motion.p`: the hero headline has to
   // stay an <h1> for the document outline, and a `<p>` would silently drop the
   // page's only level-one heading.
@@ -189,12 +231,14 @@ export default function RevealText({
         : { initial: 'hidden', whileInView: 'show', viewport: { once: true, amount: 0.4 } })}
     >
       {units.map((piece, i) => (
-        <span key={i} className={`block overflow-hidden ${reserve}`}>
-          <motion.span className="block" variants={unit}>
-            {piece}
-            {mode === 'word' && i < units.length - 1 ? ' ' : ''}
-          </motion.span>
-        </span>
+        <Fragment key={i}>
+          <span className={`${box} overflow-hidden ${reserve}`}>
+            <motion.span className={box} variants={unit}>
+              {piece}
+            </motion.span>
+          </span>
+          {separator(i)}
+        </Fragment>
       ))}
     </MotionTag>
   )
@@ -207,6 +251,26 @@ export default function RevealText({
 // below the baseline, so the reserve a line-height demands is
 // `(1.21 - lineHeight) / 2`. Hero at 0.85 demands 0.18em; the sections at 1.05
 // demand 0.08em. Both reserves clear their own threshold with room to spare.
+//
+// RE-VERIFIED AFTER THE `block` -> `inline-block` CHANGE, and the answer is that
+// the requirement is DISPLAY-MODE INDEPENDENT, which is worth stating because it is
+// not obvious. The overflow clip sits at the PADDING box for any box whose
+// `overflow` is not `visible`, and a `block` box and an `inline-block` box of the
+// same content both have a content box exactly one line box tall, which is
+// `lineHeight`. So the ink overflow below the content box is
+// `descent - (lineHeight - 1.21) / 2`... which reduces to the same
+// `(1.21 - lineHeight) / 2` in both cases, and the `pb` requirement does not move.
+//
+// Hero at 0.85: required 0.18em, shipped 0.20em, margin 0.02em, which is 1.44px at
+// the clamp's 72px ceiling. That margin is thin on the FONT METRIC and it is the
+// same 0.02em this file shipped at `block`, so the change neither improved nor
+// degraded it. On the INK this headline actually contains it is not thin at all:
+// "Una cancion, tres lecturas." has exactly one descending glyph, the comma after
+// "cancion", whose yMin is -0.1812em. The baseline sits 0.0612em above the content
+// box bottom, so the comma's ink reaches 0.1200em below the content box and clears
+// the 0.20em reserve by 0.0800em, which is 5.76px at 72px. There is no j, p, q, g
+// or y in the string, and the acute on the O of CANCION rides on the ascent above
+// the cap height, not on the descent.
 //
 // A dev-only warning rather than a throw: these are constants, and a mismatch is
 // a clipping bug a reviewer should see in a console, not a reason for the whole

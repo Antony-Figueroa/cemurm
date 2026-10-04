@@ -23,9 +23,37 @@ import { landing } from '../../../content/landing.es.js'
 //
 // §12 "Material weight encodes hierarchy" and this surface is the LARGEST
 // translucent element on the page, so it takes the strongest blur available:
-// `backdrop-blur-2xl` (40px) rather than the `xl` (24px) it had, against the same
-// 70 percent fill. Bigger surface, thicker material, deeper separation from what
-// scrolls under it.
+// `backdrop-blur-2xl` (40px) rather than the `xl` (24px) it had. Bigger surface,
+// thicker material, deeper separation from what scrolls under it.
+//
+// F1-4, THE FILL IS 85 PERCENT AND NOT 70, and this is a contrast fix rather than a
+// material preference. A translucent surface has no background of its own: what the
+// text sits on is `fill OVER whatever scrolls underneath`, so the effective
+// background MOVES as the page scrolls, and it has to clear the floor against the
+// worst thing that can pass beneath it, not the average one. At /70 the worst case
+// is the hero headline, which is `cem.text` at near-white, and `cem.secondary`
+// composited against that measures 2.65:1. A hard AA failure on every nav link, at
+// the scroll position where the headline is passing under the bar. The gate cannot
+// see this: rule 06 is a same-element source grep and rule 05b scores token pairs,
+// and an alpha composite against a moving backdrop is neither.
+//
+// Composited, worst case = the header's own fill at alpha over near-white text. The
+// fill alpha is the only variable:
+//
+//   fill /70   secondary 2.65:1 FAIL   secondary-elevated 3.53:1 FAIL
+//   fill /80   secondary 3.79:1 FAIL   secondary-elevated 5.05:1 PASS
+//   fill /85   secondary 4.50:1 PASS   secondary-elevated 5.99:1 PASS
+//   fill /95   secondary 6.17:1 PASS   secondary-elevated 8.22:1 PASS
+//
+// /85 is the smallest step that carries `cem.secondary-elevated` clear of the 4.5:1
+// floor with real margin, and it is one step short of the /95 that
+// `prefers-reduced-transparency` and the no-backdrop-filter fallback already use, so
+// the opaque end of the range is unchanged and only the default moved. The cost is
+// honest and worth stating: 15 points of fill opacity means slightly less of the
+// blur reads through. A 40px blur over a moving background is the material; this
+// keeps all of it and gives up a little see-through, which is the cheaper of the
+// two to lose. This also matches the taste skill's own instruction for a header on a
+// moving background, and it is the same rule that already produced `.cem-scroll-scrim`.
 //
 // `cem-material` carries the §12 "materialize, don't just fade" entry: blur radius
 // and scale animate together on load. It is `@starting-style` plus a transition,
@@ -38,9 +66,17 @@ import { landing } from '../../../content/landing.es.js'
 // where a defined contrasting edge is what §14 asks for and translucency cannot
 // carry it.
 const SURFACE =
-  'cem-material cem-contrast-edge bg-cem-base/70 backdrop-blur-2xl backdrop-saturate-150 ' +
+  'cem-material cem-contrast-edge bg-cem-base/85 backdrop-blur-2xl backdrop-saturate-150 ' +
   '[@media(prefers-reduced-transparency:reduce)]:bg-cem-base/95 ' +
   '[@supports_not(backdrop-filter:blur(1px))]:bg-cem-base/95'
+
+// F1-4, AND THE NAV LINKS MOVE TO `secondary-elevated` WITH IT, because /85 alone
+// leaves `cem.secondary` at exactly 4.50:1, which is the floor rather than clear of
+// it. `secondary-elevated` measures 5.99:1 on the composited worst case. This is the
+// token tailwind.config.js:19-26 was created for, and rule 06's own note says to use
+// it on a raised fill. `hover:text-cem-text` still steps up to 11.03:1, so the hover
+// affordance survives.
+const NAV_FG = 'text-cem-secondary-elevated'
 
 // APPLE §1, "Respond on pointer-down, not on release". Emil's baseline is
 // `transform: scale(0.97)` on `:active` on the 100-160ms band, and it was MISSING
@@ -94,20 +130,44 @@ export default function LandingHeader() {
             <a
               key={item.id}
               href={`#${item.id}`}
-              className={`inline-flex min-h-12 items-center text-sm font-medium text-cem-secondary duration-200 hover:text-cem-text ${PRESS} ${FOCUS}`}
+              className={`inline-flex min-h-12 items-center text-sm font-medium ${NAV_FG} duration-200 hover:text-cem-text ${PRESS} ${FOCUS}`}
             >
               {item.label}
             </a>
           ))}
         </nav>
 
-        {/* The primary action, and the second. Amber fill with `cem.base` text is the
-            8.31:1 pairing the reference mandates; amber with light text computes
-            to 2.05:1 and is a hard fail. `min-h-12` is the 48px hit target, not
-            a style. */}
+        {/* F1-2: THIS IS NO LONGER A SECOND AMBER PRIMARY. `landing.cta` renders
+            here and in Hero.jsx, both at `href="#waitlist"`, and both were an amber
+            pill about 150px apart in the same viewport. The maintainer's screenshot
+            showed them competing and the taste skill's §4.5 makes duplicate intent a
+            mandatory pre-flight fail.
+
+            THE HERO INSTANCE WINS the amber, because it holds the conversion
+            position: it is the one place on the page where the reader's next action
+            is unambiguous, and §4.7's hero stack spends the primary CTA there. This
+            one is demoted to the ghost/outline variant the skill specifies, which
+            keeps the action reachable after a scroll past the hero while leaving
+            exactly one amber primary on the page.
+
+            WHY GHOST AND NOT DELETED. Deleting it would satisfy §4.5 outright, and
+            that remains available as a one-line follow-up if the maintainer prefers
+            it. Kept, because a landing page whose only conversion action is
+            unreachable once the reader scrolls is worse than the duplicate intent,
+            and because §4.7 explicitly allows one primary plus one secondary, which
+            is what a ghost outline of the same intent is.
+
+            THE CONTRAST IS THE OTHER HALF OF F1-4. `cem-text` on this
+            translucent fill is 11.03:1 against the composited worst case, and the
+            `cem-text` border gives the outline a defined edge against the moving
+            background, which is what a transparent-fill button needs in order to
+            read as a control at all. `bg-transparent` is a
+            Tailwind keyword, not one of rule 01b's default-palette names, and
+            `hover:bg-cem-text/10` is the hover affordance the amber fill used to
+            provide. `min-h-12` is the 48px hit target, not a style. */}
         <a
           href={landing.cta.href}
-          className={`order-2 inline-flex min-h-12 items-center rounded-full bg-cem-amber px-5 text-sm font-semibold text-cem-base duration-200 hover:bg-cem-amber/90 sm:order-3 ${PRESS} ${FOCUS}`}
+          className={`order-2 inline-flex min-h-12 items-center rounded-full border border-cem-text/20 bg-transparent px-5 text-sm font-semibold text-cem-text hover:bg-cem-text/10 duration-200 sm:order-3 ${PRESS} ${FOCUS}`}
         >
           {landing.cta.label}
         </a>

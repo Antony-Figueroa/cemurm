@@ -225,7 +225,47 @@ export default function Hero() {
 
             THE STATIC FALLBACK is not a compromise, it is the phone experience: a
             real text node in `cem.text`, so a phone gets a crisp selectable
-            wordmark with no canvas, no observers and no rAF loop. */}
+            wordmark with no canvas, no observers and no rAF loop.
+
+            F1-3, THREE PROPS THAT MADE IT READ AS A DESIGN TOOL. The maintainer's
+            screenshot showed the C inside a dashed circle with four orange corner
+            handles, which is a selection frame, not a wordmark. Traced through the
+            vendored source to the three props that produce it, and all three are
+            gone:
+
+              selection -> TechText.jsx:623 and :642 gate a FRAME on
+                `focus >= 0 && s.selection`, and :530-540 draw four 5x5 handles
+                filled in `accentColor` at 0.95 alpha. Those are the handles. Now
+                false, which is also the same as removing the prop, but explicit so
+                the default's intent is visible.
+              reveal -> TechText.jsx:645 reads `s.reveal === 'letter'` and strokes
+                the FOCUSED GLYPH's outline. That is the amber C. Its default is
+                'letter', so removing the prop would have brought it straight back.
+                'none' matches neither 'letter' nor 'area', which is all the two
+                branches test, so it disables the outline AND the presence pass at
+                :595 without touching vendored source.
+              sweep -> TechText.jsx:575 runs when `s.sweep && !reducedMotion &&
+                !pointer.inside && dragging < 0`, walking the lens along a cosine
+                path with NO POINTER PRESENT, so `focus` became a real glyph index
+                on load and the frame drew itself unattended. Its default is TRUE, so
+                this had to be an explicit false.
+
+            `reach` is unchanged and was never the cause: at :401 it is only the
+            hover lens's radial falloff radius, and with no frame and no outline
+            there is nothing left for it to reveal.
+
+            §7.7, AND THIS IS THE ANSWER TO THE OPEN QUESTION. §7.7 budgets ONE
+            non-user-triggered motion moment and A1's intro loader spends it. The
+            sweep was a SECOND, so the hero was over budget at 2. With sweep off the
+            hero spends ZERO and the page is back at 1, inside the budget. It also
+            stops the rAF loop idling: TechText.jsx:682 re-arms only while `active`
+            or `settling`, and with no sweep and no pointer neither is true, so the
+            loop now parks instead of running forever.
+
+            WHAT SURVIVES: `draggable`, so a pointer can still pick a letter up and
+            put it down, and `wordLabels`, so hovering still names each letter's
+            acronym word. Those are the interactions that read as a wordmark being
+            handled. What is gone is every mark that read as a tool selecting it. */}
         <div className="max-w-3xl">
           {showCanvas ? (
             <div className="cem-wordmark-canvas h-16 w-full md:h-24 lg:h-28">
@@ -237,11 +277,11 @@ export default function Hero() {
                 color={tokens.text}
                 accentColor={tokens.amber}
                 wordLabels={landing.acronym}
-                reveal="letter"
-                selection
+                reveal="none"
+                selection={false}
                 labels
                 draggable
-                sweep={reduce === false}
+                sweep={false}
                 reach={190}
                 softness={0.7}
                 dashLength={4}
@@ -315,12 +355,25 @@ export default function Hero() {
           {landing.tagline}
         </p>
 
-        {/* THE ONE CTA: same intent, label and href the header uses, so §4.5's
-            one-label-per-intent holds and the two cannot drift. IT IS A DEAD END:
-            `href` is `#waitlist`, and whether the waitlist needs a backend is B1,
-            owned by davidjesus516. Stated, not papered over: no `mailto:`, no
-            placeholder submit, no fake confirmation. Amber on `cem.base` measured
-            at 8.31:1 from the built CSS, clearing AA and AAA; amber with light text
+        {/* THE ONE AMBER CTA. F1-2: `landing.cta` used to render TWICE in amber, here and
+            in LandingHeader.jsx, about 150px apart, which the taste skill's §4.5
+            calls a mandatory pre-flight fail. THIS instance survives as the single
+            amber primary, because it is the one in the conversion position: the
+            hero is the only place on the page where the reader's next action is
+            unambiguous, and §4.7's stack discipline spends the primary CTA there.
+            The header instance is demoted to a ghost outline, not deleted, so the
+            action stays reachable after a scroll past the hero.
+
+            WHAT THAT LEAVES: three amber marks in the DOM, two of them ever visible
+            at once, the header wordmark and this button. The visual system's rule 2
+            permits amber on the logo mark, the primary CTA and active/selected
+            state, so both survivors are inside the sanctioned set and the
+            competition the maintainer saw is gone rather than merely reduced.
+
+            IT IS A DEAD END: `href` is `#waitlist`, and whether the waitlist needs a
+            backend is B1, owned by davidjesus516. Stated, not papered over: no
+            `mailto:`, no placeholder submit, no fake confirmation. Amber on
+            `cem.base` measures 8.31:1, clearing AA and AAA; amber with light text
             computes to 2.05:1 and is a hard fail, so the fill carries the accent.
             `whitespace-nowrap` is §4.7's CTA BUTTON WRAP BAN.
 
