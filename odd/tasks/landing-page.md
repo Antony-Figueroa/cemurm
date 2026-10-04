@@ -213,7 +213,64 @@ so the next reader does not "restore" zero radius.
 CSS-native motion first (View Transitions, `animation-timeline: view()`, `@starting-style`),
 all behind `@supports` guards for Firefox.
 
-## 9. Applicable checks
+## 9. Micro-interaction guide
+
+A decision procedure, not a catalog. Both source libraries ship their components as
+**copy-paste source**, so a component costs zero bundle bytes — only the technology underneath it
+costs anything. Decide the technology first, then pick the component.
+
+### 9.1 The rule
+
+| The interaction is | Use | Cost |
+|---|---|---|
+| section enters / leaves the viewport | `animation-timeline: view()` + `@supports` | 0 |
+| element enters for the first time | `@starting-style` + a transition | 0 |
+| route / page change | View Transitions API | 0 |
+| press, hover, focus feedback | Tailwind transitions | 0 |
+| **orchestrated state** (the hero's role rotation) | `motion` — landing chunk only | ~18 kB |
+| scroll-jacking, parallax on a container, physics | **nothing** — refuses the brief | — |
+
+The fifth row is the only one that costs, and §7.7 budgets **one** non-user-triggered motion
+moment. Everything in rows 1–4 reacts to the user.
+
+### 9.2 Per section
+
+Only two sections need motion. Everything else is text, and text that competes with motion is text
+nobody reads.
+
+| Section | Needs | Technology |
+|---|---|---|
+| **hero** | role rotation, orchestrated | `motion`, landing chunk only |
+| **el ciclo** (5) | sequence highlighting as it scrolls | `animation-timeline: view()` |
+| all others | nothing | — |
+
+The hero is the single memorable thing. Spend the budget there and nowhere else.
+
+### 9.3 Hard constraints
+
+- **Firefox has no scroll-driven animations.** Verified. Guard with `@supports` and let it degrade
+  — degrading is correct, breaking is not.
+- `prefers-reduced-motion` is already handled in `src/app/index.css`. New motion inherits it; do
+  not override it.
+- Ratchets `01b` (5/5) and `02` (234/234) have zero headroom. One dead accent or default-palette
+  utility **fails** the gate. Choose colours before building.
+- Verify every Tailwind class against the built CSS. An unknown utility emits nothing and trips no
+  check — `backdrop-saturate-180` proved it (see D4).
+
+### 9.4 Where to look, and what is verified
+
+**Verified names** (extracted from Magic UI's raw HTML, so they exist): Shimmer, Marquee, Counter,
+Ripple, Meteo, floating-3d-particles.
+
+**Not verified:** the full React Bits and Magic UI catalogs. Both render client-side and expose no
+component list in the HTML, so **treat any specific component name as unverified until you open its
+page**. Do not copy a name from this file into code on my word.
+
+Browse for examples: `60fps.design` (curated interaction details from top apps). Lifting a
+*technique* from there is free; lifting a *component* still means checking its dependency cost.
+
+**Out of scope, deliberately:** three.js via `threeui` (~150 kB, consumes the whole landing
+budget), and `metalforge` shaders (churns against CSS-native-first).
 
 `pnpm check:visual && pnpm lint && pnpm build`
 
