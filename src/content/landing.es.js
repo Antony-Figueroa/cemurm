@@ -65,6 +65,30 @@ export const landing = {
     href: '#waitlist',
   },
 
+  // The wordmark's expansion, shown one letter at a time as the hero canvas is
+  // hovered or dragged. "Community-Centered MUsical Repertories Manager": the
+  // capitalised letters spell CEMURM.
+  //
+  // IN ORDER, and the order is the order of the letters in the wordmark, because
+  // that is how TechText indexes them. Index order matters more than it looks:
+  // the two M glyphs stand for DIFFERENT words, MUsical and Manager, so a lookup
+  // keyed on the character would label both of them "Musical". The `from` field is
+  // kept so a reader can check the capitalisation against the expansion without
+  // counting letters, and so correcting a word is a one-line change.
+  //
+  // This lives here rather than in a component because L1's rule is that every
+  // string the landing renders resolves from this module, and a second
+  // demo-content module would be the first place on the page where landing copy
+  // lived outside it.
+  acronym: [
+    { char: 'C', from: 'Community', label: 'Comunidad' },
+    { char: 'E', from: 'Centered', label: 'Centrado' },
+    { char: 'M', from: 'MUsical', label: 'Musical' },
+    { char: 'U', from: 'MUsical', label: 'Musical' },
+    { char: 'R', from: 'Repertories', label: 'Repertorios' },
+    { char: 'M', from: 'Manager', label: 'Gestor' },
+  ],
+
   footer: {
     note: 'CEMURM está en beta. El acceso se abre por lista de espera.',
     // LICENSE is MIT, verified at the repository root.

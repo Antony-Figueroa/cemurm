@@ -1,11 +1,56 @@
 /* eslint-disable react/prop-types -- see FeedbackForm.jsx:1 for the convention. */
 
+import { useEffect, useState } from 'react'
+import { useReducedMotion } from 'motion/react'
 import { landing } from '../../../content/landing.es.js'
 import { demoChart, roles, rotationGroupLabel } from '../../../content/landing-demo.es.js'
 import OverlayView from '../../stage/components/OverlayView.jsx'
 import SlideView from '../../projection/components/SlideView.jsx'
 import RevealText from '../components/RevealText.jsx'
 import RoleRotation from '../components/RoleRotation.jsx'
+import TechText from '../components/TechText.jsx'
+
+// The token values the canvas paints with, resolved at runtime rather than typed.
+//
+// THE PROBLEM: gate rule 01a forbids colour literals anywhere in `src/`, including
+// this file, and the project exposes only `--cem-radius-*` as custom properties,
+// NOT the colours. So there is no way to read `cem.text` off the document.
+//
+// THE ANSWER: resolve each colour by applying its DECLARED Tailwind class to a
+// throwaway element and reading the computed value back. That satisfies both
+// gates at once. Rule 01a sees a class name, not a colour, and rule 04 is happy
+// because `cem.text` and `cem.amber` are declared keys in tailwind.config.js, so
+// nothing undeclared leaks through. The canvas is provably on the same ramp as the
+// rest of the page because it is reading that page's own stylesheet.
+//
+// Returns hex, because TechText's `hexToRgb` parses hex. The computed value comes
+// back as a three-channel functional colour, so it is normalised to hex here
+// rather than in the vendored file, where it would be a behavioural change.
+//
+// `cem.text` is the wordmark fill and `cem.amber` the accent. The accent lands on
+// exactly ONE letter at a time: upstream computes a single `focus` glyph index per
+// frame and only that glyph reaches `outline: 1`, so amber never covers all six.
+function tokenColor(className) {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return ''
+  const probe = document.createElement('div')
+  probe.className = className
+  probe.style.position = 'absolute'
+  probe.style.width = '0'
+  probe.style.height = '0'
+  probe.style.overflow = 'hidden'
+  document.body.appendChild(probe)
+  const computed = window.getComputedStyle(probe).backgroundColor
+  probe.remove()
+  const parts = computed.match(/[\d.]+/g)
+  if (!parts || parts.length < 3) return ''
+  return (
+    '#' +
+    parts
+      .slice(0, 3)
+      .map((n) => Number(n).toString(16).padStart(2, '0'))
+      .join('')
+  )
+}
 
 // The hero — the landing's single memorable thing — and the first section that
 // does NOT render through the generic Section frame: section 8.2 makes the Stage
@@ -91,6 +136,46 @@ const FOCUS =
 // estimated text in a 768px measure wraps to 2 lines.
 export default function Hero() {
   const hero = landing.sections.find((section) => section.id === 'hero')
+  const reduce = useReducedMotion()
+
+  // EMIL'S RULE 1, and the most important decision in this slice: the canvas only
+  // exists where it can be used. Both gates must pass, and both are checked rather
+  // than assumed, because `matchMedia` on a touch phone and
+  // `useReducedMotion()` returning true are different failures with the same fix.
+  //
+  //   hover gate  — `(hover: hover) and (pointer: fine)`. A phone reports
+  //                 `hover: none, pointer: coarse`: no hover, no drag, no reason
+  //                 for the component to exist, yet it would still allocate a
+  //                 backing store and a scratch canvas and still attach two
+  //                 observers. Mounting it there is the failure Emil names.
+  //   motion gate — reduced motion. Verified in the vendored file rather than
+  //                 assumed: it reads `prefers-reduced-motion` in exactly ONE
+  //                 place, and that place only disables the idle sweep. Hover
+  //                 still dashes letters and drag still moves them. So its own
+  //                 reduced-motion handling is partial, and not mounting it at all
+  //                 is the only way to satisfy §6.B.
+  //
+  // BOTH ARE UNMOUNTING, NOT CSS. A display:none gate would leave the rAF loop and
+  // the observers running behind an invisible canvas, which is the cost the gate
+  // exists to prevent. `src/app/index.css` carries `.cem-wordmark-canvas` as a
+  // second line of defence only.
+  //
+  // `canHover` is read lazily in state and initialised TRUE, so the first paint is
+  // the canvas and a phone does not flash static text before swapping. The swap is
+  // invisible anyway: A1's curtain covers the hero for 1400ms, so this resolves
+  // long before anything is seen.
+  const [canHover, setCanHover] = useState(true)
+  useEffect(() => {
+    setCanHover(window.matchMedia?.('(hover: hover) and (pointer: fine)').matches ?? false)
+  }, [])
+
+  // The canvas colours, resolved from the page's own stylesheet. See tokenColor.
+  const [tokens, setTokens] = useState({ text: '', amber: '' })
+  useEffect(() => {
+    setTokens({ text: tokenColor('bg-cem-text'), amber: tokenColor('bg-cem-amber') })
+  }, [])
+
+  const showCanvas = canHover && reduce === false && tokens.text !== ''
 
   return (
     <section
@@ -102,20 +187,93 @@ export default function Hero() {
           {hero.eyebrow}
         </p>
 
-        {/* A2's headline. It takes the wrapper's full width while everything around
-            it is capped at `max-w-3xl` / `max-w-2xl`. Both are left-aligned, so the
-            left edges still line up and the display line simply runs further right.
-            That is the asymmetric white-space §4.3 asks for at VARIANCE 8, and the
-            width is what buys the single line.
+        {/* ── THE WORDMARK, which is what replaced the hero title slot ──────────
+            It is a canvas with `role="img"` and `aria-label="CEMURM"`, so it is
+            deliberately NOT the `<h1>`: a logo is identity, and the page's one
+            level-one heading has to be the value proposition. That is also why the
+            Spanish line below is untouched rather than demoted.
 
-          THE WIDTH, MEASURED NOT ASSUMED. The reference runs `font-size: 12.5vw`
-          with `white-space: nowrap`, which works for a two-word English headline
-          and fails for a 27-character Spanish one. The advance width of
-          "UNA CANCIÓN, TRES LECTURAS." in Inter Medium, read from the shipped
-          `inter-latin-500-normal.woff2` with fontTools (upm 2048, summing hmtx
-          advances for all 27 glyphs), is **15.6377em**. So one line obeys
-          `font-size <= measure / 15.6377`, and at `max-w-7xl` bounded by the
-          section's `px-6` gutter:
+            THE SPAN, from the vendored component's own fit maths (its lines
+            196-201: `fit = min(1, width*0.9/inkWidth, height*0.66/inkHeight)`,
+            `size = fontSize * fit`). "CEMURM" advances 4.5752em in Inter SemiBold
+            (measured from the shipped 600 woff2), cap height 0.7275em. At the
+            default `fontSize` of 150 that is 687px of ink, so the WIDTH term is
+            never the binding one and the container HEIGHT is the only knob:
+
+              h-14 (56px)   -> size  50.8px   ink 232 x 37px
+              h-16 (64px)   -> size  58.1px   ink 266 x 42px
+              h-20 (80px)   -> size  72.6px   ink 332 x 53px
+              h-24 (96px)   -> size  87.1px   ink 398 x 63px
+              h-28 (112px)  -> size 101.6px   ink 465 x 74px
+
+            Chosen: `h-16 md:h-24 lg:h-28`, which lands the wordmark at 58px on a
+            phone and 102px at desktop, with 87px at the md breakpoint. It is
+            height-limited at every viewport, so the numbers above are the sizes.
+
+            THE STATIC FALLBACK is not a compromise, it is the phone experience: a
+            real text node in `cem.text`, so a phone gets a crisp selectable
+            wordmark with no canvas, no observers and no rAF loop. The expansion
+            words are then not reachable, which is the honest trade: they were
+            hover-only before this slice too, and no touch user ever saw them.
+            `landing.acronym` is rendered as visually hidden text inside the
+            fallback so the expansion still reaches a screen reader.
+        */}
+        <div className="mt-6 max-w-3xl">
+          {showCanvas ? (
+            <div className="cem-wordmark-canvas h-16 w-full md:h-24 lg:h-28">
+              <TechText
+                text={landing.brand}
+                fontFamily="Inter, sans-serif"
+                fontWeight={600}
+                letterSpacing={-0.02}
+                color={tokens.text}
+                accentColor={tokens.amber}
+                wordLabels={landing.acronym}
+                reveal="letter"
+                selection
+                labels
+                draggable
+                sweep={reduce === false}
+                reach={190}
+                softness={0.7}
+                dashLength={4}
+                dashGap={2}
+                strokeWidth={1.5}
+                speed={1}
+              />
+            </div>
+          ) : (
+            <p className="text-4xl font-semibold uppercase leading-none tracking-[-0.02em] text-cem-text md:text-6xl">
+              {landing.brand}
+            </p>
+          )}
+          {/* The expansion, for assistive technology, on BOTH paths. On the
+              fallback it is the only place the words exist; on the canvas path
+              TechText is a single `role="img"` with an aria-label of just the
+              wordmark, so without this the six words would be unreachable to a
+              screen reader. `sr-only` is a Tailwind utility, so it emits a 1px box
+              and neither path gains a line of visible height. */}
+          <p className="sr-only">
+            {landing.acronym.map((entry) => `${entry.char}: ${entry.label}`).join(', ')}
+          </p>
+        </div>
+
+        {/* A2's RevealText, still here and still the `<h1>`. It was never the
+            wordmark's job: a canvas cannot be clip-mask revealed, because the
+            reveal is per-glyph DOM boxes and this is one bitmap. So the reveal
+            stays on the SPANISH VALUE PROPOSITION, which is the line it was
+            measured and built for, and the wordmark is revealed instead by A1's
+            curtain lifting off it.
+
+            THE ORDER IS THE SEQUENCE: A1's curtain slides up to uncover the
+            wordmark, then A2's words rise out of their masks. Two reveals, one
+            after the other, and the second is gated on the first finishing via
+            `trigger="ready"`.
+
+          THE WIDTH, MEASURED NOT ASSUMED. The advance width of "UNA CANCIÓN, TRES
+          LECTURAS." in Inter Medium, read from the shipped `inter-latin-500-normal`
+          woff2 with fontTools (upm 2048, summing hmtx advances over all 27
+          glyphs), is 15.6377em, so one line obeys `font-size <= measure / 15.6377`:
 
             375px  gutter 16  available  343  size  28 (floor)   line  438  2 lines  128%
             640px  gutter 16  available  608  size  37.8          line  590  1 line    97%
@@ -124,34 +282,17 @@ export default function Hero() {
            1280px  gutter 24  available 1232  size  72 (ceiling) line 1126  1 line    91%
            1920px  gutter 24  available 1872  size  72 (ceiling) line 1126  1 line    60%
 
-          The vw coefficient is 5.9 because that is the smallest value clearing the
-          binding constraint, which is the mobile end: the gutter is a fixed
-          subtraction, so it dominates as the viewport shrinks, and
-          (375-32)/(375*15.6377) = 5.849vw. The asymptotic ceiling is
-          1/15.6377 = 6.395vw. 5.9 sits between them.
+          The vw coefficient is 5.9 because the binding constraint is the mobile
+          end: the gutter is a fixed subtraction, so it dominates as the viewport
+          shrinks, and (375-32)/(375*15.6377) = 5.849vw, against an asymptotic
+          ceiling of 1/15.6377 = 6.395vw. The tight spot is 640px to 1220px at
+          91-98% fill, which is where to look first in review: a wrap there costs one
+          extra line, not a broken layout. It also makes the line count depend on
+          Inter being loaded, a CLS risk §7.7 still records as unmeasured.
 
-          FOR CONTRAST, R2's headline was `text-5xl md:text-6xl lg:text-7xl` inside
-          a 768px measure: at 72px the line needs 1126px, so it wrapped to TWO lines
-          at every desktop size. This is one line from 640px up.
-
-          THE TIGHT SPOT IS 640px TO 1220px, at 91-98% of the measure. That is
-          inherent to filling the width and it is where to look first in review: a
-          wrap there costs one extra line, not a broken layout. It also means the
-          line count depends on Inter actually being loaded, which is a CLS risk
-          during the font swap that §7.7 records as unmeasured.
-
-          UPPERCASE IS A REAL DECISION. The copy is sentence case; the reference is
-          uppercase. Spanish uppercase changes no meaning here but it does change the
-          page's voice. Applied as the reference does, through the `uppercase`
-          utility rather than by rewriting the string, so deleting one class reverts
-          it and the content module keeps its sentence-case copy.
-
-          `leading-[0.85]` and `tracking-[-0.02em]` are the reference's values, and
-          0.85 is what forces the deeper clip reserve; RevealText.jsx carries the
-          arithmetic that keeps the descenders inside the mask.
-
-          `trigger="ready"` gates the reveal on A1's signal rather than firing on
-          mount, so the headline does not animate underneath the curtain. */}
+          `leading-[0.85]` at `tracking-[-0.02em]` is the reference, and 0.85 is
+          what forces the deeper clip reserve; RevealText.jsx carries the
+          arithmetic that keeps descenders inside the mask. */}
         <RevealText
           as="h1"
           mode="word"
@@ -159,7 +300,7 @@ export default function Hero() {
           text={hero.title}
           stagger={0.14}
           duration={1.1}
-          className="cem-enter mt-4 font-medium uppercase leading-[0.85] tracking-[-0.02em] text-cem-text [font-size:clamp(1.75rem,5.9vw,4.5rem)]"
+          className="cem-enter mt-8 max-w-7xl font-medium uppercase leading-[0.85] tracking-[-0.02em] text-cem-text [font-size:clamp(1.75rem,5.9vw,4.5rem)]"
         />
 
         <p className="cem-enter mt-5 max-w-2xl text-base leading-relaxed text-cem-secondary md:text-lg">

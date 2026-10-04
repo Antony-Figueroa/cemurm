@@ -100,6 +100,32 @@
 .rounded-cem-lg { border-radius: var(--cem-radius-lg); }
 .rounded-cem-xl { border-radius: var(--cem-radius-xl); }
 
+/* ===========================================================================
+ * The hero wordmark canvas, gated on a real pointing device
+ * ===========================================================================
+ * Emil's rule: hover work belongs behind `@media (hover: hover) and (pointer:
+ * fine)`. A touch screen reports `hover: none` and `pointer: coarse`, and this is
+ * a canvas component whose entire effect is cursor driven: no hover, no drag, no
+ * reason to exist, yet it still allocates a backing store, a scratch canvas and
+ * two observers.
+ *
+ * THIS IS THE SECOND LINE OF DEFENCE, NOT THE FIRST. Hero.jsx refuses to MOUNT
+ * the canvas when the media query does not match or when reduced motion is set,
+ * and that is what actually stops the rAF loop and the observers. A CSS-only gate
+ * would leave the loop running behind a hidden canvas. This rule exists so that a
+ * regression in the mount gate still leaves the canvas invisible, and so the
+ * condition is written once, declaratively, where it can be read.
+ *
+ * The static wordmark is the counterpart and is NOT hidden by this rule: it is
+ * what a phone gets and it must stay visible. `.cem-wordmark-canvas` is only ever
+ * applied to the canvas wrapper.
+ * =========================================================================== */
+@media not all and (hover: hover) and (pointer: fine) {
+  .cem-wordmark-canvas {
+    display: none;
+  }
+}
+
 /* The ghost-word treatment is GONE (L8). R1 put a giant low-opacity word behind
    five sections, read through `content: attr(data-word)`. Rendered, they collided
    with body copy, overlapped their own headlines and were clipped by the section
