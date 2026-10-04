@@ -111,10 +111,19 @@ Each slice is its own PR, ≤400 changed lines. `pnpm check:visual` must pass on
 | **L0** | This plan + team split | ✅ `e74667e` |
 | **L1** | Token layer, route outside `AppLayout`, section scaffold, header + footer | ✅ landed |
 | **L2** | Hero Stage Bus demo (the one memorable thing) | L1 |
-| **L3** | Prose sections 3–5, 7–13 | L1 |
-| **L4** | Section 6 (Stage Bus) + section 8 (capacities by role) | L1 |
-| **L5** | Code splitting: `React.lazy` + vendor chunk + fonts + PWA | L1; **B3** for the Supabase client |
-| **L6** | CTA wiring + perf verification against §7.7 | L1; **B1/B2** |
+| **L3a** | Framing sections: `problema`, `alcance` | L1 |
+| **L3b** | `ciclo` — the one scroll-driven section | L1 |
+| **L3c** | `split`, `limites`, `offline` | L1 |
+| **L3d** | `organizacion`, `precios`. `faq` deferred — needs a human | L1 |
+| **L4** | Section 6 (Stage Bus) + section 8 (capacidades by role) | L1 |
+| **L5** | Code splitting: `React.lazy` + vendor chunk | L1 |
+| **L6** | CTA wiring (B1/B2) + fonts, PWA installability, favicon (§7.5) | L1; **B3** for the Supabase client |
+
+**L3 was split three ways and L4 took its own slice.** The plan's L3 was "prose sections 3–5,
+7–13" — ten sections in one PR, which cannot fit the 400-changed-line convention. It became
+L3a/L3b/L3c/L3d, each measured on its own. **Fonts and PWA work moved out of L5 into L6**:
+L5 is the code-splitting prerequisite and nothing else, so its diff stays small enough to
+review as wiring rather than mixed with font and manifest decisions.
 
 **L1 delivered less than this table promised.** It was scoped to include the additive token
 layer; that part was **not built**, because adding keys to `tailwind.config.js` was outside the
@@ -288,6 +297,15 @@ Before trusting any local result, confirm the toolchain is current — the main 
 |---|---|---|
 | L0 | done | `e74667e` |
 | L1 | done | 289 added / 0 removed, 6 files |
+| L1a | done | radius token layer, `6ec88b0` (D1) |
+| L2 | done | hero Stage Bus demo, 398 changed lines |
+| L3a | done | `problema`, `alcance` |
+| L3b | done | `ciclo` — the scroll-driven section |
+| L3c | done | `split`, `limites`, `offline` |
+| L3d | done | `organizacion`, `precios`. `faq` + `waitlist` remain empty frames |
+| L4 | done | `stage-bus`, `roles` |
+| L5 | done | code splitting — see §11. Landing budget **NOT met** (216.51 vs 120 kB), blocked on B3 |
+| L6 | not started | CTA (B1/B2), fonts, PWA |
 
 **L1 verification** (run against the #278 base, where the gate is green):
 
@@ -322,4 +340,90 @@ rules (`.rounded-cem-md { border-radius: var(--cem-radius-md) }`) because Tailwi
 emits nothing for a token with zero usages. Once the first component uses these tokens Tailwind
 will emit them as well and that hand-written block becomes redundant — delete it then.
 
-**Blocked on:** B1–B4 with the owner for L5/L6. **L2–L4 are unblocked.**
+---
+
+## 11. L5 — code splitting, measured
+
+`pnpm check:visual` OK 0 failing · `pnpm lint` exit 0 · `pnpm test` 307 passed · `pnpm build` exit 0.
+Ratchets unmoved: `01b` 5/5, `02` 234/234.
+
+**What changed.** Every route element in `src/app/router.jsx` is now `React.lazy` behind one
+`defer()` helper (`<Suspense fallback={null}>`), and `vite.config.js` declares three
+`manualChunks`: `vendor` (react, react-dom, react-router-dom), `motion`, `supabase`.
+
+**Auth behaviour and route order are unchanged.** `AppLayout`, `AuthProvider` and the three
+guards stay eager — auth must resolve before any route renders. Every route sits exactly where
+it sat, with its own comment intact: the top-level `/external-display` and `/overlay/:token`,
+`/guardian/confirm` outside the auth guards, and the `*` catch-all. The `fallback={null}` is
+the same blank frame `RequireAuth` already returns while loading, so no new visual state.
+
+### 11.1 Chunk inventory (gzip level 9, as served)
+
+| Chunk | Raw | Gzip |
+|---|---:|---:|
+| `vendor` | 232.49 kB | **76.20 kB** |
+| `supabase` | 221.70 kB | **57.50 kB** |
+| `motion` | 123.50 kB | **40.58 kB** |
+| `index` (entry: router + AppLayout + guards + AuthProvider) | 95.31 kB | **27.93 kB** |
+| `SongDetail` | 43.24 kB | 11.79 kB |
+| `Songs` | 36.82 kB | 10.38 kB |
+| `ServiceDetail` | 29.76 kB | 7.35 kB |
+| `StageMode` | 19.80 kB | 6.07 kB |
+| `SetlistDetail` | 21.76 kB | 5.92 kB |
+| `Landing` | 15.65 kB | 5.75 kB |
+| `Rehearsals` | 12.93 kB | 4.22 kB |
+| CSS | 36.78 kB | 6.90 kB |
+| *61 further route chunks* | — | *0.20–4.05 kB each* |
+
+`motion` is a single 40.58 kB chunk and **only `Landing` imports it.**
+
+### 11.2 What each route actually downloads
+
+| Route | Chunks | JS+CSS gzip |
+|---|---|---:|
+| `/landing` | `vendor` + `supabase` + `motion` + `index` + `Landing` + `OverlayView` + `SlideView` | **216.51 kB** |
+| `/songs` (signed in) | `vendor` + `supabase` + `index` + `Songs` + `spotify` + `enrichments` + `transpose` + `useSongs` | **184.06 kB** |
+
+### 11.3 The budget: half the targets met, one missed
+
+| Metric | Target | Measured | Verdict |
+|---|---:|---:|---|
+| Landing JS+CSS gzip | ≤ 120 kB | 216.51 kB | **MISSED by 96.5 kB** |
+| Largest single chunk | ≤ 150 kB gzip | 76.20 kB (`vendor`) | **MET** |
+| `motion` in the authenticated bundle | 0 | 0 — `/songs` does not reach it | **MET** |
+
+**The gap is almost entirely the Supabase client.** `supabase` is 57.50 kB gzip of the 216.51,
+and it is in the landing's first visit because `AuthProvider` → `data/repositories/auth.js`
+→ `src/data/supabase.js` imports it eagerly, and `AuthGuards` → `minors.js` imports it a second
+time. The chunk carries `realtime`, `postgrest`, `goTrue`, `storage` and `functions`
+sub-clients that a visitor who never signs in never calls.
+
+**Removing it is B3, not this slice.** B3 moves the `throw` in `src/data/supabase.js:7-9` from
+module load to first authenticated use. That is a **behaviour contract change** — it changes
+*when* a missing-env error fires — and it is owned by davidjesus516 (§5 B3). A marketing page
+that no-ops a misconfigured build would be worse than a heavy one.
+
+**What would close the gap**, in order of effect and all owner-gated:
+
+1. **B3, lazy client.** Up to −57.5 kB. Lands at ~159 kB: still over 120, so B3 alone is
+   necessary and NOT sufficient.
+2. **`motion` at 40.58 kB is 19% of the landing.** §7.3 budgets it for the landing chunk and
+   §9.1 makes the hero rotation the one thing worth paying for, so it stays — but this is the
+   number to attack if 120 kB must be hit. The lever is `motion/mini` or reimplementing a
+   three-step cross-fade in ~20 lines of CSS; both change the motion budget in §7.7, which is a
+   product decision, not a build one.
+3. **Font payload, still unaddressed.** `main.jsx` imports four static Inter weights; 16 woff2
+   files ship today against §7.7's 2-file target. This is §7.4 and moved to L6.
+4. The `vendor` chunk at 76.20 kB gzip is the floor no visitor gets under.
+
+### 11.4 What this slice did NOT do
+
+- **No lazy Supabase client.** B3, owner-gated, contract change. See above.
+- **No fonts, no PWA manifest, no favicon.** §7.4 and §7.5, moved to L6.
+- **No `modulepreload` link added** to `index.html`. Vite already emits correct preload hints
+  for the entry's static imports; `index.html` was left byte-identical.
+
+---
+
+**Blocked on:** B1–B2 with the owner for the L6 CTA. **B3 for the §7.7 landing budget.**
+**L6 alone remains.**
