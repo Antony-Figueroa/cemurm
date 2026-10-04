@@ -67,12 +67,62 @@ export const landing = {
   // the eleven titled sections, and the closing waitlist block that sits
   // immediately above the footer.
   //
-  // L1 fills no children. L2 fills `hero` with the Stage Bus demo, L3 the
-  // prose sections, L4 `stage-bus` and `roles`.
+  // `body` is optional and is the reason a prose section needs no component
+  // change: Section resolves eyebrow, title AND body from here by id, so adding
+  // copy cannot bypass the content module. Filled in slices L3a onward; a
+  // section with no `body` still renders as a title over its slot.
+  //
+  // Every claim below is grounded in features/*.feature, which is the product
+  // source of truth (713 scenarios). The feature each paragraph comes from is
+  // named in a trailing comment, because a marketing claim that contradicts a
+  // scenario is a bug in the copy, not a matter of taste.
   sections: [
     { id: 'hero', eyebrow: 'Stage Bus', title: 'Una canción, tres lecturas.' },
-    { id: 'problema', eyebrow: 'El problema', title: 'Una hoja no alcanza en el escenario.' },
-    { id: 'alcance', eyebrow: 'Definición', title: 'Qué es y qué no.' },
+    {
+      id: 'problema',
+      eyebrow: 'El problema',
+      title: 'Una hoja no alcanza en el escenario.',
+      // features/personal-preferences-and-adaptations.feature ("Setlist fixes the
+      // agreed key for the band": one agreed key, Juan renders A, Pedro renders
+      // E) · features/song-lifecycle.feature ("Incomplete chart is flagged as
+      // not ready", "Setlist picker shows readiness") · the same file's
+      // "Every chart edit creates a version entry" plus "Personal chord
+      // substitution" staying personal until promoted.
+      body: [
+        'Una hoja lleva un solo tono. En el setlist el tono acordado es uno y cada ' +
+          'músico ve el chart canónico renderizado en el suyo, así que la misma pieza ' +
+          'necesita una hoja distinta por mano. El setlist no: es el mismo item.',
+        'La hoja tampoco sabe si está lista. El readiness se calcula por versión, y ' +
+          'si faltan la letra, el coro o el tono acordado, el selector del setlist lo ' +
+          'avisa antes de que alguien lo descubra en el escenario.',
+        'Y una hoja no tiene historia. Cada cambio en un chart deja una versión con ' +
+          'editor, fecha y qué cambió, y una sustitución personal se queda en tu ' +
+          'dispositivo hasta que tú decides promoverla.',
+      ],
+    },
+    {
+      id: 'alcance',
+      eyebrow: 'Definición',
+      title: 'Qué es y qué no.',
+      // "El cuaderno digital de música" is upstream 8.1 row 4's own one-liner.
+      // The two non-goals are upstream 8.1 row 4's own, and each is lifted from a
+      // non-goal the suite already declares rather than invented:
+      // features/music-notation.feature frames notation as import-and-VIEW, and
+      // src/domain/chart/parser.js scopes itself to chord-pro; and
+      // features/gigs-and-performance-history.feature has a NON-GOALS block at
+      // lines 151-165 naming, verbatim, no calendar sync, no recurring series, no
+      // ticket/RSVP/attendees, and venue data stopping at name, location and type.
+      body: [
+        'CEMURM es el cuaderno digital de la música: el chart, la letra, el setlist, ' +
+          'el ensayo y el registro de lo que efectivamente se tocó. El repertorio vive ' +
+          'aquí y se actualiza desde aquí.',
+        'No es un editor de notación. Leemos y escribimos charts; la partitura no es ' +
+          'la fuente ni el resultado.',
+        'No es una app de gestión de concierto. No hay sincronización con calendario, ' +
+          'ni series recurrentes, ni entradas, RSVP ni lista de asistentes, ni ' +
+          'ubicación en un mapa. Del concierto nos interesa la música.',
+      ],
+    },
     { id: 'ciclo', eyebrow: 'El ciclo', title: 'El ciclo del culto.' },
     { id: 'stage-bus', eyebrow: 'Stage Bus', title: 'Stage Bus.' },
     { id: 'split', eyebrow: 'El modelo', title: 'El chart canónico y el renderizado personal.' },
