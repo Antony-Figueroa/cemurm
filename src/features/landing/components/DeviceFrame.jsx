@@ -40,8 +40,11 @@ export default function DeviceFrame({ anchor = 'top', children }) {
   return (
     <div className="w-full overflow-hidden rounded-cem-lg border border-cem-text/10 bg-cem-surface p-2">
       {/* `h-80` is a component dimension, not spacing: reference 4.4 caps the
-          spacing scale at 64px, which is not a device height. */}
-      <div className="h-80 overflow-hidden rounded-cem-md">
+          spacing scale at 64px, which is not a device height. It grows to `h-96`
+          from `md` up because the hero demo is the page's centrepiece (P3) and at
+          320px the demo's own content was too small to read, let alone the
+          projection screens this frame hosts. */}
+      <div className="h-80 overflow-hidden rounded-cem-md md:h-96">
         {/* `_-_` is Tailwind's underscore-for-space: CSS requires whitespace
             around the `-` inside calc(), and `calc(50vh-10rem)` is invalid. */}
         <div className={anchor === 'center' ? '-mt-[calc(50vh_-_10rem)]' : undefined}>

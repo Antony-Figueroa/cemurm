@@ -48,10 +48,6 @@ export const landing = {
   // `<figcaption>` on the demo figure rather than a line of hero copy.
   demo: {
     disclaimer: 'Demostración con datos de ejemplo, no una pieza real.',
-    // The oversized background word behind the hero. Drawn from the hero's own
-    // eyebrow ("Stage Bus"), so the texture repeats a word already on screen
-    // instead of asserting a new one.
-    ghostWord: 'Stage',
   },
 
   // Labels only: the href is built as `#${item.id}` by the header, so a nav
@@ -94,8 +90,9 @@ export const landing = {
     { id: 'hero', eyebrow: 'Stage Bus', title: 'Una canción, tres lecturas.' },
     {
       id: 'problema',
-      family: 'editorial',
-      ghost: 'Hoja',
+      family: 'fullBleed',
+      narrow: true,
+      block: 'stage-bg',
       title: 'Una hoja no alcanza en el escenario.',
       // features/personal-preferences-and-adaptations.feature ("Setlist fixes the
       // agreed key for the band": one agreed key, Juan renders A, Pedro renders
@@ -118,8 +115,8 @@ export const landing = {
     {
       id: 'alcance',
       family: 'asymmetric',
-      ghost: 'Qué',
-      flip: false,
+      block: 'base',
+      ratio: '7/5',
       eyebrow: 'Definición',
       title: 'Qué es y qué no.',
       // "El cuaderno digital de música" is upstream 8.1 row 4's own one-liner.
@@ -144,6 +141,7 @@ export const landing = {
     {
       id: 'ciclo',
       family: 'indexList',
+      block: 'stage-bg',
       title: 'El ciclo del culto.',
       // Section 8.1 row 5 and the placement rationale under it: this is
       // sequential, so it is numbered rather than written as prose — hence
@@ -247,8 +245,7 @@ export const landing = {
     {
       id: 'stage-bus',
       family: 'fullBleed',
-      block: 'surface',
-      ghost: 'Stage',
+      block: 'base',
       title: 'Stage Bus.',
       // Section 8.1 row 6: "Three roles defined, with the one-line definition the
       // coined term requires." Stage Bus is this repo's own name for one chart
@@ -308,8 +305,9 @@ export const landing = {
     },
     {
       id: 'split',
-      family: 'editorial',
-      block: 'surface',
+      family: 'asymmetric',
+      block: 'stage-bg',
+      ratio: '4/8',
       title: 'El chart canónico y el renderizado personal.',
       // Section 8.1 row 7: "Why one shared arrangement serves N musicians
       // without forking." This closes the loop L3a's `problema` opened — that
@@ -344,6 +342,7 @@ export const landing = {
     {
       id: 'roles',
       family: 'bento',
+      block: 'base',
       title: 'Capacidades por rol.',
       // Section 8.1 row 8: "Director de sistema / director de orquesta / músico /
       // instructor". Each capability below was checked against the implementation,
@@ -428,6 +427,8 @@ export const landing = {
     {
       id: 'organizacion',
       family: 'asymmetric',
+      block: 'base',
+      ratio: '5/7',
       flip: true,
       title: 'Institucional y multi-sede.',
       // Section 8.1 row 9: "system → org → branch, roles, minors with guardian
@@ -515,8 +516,7 @@ export const landing = {
     {
       id: 'limites',
       family: 'fullBleed',
-      block: 'elevated',
-      ghost: 'No',
+      block: 'stage-bg',
       eyebrow: 'Límites',
       title: 'Lo que no hacemos.',
       // Section 8.1 row 10: "The declared non-goals, each with its reason." Same
@@ -566,6 +566,9 @@ export const landing = {
     {
       id: 'offline',
       family: 'asymmetric',
+      block: 'base',
+      ratio: '8/4',
+      align: 'right',
       eyebrow: 'Datos',
       title: 'Offline y datos.',
       // Section 8.1 row 11: "What works without a connection and what does not."
@@ -640,8 +643,8 @@ export const landing = {
     {
       id: 'precios',
       family: 'fullBleed',
-      block: 'base',
-      ghost: 'Gratis',
+      block: 'stage-bg',
+      centred: true,
       title: 'Gratis durante la beta.',
       // Section 8.1 row 12 and plan section 4's out-of-scope table say the same
       // thing: there are no pricing tiers, because no pricing model exists, so
@@ -669,8 +672,8 @@ export const landing = {
     // EMPTY on purpose — an empty section is a smaller sin than six invented
     // questions a real director would recognise as invented. Fill it when the
     // questions exist. Deliberately no `body` here.
-    { id: 'faq', title: 'Preguntas frecuentes.', family: 'editorial' },
-    { id: 'waitlist', title: 'Unirme a la lista de espera.', family: 'closing' },
+    { id: 'faq', title: 'Preguntas frecuentes.', family: 'closing', block: 'base' },
+    { id: 'waitlist', title: 'Unirme a la lista de espera.', family: 'closing', block: 'stage-bg', cta: true },
   ],
 }
 

@@ -1,39 +1,59 @@
 /* eslint-disable react/prop-types -- see FeedbackForm.jsx:1 for the convention. */
 
-// L7 — the layout families the thirteen sections are spread across. Before this
-// file every section rendered through ONE title-over-a-slot frame, which is why
-// the landing read as a blog. The registry names a family per section and
-// Section.jsx dispatches here.
-//
-// §4.7, RULE BY RULE:
-//   REPETITION BAN — 12 content sections, 12 distinct COMPOSITIONS (family +
-//     block + flip + ghost). A family recurring is fine while no two sections
-//     compose alike; 13 sections cannot have 13 families, and a rule asking them
-//     to produces 13 one-off layouts nobody maintains.
-//   ANTI-CENTER BIAS (§4.3, VARIANCE 8) — one centred section, the last, which is
-//     `fullBleed(..., centred)`, not a family of its own.
-//   SPLIT-HEADER BAN — `asymmetric`'s right column carries real body copy, never
-//     filler beside a headline. §4.7 bans the other way round.
-//   BENTO CELL COUNT — one cell per body paragraph; an empty tile cannot exist.
-//   ZIGZAG CAP (max 2) — `asymmetric` is the only split family, never adjacent.
-//   MOBILE COLLAPSE — every `md:` grid declares `grid-cols-1` below 768px HERE.
-//   TYPE SCALE — every headline comes from `<Head>`, so `text-3xl md:text-5xl` +
-//     `tracking-tighter leading-[1.05]` is stated once and cannot drift per
-//     family. All thirteen sections previously shared a `text-2xl` frame, the
-//     blog scale §4.7 calls the single biggest error.
-//   RADIUS — no family here uses one, so §4.4's Shape Consistency Lock is held
-//     page-wide by the four existing assignments (`cem-sm` segments, `cem-md`
-//     window, `cem-lg` shell, `rounded-full` CTA).
-//   COLOUR BLOCKING uses `cem.base`/`surface`/`elevated` only. The reference
-//     direction alternates to red; that token is one of the four dead accents and
-//     ratchet 02 sits at 234/234, so it is described without naming the class —
-//     rule 02 greps source COMMENTS as well as markup.
-//   NO MOTION. §9.1 gives scroll CSS to `el ciclo` alone; the hero owns §7.7's
-//     single non-user-triggered moment.
+import { landing } from '../../../content/landing.es.js'
 
-/** Colour blocking, existing ramp only. `block` is part of a section's COMPOSITION.
-    Built from a registry value, never a literal colour; unknown -> `base`. */
-const BLOCKS = new Set(['base', 'surface', 'elevated'])
+// L8 — the layout families the thirteen sections are spread across.
+//
+// P0 GHOST WORDS GONE. R1's giant word behind five sections collided with body
+//   copy and was clipped by the section edge, so it read as a layout artifact.
+//   Removed, not repositioned: decoration that fights legibility is worse than
+//   none. `cem-ghost` went from index.css with it.
+//
+// P1 VALUE CONTRAST. `cem.base`, `cem.surface` and `cem.elevated` are three steps
+//   of one navy ramp, too close to separate sections at section scale. `block`
+//   now picks between TWO values, `bg-cem-base` and `bg-cem-stage-bg` (true
+//   black), alternating for a rhythm a reader can feel. `surface` and `elevated`
+//   are demoted to NESTED fills, where their smaller difference reads as an edge.
+//
+// P1, USING A PERFORMANCE-SURFACE TOKEN HERE. `cem.stage.*` is reserved for the
+//   projector and the landing is not one, so the reuse needs a reason: true black
+//   is the darkest value available; the step from `cem.base` down to `cem.surface`
+//   is too small to read across a full-bleed section; a new hue is forbidden and
+//   so is a new token; `cem.stage.bg` is already in the palette, already part of
+//   this brand's dark ramp, and is what the projector ships on.
+//
+// P2 MEASURE. Twelve sections, twelve compositions. Default alignment is left;
+//   `align: 'right'` re-orients one so the eye resets, and `closing` is the single
+//   centred band, which §4.3 permits where the composition earns it. The four
+//   splits are uneven because `ratio` is data: 7/5, 4/8, 5/7, 8/4. P3 is Hero.jsx.
+//
+// §4.7: mobile collapse is declared per family; no two splits are adjacent; the
+//   bento's cell array IS the body array, so an empty tile is not expressible; no
+//   family uses a radius, so §4.4's lock still rests on R1's assignments, except
+//   the closing CTA at `rounded-full`.
+// NO MOTION. §9.1 gives scroll CSS to `el ciclo` alone; the hero owns §7.7's one.
+
+/** Reference 7.5. Duplicated rather than shared because LandingHeader.jsx and
+    Hero.jsx each carry a copy, and a focus ring that drifts is worse than a dup. */
+const FOCUS =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cem-text ' +
+  'focus-visible:ring-offset-2 focus-visible:ring-offset-cem-base'
+
+/** Colour blocking. Two values only: navy and true black, see the P1 note above
+    for why a performance-surface token does duty here. Built from a registry value,
+    never a literal colour; unknown -> `base`. */
+const BLOCKS = new Set(['base', 'stage-bg'])
+
+// Col-span pairs for the splits, written out because Tailwind's JIT only emits a
+// class it sees in source: a computed `col-span-${n}` emits nothing. First entry is
+// the headline column.
+const SPANS = {
+  '7/5': ['md:col-span-7', 'md:col-span-5'],
+  '5/7': ['md:col-span-5', 'md:col-span-7'],
+  '4/8': ['md:col-span-4', 'md:col-span-8'],
+  '8/4': ['md:col-span-8', 'md:col-span-4'],
+}
+const spans = (section) => SPANS[section.ratio] ?? SPANS['7/5']
 
 const block = (section) => `bg-cem-${BLOCKS.has(section.block) ? section.block : 'base'}`
 
@@ -49,10 +69,10 @@ export function Eyebrow({ children }) {
 }
 
 /** Every family's eyebrow + headline. One type scale, one place. */
-function Head({ section, className = '' }) {
+function Head({ section, className = '', eyebrowClass = '' }) {
   return (
     <>
-      {section.eyebrow && <Eyebrow>{section.eyebrow}</Eyebrow>}
+      {section.eyebrow && <Eyebrow className={eyebrowClass}>{section.eyebrow}</Eyebrow>}
       <h2
         className={`text-3xl font-semibold tracking-tighter leading-[1.05] text-cem-text md:text-5xl ${className}`}
       >
@@ -62,77 +82,63 @@ function Head({ section, className = '' }) {
   )
 }
 
-/** The giant low-opacity word, drawn from the section's OWN headline so the
-    texture is never a new claim. Travels as `data-word`; CSS reads it with
-    `content: attr(data-word)`. See index.css for why. */
-function GhostWord({ word }) {
-  if (!word) return null
+/**
+ * Full-bleed: the page's WIDEST measure, `max-w-7xl` over a `max-w-[65ch]` body.
+ * Two flags, no separate families: `narrow` drops to `max-w-4xl` and 58ch for a
+ * single-measure editorial section, `centred` collapses to `max-w-3xl` for the
+ * closing band. Three near-identical grids were three bodies to maintain for one
+ * axis of difference, and §4.7 wants fewer shapes that each appear once.
+ */
+function fullBleed(section, children, centred = false, narrow = false) {
   return (
-    <span
-      aria-hidden="true"
-      data-word={word}
-      className="cem-ghost pointer-events-none absolute inset-0 overflow-hidden select-none"
+    <section
+      id={section.id}
+      className={`border-t border-cem-text/10 px-4 py-20 md:px-6 md:py-28 ${centred ? 'text-center' : ''} ${block(section)}`}
     >
-      {word}
-    </span>
+      <div className={`mx-auto ${centred ? 'max-w-3xl' : narrow ? 'max-w-4xl' : 'max-w-7xl'}`}>
+        <Head section={section} className={centred ? 'mx-auto' : narrow ? '' : 'max-w-4xl'} />
+        <div
+          className={`mt-10 text-lg leading-relaxed text-cem-secondary ${
+            centred ? 'mx-auto max-w-[65ch]' : narrow ? 'max-w-[58ch]' : 'max-w-[65ch]'
+          }`}
+        >
+          {children}
+        </div>
+      </div>
+    </section>
   )
 }
 
 /**
- * Full-bleed display: oversized type, hard edge, colour-blocked, ghost word.
- * `centred` is the third argument rather than its own family — it is a width and
- * an alignment, not a different composition, and §4.7 wants fewer distinct shapes
- * that each appear once, not more shapes.
+ * Asymmetric split, `ratio` picking one of four uneven col-span pairs.
+ * MOBILE: `grid-cols-1` below `md`; only the decorative rule is lost.
+ * `align: 'right'` is the P2 INVERTER: narrow body left, wide headline flush
+ * right. A flag and not a family, because it is the same grid with a different
+ * text alignment, and one section doing it resets the eye where all of them
+ * would just be a right-aligned page.
  */
-function fullBleed(section, children, centred = false) {
-  return (
-    <section
-      id={section.id}
-      className={`relative overflow-hidden border-t border-cem-text/10 px-4 py-24 md:px-6 ${centred ? 'text-center' : ''} ${block(section)}`}
-    >
-      <GhostWord word={section.ghost} />
-      <div className={`relative mx-auto ${centred ? 'max-w-3xl' : 'max-w-7xl'}`}>
-        <Head section={section} />
-        <div className={`mt-10 max-w-[65ch] ${centred ? 'mx-auto' : ''}`}>{children}</div>
-      </div>
-    </section>
-  )
-}
-
-/** Asymmetric split, `grid-cols-12` at 7/5 or 5/7. MOBILE: `grid-cols-1` below
-    `md` — headline stacks above body. The rail is decorative, so losing it costs
-    nothing. */
 function asymmetric(section, children) {
+  const [head, body] = spans(section)
   const flipped = section.flip === true
+  const right = section.align === 'right'
   return (
     <section
       id={section.id}
-      className={`relative overflow-hidden border-t border-cem-text/10 px-4 py-20 md:px-6 md:py-24 ${block(section)}`}
+      className={`border-t border-cem-text/10 px-4 py-20 md:px-6 md:py-28 ${block(section)}`}
     >
-      <GhostWord word={section.ghost} />
-      <div className="relative mx-auto grid max-w-7xl grid-cols-1 gap-8 md:grid-cols-12 md:gap-12">
-        <div className={`md:col-span-7 ${flipped ? 'md:order-2' : ''}`}>
-          <Head section={section} />
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 md:grid-cols-12 md:gap-10">
+        <div className={`${head} ${flipped ? 'md:order-2' : ''}`}>
+          <Head
+            section={section}
+            className={right ? 'md:text-right' : ''}
+            eyebrowClass={right ? 'md:text-right' : ''}
+          />
         </div>
-        <div className={`md:col-span-5 ${flipped ? 'md:order-1' : ''}`}>
-          <div className="border-l-2 border-cem-text/10 pl-6">{children}</div>
+        <div className={`${body} ${flipped ? 'md:order-1' : ''}`}>
+          <div className="border-l-2 border-cem-text/15 pl-6 text-lg leading-relaxed text-cem-secondary">
+            {children}
+          </div>
         </div>
-      </div>
-    </section>
-  )
-}
-
-/** Wide editorial measure. Long measure, generous leading, no box, no split. */
-function editorial(section, children) {
-  return (
-    <section
-      id={section.id}
-      className={`relative overflow-hidden px-4 py-20 md:px-6 md:py-24 ${block(section)}`}
-    >
-      <GhostWord word={section.ghost} />
-      <div className="relative mx-auto max-w-5xl">
-        <Head section={section} />
-        <div className="mt-8 max-w-[65ch] text-lg leading-relaxed">{children}</div>
       </div>
     </section>
   )
@@ -149,8 +155,8 @@ function bento(section) {
       className={`border-t border-cem-text/10 px-4 py-20 md:px-6 md:py-24 ${block(section)}`}
     >
       <div className="mx-auto max-w-7xl">
-        <Head section={section} />
-        <div className="mt-12 grid grid-cols-1 gap-px bg-cem-text/10 md:grid-cols-2">
+        <Head section={section} className="max-w-3xl" />
+        <div className="mt-12 grid grid-cols-1 gap-px bg-cem-text/15 md:grid-cols-2">
           {cells.map((cell, i) => (
             <div key={i} className={`bg-cem-elevated p-8 ${i === 0 ? 'md:col-span-2' : ''}`}>
               <p className="text-lg leading-relaxed text-cem-secondary">{cell}</p>
@@ -190,7 +196,7 @@ function indexList(section) {
               <p className="mt-2 pl-8 text-lg leading-relaxed text-cem-secondary">
                 {step.detail}
               </p>
-              <span aria-hidden="true" className="cem-cycle-rail mt-4 block h-px origin-left bg-cem-text/20" />
+              <span aria-hidden="true" className="cem-cycle-rail mt-4 block h-px origin-left bg-cem-text/25" />
             </li>
           ))}
         </ol>
@@ -199,11 +205,38 @@ function indexList(section) {
   )
 }
 
-/** Closing — the ONE centred family, and it is last. §4.3 allows one or two, spent
-    on the only section whose job is a destination rather than an argument. No
-    children: the waitlist body is unwritten (CTA blocked on B1). */
+/** The closing band: COMPACT, centred, last. It replaces two full-height voids.
+    `faq` and `waitlist` have no body, the six real questions do not exist and B1
+    (does the waitlist need a backend) is undecided, so they get short padding and
+    the CTA instead of empty height. That CTA is `landing.cta`, the same object the
+    header and hero render: one label for one intent (§4.5). It is a dead end,
+    because `#waitlist` resolves here with no form behind it: B1's consequence. */
 function closing(section) {
-  return fullBleed(section, null, true)
+  return (
+    <section
+      id={section.id}
+      className={`border-t border-cem-text/10 px-4 py-14 text-center md:px-6 md:py-16 ${block(section)}`}
+    >
+      <div className="mx-auto max-w-2xl">
+        {section.eyebrow && (
+          <div className="flex justify-center">
+            <Eyebrow>{section.eyebrow}</Eyebrow>
+          </div>
+        )}
+        <h2 className="text-2xl font-semibold tracking-tighter leading-[1.1] text-cem-text md:text-4xl">
+          {section.title}
+        </h2>
+        {section.cta && (
+          <a
+            href={landing.cta.href}
+            className={`mt-8 inline-flex min-h-12 items-center justify-center whitespace-nowrap rounded-full bg-cem-amber px-6 text-sm font-semibold text-cem-base duration-200 hover:bg-cem-amber/90 ${FOCUS}`}
+          >
+            {landing.cta.label}
+          </a>
+        )}
+      </div>
+    </section>
+  )
 }
 
 /** body paragraphs -> prose nodes, the input the prose families take. */
@@ -215,7 +248,7 @@ function paragraphs(section) {
   ))
 }
 
-const FAMILIES = { fullBleed, asymmetric, editorial, bento, indexList, closing }
+const FAMILIES = { fullBleed, asymmetric, bento, indexList, closing }
 
 export { FAMILIES, paragraphs }
 export default FAMILIES

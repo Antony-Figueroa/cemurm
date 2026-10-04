@@ -15,12 +15,10 @@ import DeviceFrame from './DeviceFrame.jsx'
 // is under the 5s threshold even if you ignore that.
 //
 // FROZEN PROP SHAPE — { groupLabel, caption, screens }
-//   groupLabel: accessible name for the single-select control that switches the
-//            three projections. Copy, so it comes from the content module.
-//   caption:   the demo's data-provenance line, rendered as the figure's
-//            `<figcaption>`. Copy, from the content module. Section 8.2 forbids
-//            asserting a licence nobody has checked, and this is where that
-//            claim lives: attached to the asset, not in the hero copy stack.
+//   groupLabel: accessible name for the control that switches the projections.
+//   caption:   the demo's data-provenance line, as the figure's `<figcaption>`.
+//            Section 8.2 forbids asserting a licence nobody has checked, and this
+//            is where that claim lives: on the asset, not in the hero copy stack.
 //   screens: [{ id, label, blurb, anchor, node }], in presentation order. `id` is
 //            the React key and the tab identity; `label` and `blurb` are copy and
 //            must come from the content module; `anchor` is 'top' | 'center' and
@@ -33,11 +31,9 @@ import DeviceFrame from './DeviceFrame.jsx'
 const DURATION = 0.2
 const EASE = [0.32, 0.72, 0, 1]
 
-// THE DEPTH TREATMENT, and why these numbers live here rather than in CSS.
-// Reference: several device mockups stacked at opposing angles, real
-// perspective, siblings scaled and faded. Before this slice the row was a flat
-// fan of 2D `rotate-6` with no perspective at all, so the frames read as a flat
-// collage instead of as objects in a space.
+// THE DEPTH TREATMENT. Reference: device mockups stacked at opposing angles with
+// real perspective. Before this the row was a flat fan of 2D `rotate-6` with no
+// perspective, so the frames read as a collage rather than as objects in a space.
 //
 // `perspective` itself is `.cem-perspective` in src/app/index.css, NOT a
 // Tailwind class, because Tailwind 3.4 has no 3D transform utilities at all.
@@ -52,20 +48,18 @@ const EASE = [0.32, 0.72, 0, 1]
 // which composes its own inline `transform` string and supports every one of
 // them (motion 14.0.0: transformPerspective, rotateX/Y/Z, translateZ).
 //
-// The sign of `rotateY` is a visual judgement that only a browser can settle:
-// opposite signs on the two sides is what makes the outer edges recede, i.e. a
-// concave fan embracing the active frame rather than a flat hinge. If it reads
-// as a convex bow in review, flip both signs; nothing else changes.
+// The sign of `rotateY` is a visual judgement only a browser can settle:
+// opposite signs on the two sides makes the outer edges recede, a concave fan
+// embracing the active frame. If it reads as a convex bow, flip both signs.
 const TILT_Y = 9
 const TILT_Z = 5
 const RECEDE_Z = -90
 
-// Reference 6.4 rule 6: under reduce, x/y/z TRANSITIONS become an opacity
-// cross-fade — movement is removed, information is not. So every rotation, the
-// Z offset and the scale are DROPPED rather than the transition. This has to go
-// through motion's own `useReducedMotion`, because src/app/index.css sets
-// `transition-duration: 0.01ms !important` and motion writes inline styles,
-// which that block cannot reach. Nothing here overrides index.css.
+// Reference 6.4 rule 6: under reduce, every rotation, the Z offset and the scale
+// are DROPPED rather than the transition: movement is removed, information is
+// not. It has to go through motion's own `useReducedMotion`, because index.css
+// sets `transition-duration: 0.01ms !important` and motion writes inline styles,
+// which that block cannot reach.
 function depthFor(offset, reduce) {
   if (reduce) return { opacity: offset === 0 ? 1 : 0.45 }
   if (offset === 0) return { opacity: 1, scale: 1, rotateY: 0, rotateZ: 0, translateZ: 0 }
@@ -96,34 +90,46 @@ export default function RoleRotation({ groupLabel, caption, screens }) {
 
   return (
     <div>
-      {/* A `<figure>`, because that is what this is: one demo asset with one
-          caption. `<figcaption>` must be a DIRECT child of `<figure>`, so the
-          caption cannot be rendered from inside the row below — hence the
-          wrapper, and hence `caption` arriving as a prop. */}
+      {/* `<figcaption>` must be a DIRECT child of `<figure>`, so the caption
+          cannot render from inside the row below. Hence `caption` is a prop. */}
       <figure>
         {/* The siblings overlap and bleed. `overflow-hidden` is the crop, which is
             what section 8.2 asks for ("rotated and cropped by the canvas edge"),
-            and it is also what keeps three 18rem frames inside a 375px phone.
+            and it is also what keeps three frames inside a 375px phone.
             `.cem-perspective` puts the row in a 3D space; it composes with the
             crop, since `perspective` affects the children's rendering and not
-            the container's own box. */}
+            the container's own box.
+
+            `z-10` ON THE ACTIVE FRAME is a fix, not a flourish. The frames paint
+            in DOM order, so index 0 painted FIRST and sat BEHIND the other two,
+            which is the resting state after the rotation settles back to 0. The
+            focused screen was the most occluded of the three at exactly the
+            moment the eye lands. Lifting it costs one class.
+
+            SIZING. P3 called this the weakest thing on the page, so the frames
+            grew to `w-72 md:w-80 lg:w-96` (288 to 384px) and DeviceFrame's window
+            grew to match. The overlap widens with them (`-ml-12 lg:-ml-16`) so the
+            row grows by two thirds, not three cards wide: 384 + 320 + 320 =
+            1024px at lg, inside a 1280px measure. */}
         <div className="cem-perspective flex items-end justify-center overflow-hidden">
           {screens.map((screen, index) => (
             <motion.div
               key={screen.id}
               animate={depthFor(index - active, reduce)}
               transition={{ duration: reduce ? 0 : DURATION, ease: EASE }}
-              className="-ml-12 w-72 shrink-0 origin-bottom first:ml-0 sm:w-80"
+              className={`-ml-12 w-72 shrink-0 origin-bottom first:ml-0 md:w-80 lg:-ml-16 lg:w-96 ${
+                index === active ? 'z-10' : 'z-0'
+              }`}
             >
               <DeviceFrame anchor={screen.anchor}>{screen.node}</DeviceFrame>
             </motion.div>
           ))}
         </div>
 
-        {/* Section 8.2 in one line: the demo is not a real piece of music. Set
-            at caption size on purpose — it is a disclosure, not a headline, and
-            §4.7's hero stack caps text elements at four. */}
-        <figcaption className="mt-5 text-center text-xs leading-relaxed text-cem-secondary">
+        {/* Section 8.2 in one line: the demo is not a real piece of music. It has
+            to stay LEGIBLE, because a disclosure nobody can read is not a
+            disclosure, so this is `text-sm` rather than caption-sized `text-xs`. */}
+        <figcaption className="mt-6 text-center text-sm leading-relaxed text-cem-secondary">
           {caption}
         </figcaption>
       </figure>

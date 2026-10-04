@@ -70,47 +70,33 @@ const FOCUS =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cem-text ' +
   'focus-visible:ring-offset-2 focus-visible:ring-offset-cem-base'
 
-// §4.7 HERO STACK DISCIPLINE, max four text elements, and this is all four:
-//   1. eyebrow   — `hero.eyebrow`, "Stage Bus"
-//   2. headline  — `hero.title`, four words
-//   3. subtext   — `landing.tagline`, five words
-//   4. CTA       — `landing.cta`
-// The demo caption L2 put in here is the fifth, and §4.7's banned list names it
-// exactly: "tiny tagline below CTAs". It moved to a `<figcaption>` on the demo
-// figure, inside RoleRotation, where it describes the asset rather than the page.
+// §4.7 HERO STACK, max four text elements, and this is all four: eyebrow,
+// headline, subtext, CTA. The demo caption L2 put here was the fifth, and §4.7's
+// banned list names it exactly ("tiny tagline below CTAs"); it is a
+// `<figcaption>` on the demo figure now, inside RoleRotation.
 //
-// §4.7 hero font scale: the headline is FOUR words, which is inside the rule's
-// "3-5 words" band and therefore permits `text-6xl md:text-7xl`. It uses
-// `text-5xl md:text-6xl lg:text-7xl`, which reaches the rule's md and lg values
-// exactly and keeps a 375px phone from getting a 72px line. At `lg` (72px) in a
-// `max-w-4xl` measure the four words wrap to TWO lines, which is §4.7's cap.
+// §4.7 font scale: the headline is FOUR words, inside the rule's "3-5 words" band,
+// so `text-6xl md:text-7xl` is permitted. `text-5xl md:text-6xl lg:text-7xl`
+// reaches the rule's md and lg values and keeps a 375px phone off a 72px line.
 //
-// TOP PADDING is `pt-12` mobile and `pt-24` desktop, i.e. exactly at §4.7's
-// `pt-24` cap and never above it. The rule also says that when the hero does not
-// fit, the fix is the type scale or the asset size, never the padding and never
-// the copy — so nothing here buys space by moving down the page. Measured
-// against a 72px-tall header plus an 800px viewport, the CTA's bottom edge lands
-// near 540px, which is above the fold with room for the demo's top edge to show.
+// TOP PADDING is `pt-12` mobile and `pt-24` desktop: exactly §4.7's cap, never
+// above it, and when the hero does not fit the rule says the fix is the type scale
+// or the asset size, never the padding and never the copy. With a 72px header and
+// an 800px viewport the CTA's bottom edge lands near 496px, above the fold.
+//
+// P2 MEASURE. The copy sits in `max-w-3xl` and the demo breaks out to
+// `max-w-7xl`; before this the hero was one `max-w-5xl` column, the exact shape
+// the review called out. The headline still meets §4.7's two-line cap: 1187px of
+// estimated text in a 768px measure wraps to 2 lines.
 export default function Hero() {
   const hero = landing.sections.find((section) => section.id === 'hero')
 
   return (
     <section
       id="hero"
-      className="relative overflow-hidden px-4 pb-16 pt-12 md:px-6 md:pb-20 md:pt-24"
+      className="relative overflow-hidden px-4 pb-16 pt-12 md:px-6 md:pb-24 md:pt-24"
     >
-      {/* The oversized background word. Reuses R1's `.cem-ghost` verbatim, and the
-          word is the hero's own eyebrow, so the texture repeats a word already on
-          screen rather than asserting a new one. */}
-      <span
-        aria-hidden="true"
-        data-word={landing.demo.ghostWord}
-        className="cem-ghost pointer-events-none absolute inset-0 overflow-hidden select-none"
-      >
-        {landing.demo.ghostWord}
-      </span>
-
-      <div className="relative mx-auto max-w-5xl">
+      <div className="relative mx-auto max-w-3xl">
         <p className="cem-enter text-xs font-semibold uppercase tracking-[0.18em] text-cem-secondary">
           {hero.eyebrow}
         </p>
@@ -123,23 +109,14 @@ export default function Hero() {
           {landing.tagline}
         </p>
 
-        {/* THE ONE CTA, and the same intent, label and href the header already
-            uses. §4.5 forbids two CTAs sharing an intent, and reusing the exact
-            label is what compliance looks like here: `landing.cta` is the single
-            source, so the two cannot drift.
-
-            IT IS A DEAD END. `landing.cta.href` is `#waitlist`, and that section
-            has an eyebrow and a title and nothing else, because whether the
-            waitlist needs a backend is B1 and B1 belongs to davidjesus516. This
-            is stated rather than papered over: no `mailto:`, no placeholder
-            submit, no fake confirmation. Making the hero's primary action a dead
-            end is the consequence of an undecided backend, not a design choice.
-
-            Amber on `cem.base` is the pairing the reference mandates, measured at
-            8.31:1 from the built CSS — AA and AAA both clear. Amber with light
-            text computes to 2.05:1 and is a hard fail, so the fill carries the
-            accent and the label stays dark. `whitespace-nowrap` is §4.7's CTA
-            BUTTON WRAP BAN: the label must not break across lines at desktop. */}
+        {/* THE ONE CTA: same intent, label and href the header uses, so §4.5's
+            one-label-per-intent holds and the two cannot drift. IT IS A DEAD END:
+            `href` is `#waitlist`, and whether the waitlist needs a backend is B1,
+            owned by davidjesus516. Stated, not papered over: no `mailto:`, no
+            placeholder submit, no fake confirmation. Amber on `cem.base` measured
+            at 8.31:1 from the built CSS, clearing AA and AAA; amber with light text
+            computes to 2.05:1 and is a hard fail, so the fill carries the accent.
+            `whitespace-nowrap` is §4.7's CTA BUTTON WRAP BAN. */}
         <a
           href={landing.cta.href}
           className={`cem-enter mt-8 inline-flex min-h-12 items-center justify-center whitespace-nowrap rounded-full bg-cem-amber px-6 text-sm font-semibold text-cem-base duration-200 hover:bg-cem-amber/90 ${FOCUS}`}
@@ -147,13 +124,16 @@ export default function Hero() {
           {landing.cta.label}
         </a>
 
-        <div className="mt-12">
-          <RoleRotation
-            groupLabel={rotationGroupLabel}
-            caption={landing.demo.disclaimer}
-            screens={roles.map((role) => ({ ...role, node: screenFor(role) }))}
-          />
         </div>
+
+      {/* P3: the demo breaks out to the page's widest measure, because it is the
+          one asset meant to be memorable and it now has room to be one. */}
+      <div className="relative mx-auto mt-14 max-w-7xl md:mt-20">
+        <RoleRotation
+          groupLabel={rotationGroupLabel}
+          caption={landing.demo.disclaimer}
+          screens={roles.map((role) => ({ ...role, node: screenFor(role) }))}
+        />
       </div>
     </section>
   )
