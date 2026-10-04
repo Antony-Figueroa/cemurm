@@ -226,7 +226,66 @@ export const landing = {
         },
       ],
     },
-    { id: 'stage-bus', eyebrow: 'Stage Bus', title: 'Stage Bus.' },
+    {
+      id: 'stage-bus',
+      eyebrow: 'Stage Bus',
+      title: 'Stage Bus.',
+      // Section 8.1 row 6: "Three roles defined, with the one-line definition the
+      // coined term requires." Stage Bus is this repo's own name for one chart
+      // feeding several differently-projected views, so the FIRST paragraph is the
+      // definition itself. A coined term that is never defined is unreadable to
+      // anyone outside the team, and this is the only place on the page that can
+      // do it.
+      //
+      // The definition is written to match what the CODE does, not a marketing
+      // gloss of it, and it was assembled by reading the surfaces the hero
+      // already renders:
+      //  · musicos   — the performer's own view: the personal key, capo and
+      //    transposition. domain/music/transpose.js `initialSemitones`
+      //    (per-song override beats the global offset) and `capoLabel`
+      //    ("Capo 2 · sounds D"), driven by data/repositories/preferences.js.
+      //  · publico   — the audience/stream view: features/stage/components/
+      //    OverlayView.jsx, which at :60-63 SKIPS every chord-pro `comment`
+      //    section, so a personal annotation is structurally incapable of
+      //    reaching it. That is the strongest single fact in this section.
+      //  · senal     — the signal/broadcast view: features/projection/components/
+      //    SlideView.jsx, whose own header states it NEVER renders chords, keys,
+      //    section keys or annotations.
+      //
+      // The hero (L2) already rotates these three inside device frames. This
+      // section explains the idea and deliberately does NOT repeat the demo: no
+      // second frame, no second rotation, no second motion moment.
+      body: [
+        // THE DEFINITION. One sentence, first, because the term is coined.
+        'Stage Bus es una sola fuente —el chart canónico y el setlist— que alimenta ' +
+          'varias vistas al mismo tiempo, cada una mostrando lo que esa persona ' +
+          'necesita y nada más.',
+        // Why one source and not one file per person. This is the same argument
+        // L3a's `problema` made from the problem side and L3c's `split` made from
+        // the model side; here it is stated from the capability side, which is why
+        // it is about what each view DROPS rather than about keys.
+        'Cada vista recorta lo que no le corresponde, y el recorte no es una copia: ' +
+          'es el mismo chart, filtrado en el momento de emitirse.',
+        // The consequence that makes the term worth having: a change lands once
+        // and every view follows, so there is nothing to re-publish per screen.
+        // Grounded in the same two components plus the offline path — the views
+        // read the cached chart, so a stage with no connection still gets all
+        // three (features/live-performance-mode.feature:106-111 and
+        // features/congregation-projection.feature:123-127, both of which L3c
+        // cites; implementation src/offline/cache.js, DB_VERSION 3).
+        'Y si cambia el chart, cambian las tres a la vez. No hay que reemitir nada, ' +
+          'ni sincronizar una copia por pantalla.',
+        // The privacy half, which is the reason this capability is named at all.
+        // features/congregation-projection.feature:113-118 ("Personal annotations
+        // never leak to the display" and substitutions are not rendered either),
+        // and features/minors-and-guardian-consent.feature:30-34.
+        // Implementation: the guarantee is STRUCTURAL, not a filter — OverlayView
+        // returns null for comment sections and SlideView never reads them, so
+        // there is no setting that can leak them.
+        'Lo que un músico escribe para sí mismo no sale de su pantalla. No es que lo ' +
+          'escondamos: las vistas de emisión ni siquiera lo leen.',
+      ],
+    },
     {
       id: 'split',
       eyebrow: 'El modelo',
@@ -261,7 +320,90 @@ export const landing = {
           'borra.',
       ],
     },
-    { id: 'roles', eyebrow: 'Roles', title: 'Capacidades por rol.' },
+    {
+      id: 'roles',
+      eyebrow: 'Roles',
+      title: 'Capacidades por rol.',
+      // Section 8.1 row 8: "Director de sistema / director de orquesta / músico /
+      // instructor". Each capability below was checked against the implementation,
+      // not just the feature file, because features/*.feature has now promised
+      // behaviour the code does not have four times (MusicXML, ABC, the offline
+      // reconnect path, org/branch RLS). Two of the four terms needed correcting
+      // against the schema — see the `director de orquesta` and `instructor`
+      // paragraphs, which say less than the plan's row does.
+      body: [
+        // Director de sistema. The role EXISTS: 0001_init.sql:61 `system_admin`
+        // in the role enum, and it is enforced through
+        // private.session_has_system_role (0016:43-51), which gates four things:
+        // :81 and :104 (org lifecycle / the org tables), and :370 and :418 (the
+        // promote/demote RPCs, so only a system admin can move a song to or from
+        // the system repertoire). It also appoints moderators — 0015:224 reads
+        // user_roles where role = 'system_admin'.
+        'El director de sistema administra el repertorio del sistema: quién aporta ' +
+          'qué, y qué biblioteca ve todo el mundo. También es quien nombra a los ' +
+          'moderadores de la comunidad.',
+        // "Director de orquesta" is a TERM, NOT A ROLE, and the schema says so.
+        // Grepping migrations and src/ for orchestra|conductor|music_director
+        // returns nothing but a comment about import-queue orchestration. The
+        // capability is real; it is attached to setlist OWNERSHIP, not to a role.
+        // Evidence: 0001_init.sql:546 creates setlists with
+        // `created_by uuid NOT NULL -- setlist owner/director`, and 0002's
+        // setlists_insert_owner / setlists_select_member policies scope it. For
+        // the service plan the equivalent is leader_id: 0018_service_planning.sql
+        // :113-136 gates insert/update/delete on leader_id = auth.uid(), which is
+        // what features/service-planning.feature:98-102 ("Plan is read-only for
+        // members until published") describes. So the Spanish term is kept —
+        // it is the job, and section 8.3 says vocabulary is reused exactly — but
+        // the copy attributes the powers to owning the setlist or leading the
+        // culto, which is what is actually enforced.
+        'Quien arma el setlist dirige: ordena las canciones, fija el tono acordado y ' +
+          'publica el plan del culto. Publicar es lo que lo convierte en el plan ' +
+          'que todos ejecutan; antes de eso, los demás solo pueden verlo.',
+        // Músico. The performer level. Role enum 0001:66
+        // ('org_member','performer','substitute'). Real capabilities, all in
+        // code: Stage Mode reads the cached setlist and applies the personal
+        // transpose and capo (domain/music/transpose.js initialSemitones,
+        // capoLabel; live-performance-mode.feature:70-82), transpose and tempo
+        // work offline (:106-111), and the performer's own annotations stay on
+        // their profile (personal-preferences-and-adaptations.feature:183-187,
+        // implementation domain/music/annotations.js). The performer also takes a
+        // substitution and receives it in their own key
+        // (substitutions-and-coverage.feature:39-45, implementation
+        // data/repositories/substitutions.js renderSemitones at :542).
+        'El músico ve su parte en su tono, con su capo y su tempo, funciona sin ' +
+          'conexión y escribe sus propias anotaciones para sí mismo. Si cubre una ' +
+          'parte que falta, la recibe en su propia tonalidad.',
+        // INSTRUCTOR: specified, NOT implemented, except for one narrow thing.
+        // This is the paragraph that had to shrink.
+        //
+        // What the features specify: education-courses-and-exercises.feature (18,
+        // 26) and education-teaching-assignments.feature (27, 48, 55, 83, 91, 103)
+        // describe courses, exercises, hand-outs, completion tracking and streaks.
+        // What exists: NOTHING. Measured 2026-10-03 — there is no
+        // src/features/education/ directory, no repository under
+        // src/data/repositories/ for courses, exercises or assignments, and NO
+        // migration creates a course, exercise, enrollment or streak table
+        // (0001 has 48 CREATE TABLE statements and none of them is one).
+        //
+        // What instructor CAN do today, verified in policies: add songs at their
+        // own branch (0016:145-161 songs_insert_scoped, whose comment reads
+        // "instructor can add at own branch"), and update a promoted song of their
+        // own source org (0016:166-179 songs_update_source_org, whose role list is
+        // exactly 'instructor','branch_admin','org_admin','org_owner'). That is
+        // two powers, both about repertoire. The only instructor reference in the
+        // app is a label: src/features/orgs/pages/Organizations.jsx:17,20 lists
+        // 'instructor' in ELEVATED_ROLES.
+        //
+        // So: say the two real ones, and say plainly that the teaching surface is
+        // not here yet. Section 8.1's row lists instructor as a role with
+        // capabilities, and writing the specified-but-absent ones would be the
+        // fifth feature-file promise the landing would be repeating.
+        'El instructor hoy añade canciones a su sede y mantiene las que su ' +
+          'organización aportó al repertorio del sistema. La parte de enseñar —cursos, ' +
+          'trabajos, seguir el avance de un alumno— todavía no está construida, y no ' +
+          'queremos prometerla antes de que exista.',
+      ],
+    },
     {
       id: 'organizacion',
       eyebrow: 'Organización',
