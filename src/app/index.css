@@ -100,6 +100,34 @@
 .rounded-cem-lg { border-radius: var(--cem-radius-lg); }
 .rounded-cem-xl { border-radius: var(--cem-radius-xl); }
 
+/* The giant low-opacity word behind a display family — L7. Colour is
+   `cem.elevated`, an existing token, and it lives HERE rather than in a component
+   because gate rule 01a forbids colour literals in src/. The word arrives as
+   `data-word` and is read with `content: attr(data-word)` — not an inline custom
+   property, because this repo is Tailwind-only — and is also in the DOM behind the
+   pseudo-element, so unsupported `content` degrades to oversized text. `cqw` scales
+   it to its section (hence `container-type`), clamped so a short section never
+   gets a word taller than its own box. Decorative: aria-hidden, pointer-events-none,
+   and the headline still reads the word aloud. STATIC — §9.1 gives scroll CSS to
+   `el ciclo` alone. */
+.cem-ghost {
+  display: flex;
+  align-items: flex-end;
+  container-type: inline-size;
+}
+
+.cem-ghost::before {
+  content: attr(data-word);
+  color: var(--cem-elevated);
+  font-size: clamp(3.5rem, 24cqw, 15rem);
+  font-weight: 600;
+  line-height: 0.75;
+  letter-spacing: -0.05em;
+  white-space: nowrap;
+  opacity: 0.6;
+  user-select: none;
+}
+
 /* ===========================================================================
  * El ciclo del culto — scroll-driven sequence highlighting
  * ===========================================================================

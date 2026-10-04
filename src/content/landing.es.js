@@ -80,7 +80,8 @@ export const landing = {
     { id: 'hero', eyebrow: 'Stage Bus', title: 'Una canción, tres lecturas.' },
     {
       id: 'problema',
-      eyebrow: 'El problema',
+      family: 'editorial',
+      ghost: 'Hoja',
       title: 'Una hoja no alcanza en el escenario.',
       // features/personal-preferences-and-adaptations.feature ("Setlist fixes the
       // agreed key for the band": one agreed key, Juan renders A, Pedro renders
@@ -102,6 +103,9 @@ export const landing = {
     },
     {
       id: 'alcance',
+      family: 'asymmetric',
+      ghost: 'Qué',
+      flip: false,
       eyebrow: 'Definición',
       title: 'Qué es y qué no.',
       // "El cuaderno digital de música" is upstream 8.1 row 4's own one-liner.
@@ -125,7 +129,7 @@ export const landing = {
     },
     {
       id: 'ciclo',
-      eyebrow: 'El ciclo',
+      family: 'indexList',
       title: 'El ciclo del culto.',
       // Section 8.1 row 5 and the placement rationale under it: this is
       // sequential, so it is numbered rather than written as prose — hence
@@ -228,7 +232,9 @@ export const landing = {
     },
     {
       id: 'stage-bus',
-      eyebrow: 'Stage Bus',
+      family: 'fullBleed',
+      block: 'surface',
+      ghost: 'Stage',
       title: 'Stage Bus.',
       // Section 8.1 row 6: "Three roles defined, with the one-line definition the
       // coined term requires." Stage Bus is this repo's own name for one chart
@@ -288,7 +294,8 @@ export const landing = {
     },
     {
       id: 'split',
-      eyebrow: 'El modelo',
+      family: 'editorial',
+      block: 'surface',
       title: 'El chart canónico y el renderizado personal.',
       // Section 8.1 row 7: "Why one shared arrangement serves N musicians
       // without forking." This closes the loop L3a's `problema` opened — that
@@ -322,7 +329,7 @@ export const landing = {
     },
     {
       id: 'roles',
-      eyebrow: 'Roles',
+      family: 'bento',
       title: 'Capacidades por rol.',
       // Section 8.1 row 8: "Director de sistema / director de orquesta / músico /
       // instructor". Each capability below was checked against the implementation,
@@ -406,7 +413,8 @@ export const landing = {
     },
     {
       id: 'organizacion',
-      eyebrow: 'Organización',
+      family: 'asymmetric',
+      flip: true,
       title: 'Institucional y multi-sede.',
       // Section 8.1 row 9: "system → org → branch, roles, minors with guardian
       // consent". This is the most reputationally sensitive section on the page,
@@ -492,6 +500,9 @@ export const landing = {
     },
     {
       id: 'limites',
+      family: 'fullBleed',
+      block: 'elevated',
+      ghost: 'No',
       eyebrow: 'Límites',
       title: 'Lo que no hacemos.',
       // Section 8.1 row 10: "The declared non-goals, each with its reason." Same
@@ -540,6 +551,7 @@ export const landing = {
     },
     {
       id: 'offline',
+      family: 'asymmetric',
       eyebrow: 'Datos',
       title: 'Offline y datos.',
       // Section 8.1 row 11: "What works without a connection and what does not."
@@ -613,7 +625,9 @@ export const landing = {
     },
     {
       id: 'precios',
-      eyebrow: 'Precios',
+      family: 'fullBleed',
+      block: 'base',
+      ghost: 'Gratis',
       title: 'Gratis durante la beta.',
       // Section 8.1 row 12 and plan section 4's out-of-scope table say the same
       // thing: there are no pricing tiers, because no pricing model exists, so
@@ -641,8 +655,8 @@ export const landing = {
     // EMPTY on purpose — an empty section is a smaller sin than six invented
     // questions a real director would recognise as invented. Fill it when the
     // questions exist. Deliberately no `body` here.
-    { id: 'faq', eyebrow: 'Preguntas', title: 'Preguntas frecuentes.' },
-    { id: 'waitlist', eyebrow: 'Acceso', title: 'Unirme a la lista de espera.' },
+    { id: 'faq', title: 'Preguntas frecuentes.', family: 'editorial' },
+    { id: 'waitlist', title: 'Unirme a la lista de espera.', family: 'closing' },
   ],
 }
 
