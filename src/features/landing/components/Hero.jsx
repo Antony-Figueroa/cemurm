@@ -61,31 +61,99 @@ function screenFor(role) {
   return <MusicianScreen role={role} />
 }
 
+// Reference 7.5: 2px solid `cem.text`, offset 2, `:focus-visible` only, and
+// never the accent — a musician has to tell "this has keyboard focus" from
+// "this is the current song" at a glance. Same rule, same ring, as the header's
+// FOCUS constant, copied rather than shared because LandingHeader.jsx is not in
+// this slice's edit surfaces and the ring must not drift between two CTAs.
+const FOCUS =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cem-text ' +
+  'focus-visible:ring-offset-2 focus-visible:ring-offset-cem-base'
+
+// §4.7 HERO STACK DISCIPLINE, max four text elements, and this is all four:
+//   1. eyebrow   — `hero.eyebrow`, "Stage Bus"
+//   2. headline  — `hero.title`, four words
+//   3. subtext   — `landing.tagline`, five words
+//   4. CTA       — `landing.cta`
+// The demo caption L2 put in here is the fifth, and §4.7's banned list names it
+// exactly: "tiny tagline below CTAs". It moved to a `<figcaption>` on the demo
+// figure, inside RoleRotation, where it describes the asset rather than the page.
+//
+// §4.7 hero font scale: the headline is FOUR words, which is inside the rule's
+// "3-5 words" band and therefore permits `text-6xl md:text-7xl`. It uses
+// `text-5xl md:text-6xl lg:text-7xl`, which reaches the rule's md and lg values
+// exactly and keeps a 375px phone from getting a 72px line. At `lg` (72px) in a
+// `max-w-4xl` measure the four words wrap to TWO lines, which is §4.7's cap.
+//
+// TOP PADDING is `pt-12` mobile and `pt-24` desktop, i.e. exactly at §4.7's
+// `pt-24` cap and never above it. The rule also says that when the hero does not
+// fit, the fix is the type scale or the asset size, never the padding and never
+// the copy — so nothing here buys space by moving down the page. Measured
+// against a 72px-tall header plus an 800px viewport, the CTA's bottom edge lands
+// near 540px, which is above the fold with room for the demo's top edge to show.
 export default function Hero() {
   const hero = landing.sections.find((section) => section.id === 'hero')
 
   return (
-    <section id="hero" className="px-4 py-16 md:px-6">
-      <div className="mx-auto max-w-5xl">
-        <p className="text-sm font-semibold tracking-wide text-cem-secondary">{hero.eyebrow}</p>
-        <h1 className="mt-3 max-w-3xl text-2xl font-semibold leading-tight tracking-tight text-cem-text md:text-4xl">
+    <section
+      id="hero"
+      className="relative overflow-hidden px-4 pb-16 pt-12 md:px-6 md:pb-20 md:pt-24"
+    >
+      {/* The oversized background word. Reuses R1's `.cem-ghost` verbatim, and the
+          word is the hero's own eyebrow, so the texture repeats a word already on
+          screen rather than asserting a new one. */}
+      <span
+        aria-hidden="true"
+        data-word={landing.demo.ghostWord}
+        className="cem-ghost pointer-events-none absolute inset-0 overflow-hidden select-none"
+      >
+        {landing.demo.ghostWord}
+      </span>
+
+      <div className="relative mx-auto max-w-5xl">
+        <p className="cem-enter text-xs font-semibold uppercase tracking-[0.18em] text-cem-secondary">
+          {hero.eyebrow}
+        </p>
+
+        <h1 className="cem-enter mt-4 max-w-4xl text-5xl font-semibold leading-[1.02] tracking-tighter text-cem-text md:text-6xl lg:text-7xl">
           {hero.title}
         </h1>
-        <p className="mt-4 max-w-2xl text-base text-cem-secondary md:text-lg">{landing.tagline}</p>
+
+        <p className="cem-enter mt-5 max-w-2xl text-base leading-relaxed text-cem-secondary md:text-lg">
+          {landing.tagline}
+        </p>
+
+        {/* THE ONE CTA, and the same intent, label and href the header already
+            uses. §4.5 forbids two CTAs sharing an intent, and reusing the exact
+            label is what compliance looks like here: `landing.cta` is the single
+            source, so the two cannot drift.
+
+            IT IS A DEAD END. `landing.cta.href` is `#waitlist`, and that section
+            has an eyebrow and a title and nothing else, because whether the
+            waitlist needs a backend is B1 and B1 belongs to davidjesus516. This
+            is stated rather than papered over: no `mailto:`, no placeholder
+            submit, no fake confirmation. Making the hero's primary action a dead
+            end is the consequence of an undecided backend, not a design choice.
+
+            Amber on `cem.base` is the pairing the reference mandates, measured at
+            8.31:1 from the built CSS — AA and AAA both clear. Amber with light
+            text computes to 2.05:1 and is a hard fail, so the fill carries the
+            accent and the label stays dark. `whitespace-nowrap` is §4.7's CTA
+            BUTTON WRAP BAN: the label must not break across lines at desktop. */}
+        <a
+          href={landing.cta.href}
+          className={`cem-enter mt-8 inline-flex min-h-12 items-center justify-center whitespace-nowrap rounded-full bg-cem-amber px-6 text-sm font-semibold text-cem-base duration-200 hover:bg-cem-amber/90 ${FOCUS}`}
+        >
+          {landing.cta.label}
+        </a>
 
         <div className="mt-12">
           <RoleRotation
             groupLabel={rotationGroupLabel}
+            caption={landing.demo.disclaimer}
             screens={roles.map((role) => ({ ...role, node: screenFor(role) }))}
           />
         </div>
-
-        {/* Honest about what is on screen. The fixture is invented placeholder
-            data and section 8.2 forbids asserting a licence nobody has checked,
-            so this line says what it is instead of dressing it up. */}
-        <p className="mt-8 text-center text-sm text-cem-secondary">
-          Demostración con datos de ejemplo, no una pieza real.
-        </p>
       </div>
     </section>
   )

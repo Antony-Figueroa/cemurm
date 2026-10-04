@@ -128,6 +128,65 @@
   user-select: none;
 }
 
+/* The hero demo row in a 3D space. NOT a Tailwind class, and not a fixable one.
+
+   Tailwind 3.4 has NO 3D transform utilities. Its Transforms section is exactly
+   scale, rotate, translate, skew and transform-origin; `rotate-x-*`, `rotate-y-*`,
+   `rotate-z-*`, `perspective-*`, `transform-style` and `backface-visibility` are
+   all v4 additions (verified against both v3.tailwindcss.com/docs/rotate and
+   tailwindcss.com/docs/rotate). So on this project's pinned 3.4.19 every one of
+   `perspective-[1200px]`, `rotate-x-6`, `rotate-y-6`, `preserve-3d` and
+   `backface-hidden` emits NOTHING and trips no check — the same silent no-op as
+   `backdrop-saturate-180` in LandingHeader, and the concrete reason the project
+   stays on 3.4 rather than taking v4's 3D utilities.
+
+   Hence the split: `perspective` is declared here, and the rotation and the Z
+   offset travel through `motion`, which composes its own inline transform string.
+   See RoleRotation.jsx.
+
+   1400px is the perspective distance, and its job is to make a 9-degree Y
+   rotation read as depth rather than as a flat shear: a shorter distance
+   exaggerates the far edge and shears the frame, a longer one flattens it.
+   There is no Apple number to match here, so this is a project decision. */
+.cem-perspective {
+  perspective: 1400px;
+}
+
+/* The hero copy entrance. `@starting-style` plus a transition, which is plan
+   9.1 row 3 — "element enters for the first time" — and costs zero bytes
+   because it is CSS, not `motion`. That is the whole reason it is not written
+   as a motion variant: section 7.7 budgets ONE non-user-triggered motion
+   moment and the role rotation already spends it. An entrance is not a repeat
+   of it either, because it cannot run twice — there is no trigger, no loop
+   and no auto-advance — but it is free, so there is no reason to argue.
+
+   `translate`, not `transform`: `motion` writes `transform` inline on the demo
+   row, and using the independent property here means the two never collide.
+
+   Under `prefers-reduced-motion: reduce` the block at the bottom of this file
+   sets `transition-duration: 0.01ms !important`, so the whole entrance
+   collapses to its end state in 0.01ms. No override is needed or wanted.
+
+   `:nth-child` staggers the four hero copy elements without an inline
+   `--index` style, because this repo is Tailwind-only with no inline styles.
+   The four `.cem-enter` elements must stay siblings for these to resolve. */
+.cem-enter {
+  transition:
+    opacity 520ms cubic-bezier(0.32, 0.72, 0, 1),
+    translate 520ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@starting-style {
+  .cem-enter {
+    opacity: 0;
+    translate: 0 16px;
+  }
+}
+
+.cem-enter:nth-child(2) { transition-delay: 70ms; }
+.cem-enter:nth-child(3) { transition-delay: 140ms; }
+.cem-enter:nth-child(4) { transition-delay: 210ms; }
+
 /* ===========================================================================
  * El ciclo del culto — scroll-driven sequence highlighting
  * ===========================================================================

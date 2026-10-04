@@ -40,6 +40,20 @@ export const landing = {
   // day a second locale exists, and it asserts nothing checkable.
   tagline: 'El cuaderno digital de música.',
 
+  // What the hero's device demo is, said next to the demo rather than in the
+  // hero copy. Verbatim from the string L2 hard-coded in Hero.jsx: section 8.2
+  // forbids asserting a licence nobody has checked, and this is the honest form
+  // of that sentence. It moved into this module because a landing component
+  // holding a copy literal is the thing L1 set out to remove, and it is now a
+  // `<figcaption>` on the demo figure rather than a line of hero copy.
+  demo: {
+    disclaimer: 'Demostración con datos de ejemplo, no una pieza real.',
+    // The oversized background word behind the hero. Drawn from the hero's own
+    // eyebrow ("Stage Bus"), so the texture repeats a word already on screen
+    // instead of asserting a new one.
+    ghostWord: 'Stage',
+  },
+
   // Labels only: the href is built as `#${item.id}` by the header, so a nav
   // label can never point at a section that does not exist.
   nav: [
