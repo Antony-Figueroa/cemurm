@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types -- the shape is frozen in the registry below,
    and there is no propTypes anywhere in src/ (see FeedbackForm.jsx:1). */
 import { landing } from '../../../content/landing.es.js'
+import CycleSequence from './CycleSequence.jsx'
 
 // The frame every landing section renders inside: the page's vertical rhythm,
 // the eyebrow, the title, and an empty slot a later slice fills with content.
@@ -56,10 +57,14 @@ export default function Section({ id, children }) {
         <h2 className="mt-3 max-w-2xl text-2xl font-semibold leading-tight tracking-tight text-cem-text">
           {section.title}
         </h2>
-        {/* `body` wins when present; `children` is the title-over-slot fallback
-            L1 shipped, kept so a later interactive section can still be handed a
-            slot instead of a paragraph array. */}
-        {section.body ? (
+        {/* Exactly one of three. `steps` is the numbered-sequence variant
+            (section 8.1 row 5); `body` is prose; `children` is the title-over-slot
+            fallback L1 shipped, kept so a later interactive section can still be
+            handed a slot instead of an array. Order matters only in that `steps`
+            is checked first — no section sets more than one. */}
+        {section.steps ? (
+          <CycleSequence steps={section.steps} />
+        ) : section.body ? (
           <div className="mt-8 max-w-prose space-y-6">
             {section.body.map((paragraph, index) => (
               <p key={index} className="text-lg leading-snug text-cem-secondary">

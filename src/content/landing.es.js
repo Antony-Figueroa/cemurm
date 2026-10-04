@@ -123,7 +123,109 @@ export const landing = {
           'ubicación en un mapa. Del concierto nos interesa la música.',
       ],
     },
-    { id: 'ciclo', eyebrow: 'El ciclo', title: 'El ciclo del culto.' },
+    {
+      id: 'ciclo',
+      eyebrow: 'El ciclo',
+      title: 'El ciclo del culto.',
+      // Section 8.1 row 5 and the placement rationale under it: this is
+      // sequential, so it is numbered rather than written as prose — hence
+      // `steps` instead of `body`.
+      //
+      // TWO TERMS TRANSLATED, and both deliberately. Upstream 8.1 writes the
+      // sequence in English shorthand ("lifecycle", "performance"), but 8.3's
+      // binding vocabulary is the list that may appear on the page, and neither
+      // word is on it. `chart` and `concierto` are. So "Ciclo del chart" and
+      // "Concierto" carry them, with the English kept only where 8.3 asks for
+      // it — `plan freeze` is on the list verbatim.
+      //
+      // Every step was checked against BOTH the feature file and the repository
+      // that implements it, per the L3a lesson that a feature states intent and
+      // the code states behaviour:
+      steps: [
+        {
+          // features/song-lifecycle.feature:10-32 ("Incomplete chart is flagged
+          // as not ready", "Missing required metadata keeps a song from being
+          // ready") and :51-55 ("Every chart edit creates a version entry").
+          // Implementation: domain/chart/readiness.js computeReadiness, called
+          // from songs.js:273, with readiness tracked per version at
+          // songs.js:269-273 — not per song.
+          term: 'Ciclo del chart',
+          detail:
+            'El chart nace en borrador y queda listo cuando tiene letra, acordes y tono ' +
+            'acordado. Cada corrección deja una versión con autor, fecha y qué cambió.',
+        },
+        {
+          // features/rehearsal-workflow.feature:10-15 (agenda built from a
+          // setlist, each song keeping its agreed key), :72-76 ("Carried over:
+          // needs work"), :78-82 (notes attach to the song, not to the chart).
+          // Implementation: rehearsals.js createRehearsal, publishRehearsal,
+          // markOutcome, recordRun, updateNote, changeSetlistItemKey.
+          term: 'Ensayo',
+          detail:
+            'El ensayo se arma desde el setlist y cada canción conserva su tono acordado. ' +
+            'Lo que queda sin pulir se arrastra al siguiente, con sus notas.',
+        },
+        {
+          // features/published-plan-freeze.feature:10-13 (publishing snapshots
+          // the plan), :15-19 ("Changed after publish"), :42-46 ("the draft is
+          // never executed on stage"). Implementation: services.js:637
+          // publishPlan, :655 getPublishedPlan, :669 listPlanVersions, over
+          // migration 0021_plan_freeze.sql.
+          term: 'plan freeze',
+          detail:
+            'Publicar congela el plan. Lo que edites después queda marcado como cambio ' +
+            'posterior y nunca es lo que se ejecuta.',
+        },
+        {
+          // features/live-performance-mode.feature:10-14 (full-screen setlist,
+          // minimal controls), :70-75 (transpose during the performance),
+          // :106-111 (works fully offline). The record half:
+          // features/gigs-and-performance-history.feature:84-94 records skipped
+          // songs and songs played outside the setlist separately.
+          // Implementation: gigs.js:613 completeGig with validateCompletion:354.
+          term: 'Concierto',
+          detail:
+            'En Stage Mode el setlist entero cabe en la tablet, con tu renderizado ' +
+            'personal y sin conexión si hace falta. Al terminar queda registro de lo que ' +
+            'se tocó y de lo que no.',
+        },
+        {
+          // features/substitutions-and-coverage.feature:10-15 (unavailability
+          // opens a request), :28-33 (the first confirmed accept covers it),
+          // :39-45 (call sheet shows the agreed key G, the substitute's chords
+          // render in A, the stored plan is unchanged), :106-110 (logged as
+          // "Bass: Pedro (sub for Lucia)"). Implementation: substitutions.js
+          // markUnavailable, sendSubstitutionRequest, respondSubstitution,
+          // cancelSubstitution, reclaimAssignment, overruleSubstitution,
+          // substitutionCandidates, instrumentTransposition, renderSemitones.
+          term: 'Sustitución',
+          detail:
+            'Si alguien falta, la parte se cubre con un compañero que la recibe en su ' +
+            'propio tono. El plan no se toca y la cobertura queda registrada.',
+        },
+        {
+          // features/congregation-projection.feature:16-21 (the congregation
+          // display shows lyrics and slide titles, "and it does not show chords,
+          // keys, rehearsal notes, or controls") and :113-118 ("Personal
+          // annotations never leak to the display", substitutions not rendered
+          // either). Implementation, verified by reading the components rather
+          // than trusting the feature: SlideView.jsx renders only the four slide
+          // kinds and never a chord, a key or an annotation, and
+          // OverlayView.jsx:60-63 drops every chord-pro `comment` section.
+          // Implementation of the transport: projection.js buildDeck,
+          // nextSlide, goTo, syncState.
+          //
+          // DELIBERATELY OMITTED: that feature file also specifies projection
+          // rights blocking. It is not mentioned here, because asserting
+          // anything about licensing is exactly what 8.2 forbids without a
+          // verified source.
+          term: 'Proyección',
+          detail:
+            'La proyección muestra la letra y el título de cada sección. Ni acordes, ni ' +
+            'tonos, ni anotaciones personales, ni controles.',
+        },
+      ],
+    },
     { id: 'stage-bus', eyebrow: 'Stage Bus', title: 'Stage Bus.' },
     { id: 'split', eyebrow: 'El modelo', title: 'El chart canónico y el renderizado personal.' },
     { id: 'roles', eyebrow: 'Roles', title: 'Capacidades por rol.' },

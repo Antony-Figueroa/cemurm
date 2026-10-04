@@ -100,6 +100,66 @@
 .rounded-cem-lg { border-radius: var(--cem-radius-lg); }
 .rounded-cem-xl { border-radius: var(--cem-radius-xl); }
 
+/* ===========================================================================
+ * El ciclo del culto — scroll-driven sequence highlighting
+ * ===========================================================================
+ *
+ * Plan section 9.1 is a decision procedure and this is the one row that says
+ * "section enters / leaves the viewport → animation-timeline: view()". No
+ * JavaScript, no motion, no bundle cost. Because it is driven by scrolling it is
+ * USER-TRIGGERED, so it does not spend the single non-user-triggered motion
+ * moment section 7.7 budgets — that one went to the hero rotation.
+ *
+ * IT ANIMATES TRANSFORM ONLY. Reference 6.4 rule 4 forbids animating anything
+ * but `transform` and `opacity`, and there is a second reason to pick `transform`
+ * here: a rail that FILLS is a shape change, so it reads as progress even for a
+ * viewer who cannot perceive the movement. Opacity on body copy was rejected —
+ * dimming prose to 0.35 drops it far under the 4.5:1 floor in reference 3.4, and
+ * this section must stay readable at every scroll position.
+ *
+ * WHY THE AMBER IS NOT IN THE KEYFRAMES. The obvious thing to animate here is
+ * the rail's colour, and it is impossible: gate rule 01a forbids raw colour
+ * literals anywhere in src/, including this file, and no custom property in the
+ * project holds the accent — `--cem-radius-*` are the only `cem` tokens adopted
+ * so far. A colour literal in a @keyframes block fails the gate. So the scroll
+ * timeline moves geometry and the accent stays a Tailwind class. See
+ * CycleSequence.jsx for how that split is made.
+ *
+ * DEGRADATION, in the order it happens:
+ *   - Firefox has no scroll-driven animations (verified). The @supports guard
+ *     means the animation is never declared, the rail renders at its natural
+ *     full width, and the section stays a complete, numbered, readable sequence.
+ *   - prefers-reduced-motion. The guard below is `no-preference`, so under
+ *     reduce the animation is not merely shortened — it is never declared.
+ *     That is deliberate belt-and-braces: the block at the bottom of this file
+ *     sets `animation-duration: 0.01ms !important`, and whether a view timeline
+ *     ignores that or is broken by it cannot be checked without a browser. The
+ *     nested media query makes the question moot either way, and it does not
+ *     modify or override that block.
+ *
+ * The rail's resting state is the FINISHED state, not the empty one, so
+ * degrading yields six complete rules rather than six empty ones.
+ */
+@keyframes cem-cycle-fill {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .cem-cycle-rail {
+      animation: cem-cycle-fill linear both;
+      animation-timeline: view();
+      animation-range: entry 20% entry 80%;
+    }
+  }
+}
+
 /* docs/ux-spec.md 253: reduced motion reduces transitions and animations to
    near-zero. The 0.01ms is deliberate and must not be "corrected" to 0: some
    engines skip a transition whose duration is exactly zero, so `transitionend`
