@@ -14,6 +14,13 @@
 //      assignment rather than painting white. Both call sites pass a token, so the
 //      default is unreachable either way.
 //   2. This banner and the repo's lint header.
+//   3. `...rest` is accepted and spread onto the root div. Five call sites pass a
+//      host `style` (position: fixed at the press point, pointer-events: none)
+//      that upstream silently drops, so the root kept `relative w-full h-full`
+//      inside an auto-height parent: a zero-height box, therefore a zero-height
+//      canvas and nothing to paint on. The spread is placed BEFORE the component's
+//      own className and onClick so a caller cannot clobber the layout or the
+//      trigger; the only prop in use today is `style`.
 //
 // NOT CHANGED, and reported rather than quietly fixed:
 //
@@ -48,7 +55,7 @@ const ClickSpark = ({
   duration = 400,
   easing = 'ease-out',
   extraScale = 1.0,
-  children
+  children, ...rest
 }) => {
   const canvasRef = useRef(null);
   const sparksRef = useRef([]);
@@ -172,7 +179,7 @@ const ClickSpark = ({
   };
 
   return (
-    <div className="relative w-full h-full" onClick={handleClick}>
+    <div {...rest} className="relative w-full h-full" onClick={handleClick}>
       <canvas ref={canvasRef} className="w-full h-full block absolute top-0 left-0 select-none pointer-events-none" />
       {children}
     </div>
