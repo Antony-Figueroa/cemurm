@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types -- see FeedbackForm.jsx:1 for the convention. */
 
 import { landing } from '../../../content/landing.es.js'
+import RevealText from './RevealText.jsx'
 
 // L8 — the layout families the thirteen sections are spread across.
 //
@@ -68,16 +69,40 @@ export function Eyebrow({ children }) {
   )
 }
 
-/** Every family's eyebrow + headline. One type scale, one place. */
+/** Every family's eyebrow + headline. One type scale, one place.
+ *
+ *  A2: the `<h2>` became `<RevealText>`, so section headlines use the same
+ *  clip-mask reveal as the hero and the page reads as one system. Two things
+ *  changed deliberately and nothing else did:
+ *
+ *  `trigger="inView"` is the important one. A section below the fold must reveal
+ *  when it is REACHED, not when the page loads, and §5.D bans
+ *  `window.addEventListener('scroll')`. `whileInView` with `viewport={{ once: true }}`
+ *  is Motion's own IntersectionObserver, so it is both allowed and batched by the
+ *  browser rather than firing per scroll frame.
+ *
+ *  The type scale is untouched: still `text-3xl md:text-5xl` plus
+ *  `tracking-tighter leading-[1.05]`. That line-height is also what sets
+ *  RevealText's line-mode clip reserve to 0.14em, so the two files agree by
+ *  arithmetic rather than by luck; see RevealText.jsx.
+ *
+ *  The `closing` family gets the same treatment on its own headline rather than
+ *  through this component, because its scale is smaller (`text-2xl md:text-4xl`)
+ *  and it carries the page's CTA. It still reveals, because leaving the last
+ *  headline static would break the coherence this slice exists to create, and
+ *  `whileInView` with `once` fires as it scrolls in rather than on load, so it
+ *  delays nothing a visitor was waiting for. */
 function Head({ section, className = '', eyebrowClass = '' }) {
   return (
     <>
       {section.eyebrow && <Eyebrow className={eyebrowClass}>{section.eyebrow}</Eyebrow>}
-      <h2
+      <RevealText
+        as="h2"
+        mode="line"
+        trigger="inView"
+        text={section.title}
         className={`text-3xl font-semibold tracking-tighter leading-[1.05] text-cem-text md:text-5xl ${className}`}
-      >
-        {section.title}
-      </h2>
+      />
     </>
   )
 }
@@ -223,9 +248,13 @@ function closing(section) {
             <Eyebrow>{section.eyebrow}</Eyebrow>
           </div>
         )}
-        <h2 className="text-2xl font-semibold tracking-tighter leading-[1.1] text-cem-text md:text-4xl">
-          {section.title}
-        </h2>
+        <RevealText
+          as="h2"
+          mode="line"
+          trigger="inView"
+          text={section.title}
+          className="text-2xl font-semibold tracking-tighter leading-[1.1] text-cem-text md:text-4xl"
+        />
         {section.cta && (
           <a
             href={landing.cta.href}

@@ -4,6 +4,7 @@ import { landing } from '../../../content/landing.es.js'
 import { demoChart, roles, rotationGroupLabel } from '../../../content/landing-demo.es.js'
 import OverlayView from '../../stage/components/OverlayView.jsx'
 import SlideView from '../../projection/components/SlideView.jsx'
+import RevealText from '../components/RevealText.jsx'
 import RoleRotation from '../components/RoleRotation.jsx'
 
 // The hero — the landing's single memorable thing — and the first section that
@@ -96,14 +97,70 @@ export default function Hero() {
       id="hero"
       className="relative overflow-hidden px-4 pb-16 pt-12 md:px-6 md:pb-24 md:pt-24"
     >
-      <div className="relative mx-auto max-w-3xl">
-        <p className="cem-enter text-xs font-semibold uppercase tracking-[0.18em] text-cem-secondary">
+      <div className="relative mx-auto max-w-7xl">
+        <p className="cem-enter max-w-3xl text-xs font-semibold uppercase tracking-[0.18em] text-cem-secondary">
           {hero.eyebrow}
         </p>
 
-        <h1 className="cem-enter mt-4 max-w-4xl text-5xl font-semibold leading-[1.02] tracking-tighter text-cem-text md:text-6xl lg:text-7xl">
-          {hero.title}
-        </h1>
+        {/* A2's headline. It takes the wrapper's full width while everything around
+            it is capped at `max-w-3xl` / `max-w-2xl`. Both are left-aligned, so the
+            left edges still line up and the display line simply runs further right.
+            That is the asymmetric white-space §4.3 asks for at VARIANCE 8, and the
+            width is what buys the single line.
+
+          THE WIDTH, MEASURED NOT ASSUMED. The reference runs `font-size: 12.5vw`
+          with `white-space: nowrap`, which works for a two-word English headline
+          and fails for a 27-character Spanish one. The advance width of
+          "UNA CANCIÓN, TRES LECTURAS." in Inter Medium, read from the shipped
+          `inter-latin-500-normal.woff2` with fontTools (upm 2048, summing hmtx
+          advances for all 27 glyphs), is **15.6377em**. So one line obeys
+          `font-size <= measure / 15.6377`, and at `max-w-7xl` bounded by the
+          section's `px-6` gutter:
+
+            375px  gutter 16  available  343  size  28 (floor)   line  438  2 lines  128%
+            640px  gutter 16  available  608  size  37.8          line  590  1 line    97%
+            768px  gutter 24  available  720  size  45.3          line  709  1 line    98%
+           1024px  gutter 24  available  976  size  60.4          line  945  1 line    97%
+           1280px  gutter 24  available 1232  size  72 (ceiling) line 1126  1 line    91%
+           1920px  gutter 24  available 1872  size  72 (ceiling) line 1126  1 line    60%
+
+          The vw coefficient is 5.9 because that is the smallest value clearing the
+          binding constraint, which is the mobile end: the gutter is a fixed
+          subtraction, so it dominates as the viewport shrinks, and
+          (375-32)/(375*15.6377) = 5.849vw. The asymptotic ceiling is
+          1/15.6377 = 6.395vw. 5.9 sits between them.
+
+          FOR CONTRAST, R2's headline was `text-5xl md:text-6xl lg:text-7xl` inside
+          a 768px measure: at 72px the line needs 1126px, so it wrapped to TWO lines
+          at every desktop size. This is one line from 640px up.
+
+          THE TIGHT SPOT IS 640px TO 1220px, at 91-98% of the measure. That is
+          inherent to filling the width and it is where to look first in review: a
+          wrap there costs one extra line, not a broken layout. It also means the
+          line count depends on Inter actually being loaded, which is a CLS risk
+          during the font swap that §7.7 records as unmeasured.
+
+          UPPERCASE IS A REAL DECISION. The copy is sentence case; the reference is
+          uppercase. Spanish uppercase changes no meaning here but it does change the
+          page's voice. Applied as the reference does, through the `uppercase`
+          utility rather than by rewriting the string, so deleting one class reverts
+          it and the content module keeps its sentence-case copy.
+
+          `leading-[0.85]` and `tracking-[-0.02em]` are the reference's values, and
+          0.85 is what forces the deeper clip reserve; RevealText.jsx carries the
+          arithmetic that keeps the descenders inside the mask.
+
+          `trigger="ready"` gates the reveal on A1's signal rather than firing on
+          mount, so the headline does not animate underneath the curtain. */}
+        <RevealText
+          as="h1"
+          mode="word"
+          trigger="ready"
+          text={hero.title}
+          stagger={0.14}
+          duration={1.1}
+          className="cem-enter mt-4 font-medium uppercase leading-[0.85] tracking-[-0.02em] text-cem-text [font-size:clamp(1.75rem,5.9vw,4.5rem)]"
+        />
 
         <p className="cem-enter mt-5 max-w-2xl text-base leading-relaxed text-cem-secondary md:text-lg">
           {landing.tagline}
@@ -123,8 +180,7 @@ export default function Hero() {
         >
           {landing.cta.label}
         </a>
-
-        </div>
+      </div>
 
       {/* P3: the demo breaks out to the page's widest measure, because it is the
           one asset meant to be memorable and it now has room to be one. */}
