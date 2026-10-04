@@ -262,7 +262,92 @@ export const landing = {
       ],
     },
     { id: 'roles', eyebrow: 'Roles', title: 'Capacidades por rol.' },
-    { id: 'organizacion', eyebrow: 'Organización', title: 'Institucional y multi-sede.' },
+    {
+      id: 'organizacion',
+      eyebrow: 'Organización',
+      title: 'Institucional y multi-sede.',
+      // Section 8.1 row 9: "system → org → branch, roles, minors with guardian
+      // consent". This is the most reputationally sensitive section on the page,
+      // because part of it describes how children are handled, so every clause
+      // below names BOTH a feature scenario and the migration or repository that
+      // enforces it. Three of the four were verified this way rather than taken
+      // from the feature file, and the fourth — branch visibility — is where the
+      // feature file and AGENTS.md turn out to disagree. See the note on the
+      // visibility paragraph.
+      body: [
+        // features/organizational-repertoire-model.feature:7-13 ("System
+        // repertoire as the unified catalog") and :33-39 ("System-level song
+        // available across all branches").
+        // Implementation: migration 0016_org_repertoire_model.sql, policy
+        // `songs_select_system` (lines 122-125) — `using (auth.uid() is not null
+        // and org_id is null)`, so a system-level song is readable by EVERY
+        // authenticated user, and the repository is
+        // data/repositories/orgRepertoire.js.
+        // NOTE ON AGENTS.md: its caution that "implemented RLS is owner-scoped
+        // only" is STALE for songs. 0016 replaced the owner-only policies of
+        // 0002 with four scoped ones, and songs_select_system is readable by any
+        // authenticated session by design. What remains a design target is
+        // docs/database-schema-v2.md §3.1's full visibility MATRIX, not this
+        // clause. Stating the level model without claiming cross-org read access
+        // is what keeps this honest.
+        'Cuatro niveles: el repertorio del sistema, la organización, la sede y la ' +
+          'canción de una persona. Una canción del sistema se puede usar en cualquier ' +
+          'sede sin copiarla, y la organización que la aporta conserva la edición.',
+        // features/organizational-repertoire-model.feature:31-45 ("Organization
+        // with multiple branches", "Branch-specific repertoire addition").
+        // Implementation: policy `songs_select_branch` (0016:136-143), gated on
+        // private.user_branch_ids(auth.uid()), and `songs_select_org`
+        // (0016:127-134) on private.is_org_member.
+        'Una sede ve su propio material y el de su organización. Lo de otra sede no ' +
+          'aparece hasta que alguien lo comparte, y compartirlo es una decisión ' +
+          'consciente, no un efecto secundario.',
+        // The minors half, and the reason this paragraph is written in the past and
+        // conditional rather than as a promise.
+        //
+        // features/minors-and-guardian-consent.feature:10-19 (age gate; account
+        // stays inactive until consent) and :20-24 (the ledger stores the
+        // guardian's identity, the date and the text they saw).
+        // Implementation, read in the migrations rather than the feature file:
+        //  · 0031_guardian_consent_email.sql closed a REAL defect here — 0017 line
+        //    88 shipped `status text not null default 'active'`, so consent was
+        //    SELF-ASSERTED: the account holder typed a guardian's name and the row
+        //    came out active, unlocking the account on the spot. 0031 changed the
+        //    default to 'pending' and made the confirm path the only writer of
+        //    consented_at.
+        //  · The consent record is supervision evidence: guardian identity, date,
+        //    and the exact wording shown, per 0031's header and
+        //    private.record_guardian_consent (0017:259-313).
+        //  · Only the GUARDIAN can close a pending request, through a one-shot
+        //    emailed capability — supabase/functions/send-guardian-consent and the
+        //    login-less confirm RPC (0031), rendered by
+        //    features/auth/pages/GuardianConfirm.jsx, which refuses to auto-submit
+        //    so a mail scanner or prefetcher cannot spend a child's consent.
+        'Un menor de edad no abre una cuenta como adulto. El consentimiento de su ' +
+          'tutor o tutora se pide a un adulto, por correo, con un enlace de un solo ' +
+          'uso: hasta que ese adulto responde, la cuenta permanece cerrada y el ' +
+          'consentimiento queda registrado con la fecha y el texto que leyó.',
+        // The public-surface half, and the part that is genuinely enforced rather
+        // than merely designed.
+        //
+        // features/minors-and-guardian-consent.feature:30-34 (publishing to the
+        // public library is blocked without guardian approval) and :40-44 (minors
+        // never appear in public profiles or suggested lists).
+        // Implementation: migration 0029_fail_closed_minors.sql — the publish gate
+        // at lines 175-188 requires an ACTIVE consent row carrying
+        // public_sharing_approved, and `profiles_select_search` (lines 102-105) is
+        // recreated to exclude not-verified-adults. 0029 also made an UNKNOWN date
+        // of birth fail CLOSED: it is excluded from public search and blocked from
+        // publishing, deliberately ordered after the minor branch so a known minor
+        // still gets the guardian message.
+        // THAT is the difference between this and the feature file: the feature
+        // promises exclusion by minority, and the migration additionally refuses to
+        // expose a profile it cannot verify as an adult. The stricter rule is the
+        // one shipped, so it is the one written.
+        'Ni la comunidad pública ni la biblioteca ven a un menor sin que su tutor o ' +
+          'tutora lo autorice. Tampoco vemos perfiles cuya edad no podamos verificar: ' +
+          'si no la conocemos, no la exponemos.',
+      ],
+    },
     {
       id: 'limites',
       eyebrow: 'Límites',
@@ -384,7 +469,36 @@ export const landing = {
           'al otro y no te avisamos.',
       ],
     },
-    { id: 'precios', eyebrow: 'Precios', title: 'Gratis durante la beta.' },
+    {
+      id: 'precios',
+      eyebrow: 'Precios',
+      title: 'Gratis durante la beta.',
+      // Section 8.1 row 12 and plan section 4's out-of-scope table say the same
+      // thing: there are no pricing tiers, because no pricing model exists, so
+      // the page says "$0 during beta" and stops.
+      //
+      // Section 8.3 forbids invented tiers, and the same list forbids a
+      // future-price hint dressed as a fact. So: one paragraph, no comparison, no
+      // "contact us", no tier preview, and — deliberately — NO date for when the
+      // beta ends, because nobody has decided one and a guessed deadline is the
+      // easiest invented number on a pricing page to get wrong.
+      //
+      // Implementation backing the beta itself: package.json declares no billing
+      // or payment dependency at all, and docs/technical-spec.md:523 rates the $0
+      // backend cost (Supabase + storage + Vercel) as the reason offline-first
+      // carries no store or tooling overhead. The product is free because there is
+      // nothing to charge for yet, not because a plan was chosen.
+      body: [
+        'CEMURM es gratis durante la beta. No hay planes ni niveles: no hemos ' +
+          'definido un precio, y preferimos decirlo así antes que anunciar uno que ' +
+          'todavía no existe.',
+      ],
+    },
+    // Section 8.1 row 13 asks for "6 real questions from a system director". We do
+    // not have them. Section 8.3 forbids inventing content, so this frame stays
+    // EMPTY on purpose — an empty section is a smaller sin than six invented
+    // questions a real director would recognise as invented. Fill it when the
+    // questions exist. Deliberately no `body` here.
     { id: 'faq', eyebrow: 'Preguntas', title: 'Preguntas frecuentes.' },
     { id: 'waitlist', eyebrow: 'Acceso', title: 'Unirme a la lista de espera.' },
   ],
