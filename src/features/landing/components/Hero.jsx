@@ -116,6 +116,17 @@ const FOCUS =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cem-text ' +
   'focus-visible:ring-offset-2 focus-visible:ring-offset-cem-base'
 
+// APPLE §1, "Respond on pointer-down, not on release". Emil's baseline is
+// `transform: scale(0.97)` on `:active` over 100 to 160ms, and the landing had NO
+// press state anywhere before this rebuild: the CTA, the role tabs and every header
+// link responded only on hover and on click.
+//
+// `transition-transform` replaces the `duration-200` these elements already had,
+// because 200ms is past the top of the band and press feedback is the one
+// interaction where latency is most visible. `ease-out` per Emil §3, never
+// `ease-in`, which delays the movement the user is watching for.
+const PRESS = 'transition-transform duration-150 ease-out active:scale-[0.97]'
+
 // §4.7 HERO STACK, max four text elements, and this is all four: eyebrow,
 // headline, subtext, CTA. The demo caption L2 put here was the fifth, and §4.7's
 // banned list names it exactly ("tiny tagline below CTAs"); it is a
@@ -183,15 +194,20 @@ export default function Hero() {
       className="relative overflow-hidden px-4 pb-16 pt-12 md:px-6 md:pb-24 md:pt-24"
     >
       <div className="relative mx-auto max-w-7xl">
-        <p className="cem-enter max-w-3xl text-xs font-semibold uppercase tracking-[0.18em] text-cem-secondary">
-          {hero.eyebrow}
-        </p>
-
-        {/* ── THE WORDMARK, which is what replaced the hero title slot ──────────
+        {/* ── THE WORDMARK. It leads, because it is the identity and nothing else
+            above it should compete. ─────────────────────────────────────────────
             It is a canvas with `role="img"` and `aria-label="CEMURM"`, so it is
             deliberately NOT the `<h1>`: a logo is identity, and the page's one
             level-one heading has to be the value proposition. That is also why the
             Spanish line below is untouched rather than demoted.
+
+            §15 TRACKING. The wordmark is display type at 58 to 102px, and it
+            carries `letterSpacing={-0.02}`, NEGATIVE. That is the direction Apple
+            asks for at this size and it was already correct before this rebuild.
+            The brief's premise that the wordmark carried positive 0.18em was not
+            true of the code; 0.18em is the 12px EYEBROW's tracking, and positive
+            tracking on 12px uppercase is correct, so both values stay and the scale
+            keeps its two directions.
 
             THE SPAN, from the vendored component's own fit maths (its lines
             196-201: `fit = min(1, width*0.9/inkWidth, height*0.66/inkHeight)`,
@@ -200,25 +216,17 @@ export default function Hero() {
             default `fontSize` of 150 that is 687px of ink, so the WIDTH term is
             never the binding one and the container HEIGHT is the only knob:
 
-              h-14 (56px)   -> size  50.8px   ink 232 x 37px
               h-16 (64px)   -> size  58.1px   ink 266 x 42px
-              h-20 (80px)   -> size  72.6px   ink 332 x 53px
               h-24 (96px)   -> size  87.1px   ink 398 x 63px
               h-28 (112px)  -> size 101.6px   ink 465 x 74px
 
-            Chosen: `h-16 md:h-24 lg:h-28`, which lands the wordmark at 58px on a
-            phone and 102px at desktop, with 87px at the md breakpoint. It is
-            height-limited at every viewport, so the numbers above are the sizes.
+            `h-16 md:h-24 lg:h-28` lands it at 58px on a phone and 102px at desktop.
+            Height-limited at every viewport, so those are the real sizes.
 
             THE STATIC FALLBACK is not a compromise, it is the phone experience: a
             real text node in `cem.text`, so a phone gets a crisp selectable
-            wordmark with no canvas, no observers and no rAF loop. The expansion
-            words are then not reachable, which is the honest trade: they were
-            hover-only before this slice too, and no touch user ever saw them.
-            `landing.acronym` is rendered as visually hidden text inside the
-            fallback so the expansion still reaches a screen reader.
-        */}
-        <div className="mt-6 max-w-3xl">
+            wordmark with no canvas, no observers and no rAF loop. */}
+        <div className="max-w-3xl">
           {showCanvas ? (
             <div className="cem-wordmark-canvas h-16 w-full md:h-24 lg:h-28">
               <TechText
@@ -303,7 +311,7 @@ export default function Hero() {
           className="cem-enter mt-8 max-w-7xl font-medium uppercase leading-[0.85] tracking-[-0.02em] text-cem-text [font-size:clamp(1.75rem,5.9vw,4.5rem)]"
         />
 
-        <p className="cem-enter mt-5 max-w-2xl text-base leading-relaxed text-cem-secondary md:text-lg">
+        <p className="cem-enter mt-6 max-w-2xl text-base leading-relaxed text-cem-secondary md:text-lg">
           {landing.tagline}
         </p>
 
@@ -314,21 +322,54 @@ export default function Hero() {
             placeholder submit, no fake confirmation. Amber on `cem.base` measured
             at 8.31:1 from the built CSS, clearing AA and AAA; amber with light text
             computes to 2.05:1 and is a hard fail, so the fill carries the accent.
-            `whitespace-nowrap` is §4.7's CTA BUTTON WRAP BAN. */}
+            `whitespace-nowrap` is §4.7's CTA BUTTON WRAP BAN.
+
+            APPLE §1, RESPOND ON POINTER-DOWN. There was NO press state on this
+            button, or on any other pressable element in the landing. `PRESS` is
+            `active:scale-[0.97]` on a 150ms transition, which is Emil's baseline
+            and inside the 100-160ms band.
+
+            NO CLICKSPARK HERE, AND THAT IS THE POINT. Apple §16.8 says delight is
+            the result of getting the other seven right, and §13 says add feedback
+            only where it earns its place. This button is the page's only conversion
+            action and it goes nowhere: `#waitlist` is an empty section because B1
+            is undecided. A particle burst on a button that leads to nothing is
+            polish on a broken promise, and it would be the most visible thing on
+            the page. The spark went on the role tabs instead, which do real work. */}
         <a
           href={landing.cta.href}
-          className={`cem-enter mt-8 inline-flex min-h-12 items-center justify-center whitespace-nowrap rounded-full bg-cem-amber px-6 text-sm font-semibold text-cem-base duration-200 hover:bg-cem-amber/90 ${FOCUS}`}
+          className={`cem-enter mt-8 inline-flex min-h-12 items-center justify-center whitespace-nowrap rounded-full bg-cem-amber px-6 text-sm font-semibold text-cem-base duration-200 hover:bg-cem-amber/90 ${PRESS} ${FOCUS}`}
         >
           {landing.cta.label}
         </a>
       </div>
 
-      {/* P3: the demo breaks out to the page's widest measure, because it is the
-          one asset meant to be memorable and it now has room to be one. */}
-      <div className="relative mx-auto mt-14 max-w-7xl md:mt-20">
+      {/* ── THE DEMONSTRATION, and where the eyebrow went ───────────────────────
+          `hero.eyebrow` reads "Stage Bus", which is the name of the CONCEPT the
+          demo shows, not a label for the page or for the brand. It was sitting
+          above the wordmark, where it read as a third identity statement stacked
+          on top of "CEMURM" and the headline, and that redundancy is a large part
+          of why the hero read as a blog header.
+
+          It is not deleted and the string is not touched: it moved DOWN to sit
+          directly above the three device frames, which is the thing it names.
+          That is Emil §16 "Grouping and mapping": a control or a label belongs
+          near what it labels, and if you need a label to explain a relationship
+          the relationship is weak. Nothing is lost and the copy is unchanged.
+
+          §15 TRACKING, the other direction: this stays POSITIVE at 0.18em because
+          it is 12px uppercase. Apple asks for negative tracking on display text
+          and slightly positive on small text, and the page needs both, so the
+          scale keeps both rather than being flattened to one value. */}
+      <div className="relative mx-auto mt-16 max-w-7xl md:mt-24">
+        <p className="mb-6 text-center text-xs font-semibold uppercase tracking-[0.18em] text-cem-secondary">
+          {hero.eyebrow}
+        </p>
+
         <RoleRotation
           groupLabel={rotationGroupLabel}
           caption={landing.demo.disclaimer}
+          sparkColor={tokens.amber}
           screens={roles.map((role) => ({ ...role, node: screenFor(role) }))}
         />
       </div>

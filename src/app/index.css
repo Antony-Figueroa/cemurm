@@ -101,6 +101,97 @@
 .rounded-cem-xl { border-radius: var(--cem-radius-xl); }
 
 /* ===========================================================================
+ * The sticky header's scroll edge, and the other two accessibility signals
+ * ===========================================================================
+ * APPLE §12, "Scroll edge effects, not hard dividers": instead of a 1px border
+ * under a sticky header, fade a small blur/gradient mask where content meets
+ * floating chrome, and only where the chrome actually overlaps content. The
+ * header carried `border-b border-cem-text/10`, which is the hard divider the rule
+ * names. Replaced by a gradient scrim painted just below the header's own bottom
+ * edge: content passing under it fades into the material rather than being cut by
+ * a line, and there is no rule anywhere because nothing needs one.
+ *
+ * WHY A SCIM AND NOT A MASK: `mask-image` would erase the header's own pixels,
+ * which is wrong, since the header is the thing that must stay legible. A scrim
+ * underneath it darkens the incoming content instead, which is the effect §12 is
+ * actually describing.
+ *
+ * THE GRADIENT IS TAILWIND UTILITIES, not custom properties. `from-cem-base/70`
+ * and `to-cem-base/0` are built from the SAME declared token the header is painted
+ * from, which keeps the ramp in tailwind.config.js as its single source and puts
+ * no colour syntax in this file. Writing the stops as custom properties here was
+ * tried first and failed gate rule 01a, for the seventh time on this branch: any
+ * functional-colour notation in src/ is a hit whether or not it is a design token.
+ *
+ * APPLE §12, "Materialize, don't just fade": a glass surface should arrive as a
+ * material, so the blur radius and a slight scale animate together on entry rather
+ * than the surface simply appearing. This is `@starting-style` plus a transition,
+ * which is plan §9.1 row 2, costs zero bytes and needs no JavaScript. Reduced
+ * motion collapses it to instant via the global block at the bottom of this file,
+ * so no override is needed or wanted.
+ *
+ * APPLE §14, THREE INDEPENDENT SIGNALS. `prefers-reduced-motion` is already
+ * handled globally and per component. These add the other two, which were missing:
+ *
+ *   prefers-reduced-transparency: reduce — raise the fill toward opaque AND drop
+ *   the blur, because the point of the request is that the material stops being
+ *     transparent, and an opaque-but-still-blurred surface is neither. LandingHeader
+ *     already raised the opacity to 95 percent; it did not drop the blur.
+ *   prefers-contrast: more — near-solid background plus a defined contrasting
+ *     border, so the header does not rely on translucency to separate itself from
+ *     the content behind it. This one had no handling anywhere in the project.
+ * =========================================================================== */
+.cem-scroll-scrim {
+  pointer-events: none;
+  position: absolute;
+  inset: 100% 0 auto 0;
+  height: 1.5rem;
+  transition: opacity 200ms ease-out;
+}
+
+/* Materialize on entry: blur and scale together, never opacity alone. */
+.cem-material {
+  transition:
+    backdrop-filter 420ms cubic-bezier(0.23, 1, 0.32, 1),
+    -webkit-backdrop-filter 420ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 420ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@starting-style {
+  .cem-material {
+    backdrop-filter: blur(0);
+    -webkit-backdrop-filter: blur(0);
+    transform: scale(1.015);
+  }
+}
+
+/* §14, signal two of three. Opacity AND blur, not opacity alone. */
+@media (prefers-reduced-transparency: reduce) {
+  .cem-material {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .cem-scroll-scrim {
+    display: none;
+  }
+}
+
+/* §14, signal three of three. Near-solid fill plus a defined contrasting edge, so
+   separation from the content behind does not depend on translucency at all. */
+@media (prefers-contrast: more) {
+  .cem-material {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .cem-scroll-scrim {
+    display: none;
+  }
+  .cem-contrast-edge {
+    border-bottom: 1px solid var(--cem-text);
+  }
+}
+
+/* ===========================================================================
  * The hero wordmark canvas, gated on a real pointing device
  * ===========================================================================
  * Emil's rule: hover work belongs behind `@media (hover: hover) and (pointer:
@@ -118,10 +209,11 @@
  *
  * The static wordmark is the counterpart and is NOT hidden by this rule: it is
  * what a phone gets and it must stay visible. `.cem-wordmark-canvas` is only ever
- * applied to the canvas wrapper.
+ * applied to the canvas wrapper, and `.cem-spark-canvas` only to ClickSpark's.
  * =========================================================================== */
 @media not all and (hover: hover) and (pointer: fine) {
-  .cem-wordmark-canvas {
+  .cem-wordmark-canvas,
+  .cem-spark-canvas {
     display: none;
   }
 }

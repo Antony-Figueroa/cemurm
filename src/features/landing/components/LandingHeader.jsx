@@ -20,10 +20,36 @@ import { landing } from '../../../content/landing.es.js'
 // no Apple provenance, but Tailwind's default `backdrop-saturate` scale stops
 // at 150 — so `backdrop-saturate-180` emits NO rule at all and would have
 // shipped as a silent no-op. 150 is the nearest step that exists.
+//
+// §12 "Material weight encodes hierarchy" and this surface is the LARGEST
+// translucent element on the page, so it takes the strongest blur available:
+// `backdrop-blur-2xl` (40px) rather than the `xl` (24px) it had, against the same
+// 70 percent fill. Bigger surface, thicker material, deeper separation from what
+// scrolls under it.
+//
+// `cem-material` carries the §12 "materialize, don't just fade" entry: blur radius
+// and scale animate together on load. It is `@starting-style` plus a transition,
+// declared in src/app/index.css, so it costs zero bytes and no JavaScript.
+//
+// §12 "Scroll edge effects, not hard dividers": `border-b border-cem-text/10` was
+// exactly the 1px border the rule names, so it is gone. The scrim below is painted
+// from `.cem-scroll-scrim` and fades the incoming content into the material.
+// `.cem-contrast-edge` re-introduces a border ONLY under `prefers-contrast: more`,
+// where a defined contrasting edge is what §14 asks for and translucency cannot
+// carry it.
 const SURFACE =
-  'border-b border-cem-text/10 bg-cem-base/70 backdrop-blur-xl backdrop-saturate-150 ' +
+  'cem-material cem-contrast-edge bg-cem-base/70 backdrop-blur-2xl backdrop-saturate-150 ' +
   '[@media(prefers-reduced-transparency:reduce)]:bg-cem-base/95 ' +
   '[@supports_not(backdrop-filter:blur(1px))]:bg-cem-base/95'
+
+// APPLE §1, "Respond on pointer-down, not on release". Emil's baseline is
+// `transform: scale(0.97)` on `:active` on the 100-160ms band, and it was MISSING
+// on every pressable element in the landing. `transition-transform` rather than the
+// existing `duration-200`, because 200ms is past the 160ms top of the band for
+// press feedback and this is the one interaction where latency is most visible.
+// `active:scale-[0.97]` is Tailwind's arbitrary-value form of scale(0.97); the
+// value is inline in the class name and therefore emitted, unlike a computed one.
+const PRESS = 'transition-transform duration-150 ease-out active:scale-[0.97]'
 
 // Reference 7.5: 2px solid `cem.text`, offset 2, `:focus-visible` only, and
 // never the accent — a musician has to be able to tell "this has keyboard focus"
@@ -43,8 +69,19 @@ export default function LandingHeader() {
         {/* The wordmark, and the first of the three things full-saturation amber
             is allowed on. A `span` rather than a link: on a marketing page the
             logo is an identity, not a jump back to a top of page you are
-            already at. */}
-        <span className="order-1 text-lg font-semibold tracking-tight text-cem-amber">
+            already at.
+
+            §15, TRACKING IS SIZE-SPECIFIC. This is `text-lg` at 18px, which sits
+            in the band where Apple says small text wants slightly POSITIVE
+            tracking for legibility, and this was `tracking-tight`, which is
+            negative. Negative tracking at 18px is a display treatment applied at a
+            size that does not want it, so it is now neutral. That is also what
+            the letters themselves prefer: CEMURM is all capitals with wide
+            letterforms, so negative tracking on top of that closes the gaps for no
+            gain. The two directions are NOT flattened: the hero eyebrow at 12px
+            keeps positive 0.18em, the display wordmark keeps negative, and body
+            copy stays at zero. */}
+        <span className="order-1 text-lg font-semibold tracking-normal text-cem-amber">
           {landing.brand}
         </span>
 
@@ -57,7 +94,7 @@ export default function LandingHeader() {
             <a
               key={item.id}
               href={`#${item.id}`}
-              className={`inline-flex min-h-12 items-center text-sm font-medium text-cem-secondary duration-200 hover:text-cem-text ${FOCUS}`}
+              className={`inline-flex min-h-12 items-center text-sm font-medium text-cem-secondary duration-200 hover:text-cem-text ${PRESS} ${FOCUS}`}
             >
               {item.label}
             </a>
@@ -70,11 +107,22 @@ export default function LandingHeader() {
             a style. */}
         <a
           href={landing.cta.href}
-          className={`order-2 inline-flex min-h-12 items-center rounded-full bg-cem-amber px-5 text-sm font-semibold text-cem-base duration-200 hover:bg-cem-amber/90 sm:order-3 ${FOCUS}`}
+          className={`order-2 inline-flex min-h-12 items-center rounded-full bg-cem-amber px-5 text-sm font-semibold text-cem-base duration-200 hover:bg-cem-amber/90 sm:order-3 ${PRESS} ${FOCUS}`}
         >
           {landing.cta.label}
         </a>
       </div>
+
+      {/* §12, the scroll edge. `absolute` against the header's own box, so it sits
+          exactly below the material and travels with it as the page scrolls. It is
+          `pointer-events: none` and carries no id, so it can never intercept a
+          click meant for the nav beneath it. Hidden entirely under
+          `prefers-reduced-transparency: reduce` and `prefers-contrast: more`,
+          where there is nothing to fade into. */}
+      <div
+        className="cem-scroll-scrim bg-gradient-to-b from-cem-base/70 to-cem-base/0"
+        aria-hidden="true"
+      />
     </header>
   )
 }

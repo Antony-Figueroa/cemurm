@@ -2,7 +2,20 @@
 
 import { useEffect, useState } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
+import ClickSpark from './ClickSpark.jsx'
 import DeviceFrame from './DeviceFrame.jsx'
+
+// Whether this device can actually drive a cursor-driven effect. A phone reports
+// `hover: none, pointer: coarse`: no hover, no drag, and for ClickSpark no
+// meaningful click target to burst from in a canvas that covers the tabs.
+//
+// Lazy-initialised TRUE so the first paint is the enriched version and a phone
+// does not flash the plain one before swapping. The swap is invisible in practice:
+// A1's curtain covers the hero for 1400ms, long enough for this to resolve.
+function hasFinePointer() {
+  if (typeof window === 'undefined') return true
+  return window.matchMedia?.('(hover: hover) and (pointer: fine)').matches ?? false
+}
 
 // THE ONE NON-USER-TRIGGERED MOTION MOMENT IN THE WHOLE LANDING (section 7.7
 // budgets exactly one). It is a three-step sequence that runs once on load and
@@ -72,7 +85,7 @@ function depthFor(offset, reduce) {
   }
 }
 
-export default function RoleRotation({ groupLabel, caption, screens }) {
+export default function RoleRotation({ groupLabel, caption, sparkColor, screens }) {
   const reduce = useReducedMotion()
   const [active, setActive] = useState(0)
 
@@ -87,6 +100,33 @@ export default function RoleRotation({ groupLabel, caption, screens }) {
   }, [reduce])
 
   const current = screens[active]
+
+  // §14, signal one. `useReducedMotion()` is the only reliable control here: this
+  // file and ClickSpark both drive canvas rAF loops, and index.css's global
+  // reduced-motion block sets CSS transition and animation durations, which inline
+  // styles and rAF never consult. The previous slice already unmounted the wordmark
+  // canvas on this signal; ClickSpark needs the same treatment and gets it here.
+  const canSpark = reduce === false && hasFinePointer()
+
+  // APPLE §1, RESPOND ON POINTER-DOWN. These buttons previously had `duration-200`
+  // and no press state at all. `transition-transform duration-150 ease-out` with
+  // `active:scale-[0.97]` is Emil's baseline inside the 100-160ms band, and it is
+  // the reason the buttons read as buttons rather than as links.
+  const tabs = screens.map((screen, index) => (
+    <button
+      key={screen.id}
+      type="button"
+      aria-pressed={index === active}
+      onClick={() => setActive(index)}
+      className={`inline-flex min-h-12 min-w-12 items-center justify-center rounded-cem-sm border-b-2 px-4 text-sm font-medium transition-transform duration-150 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cem-text focus-visible:ring-offset-2 focus-visible:ring-offset-cem-base ${
+        index === active
+          ? 'border-cem-amber text-cem-amber'
+          : 'border-transparent text-cem-secondary hover:text-cem-text'
+      }`}
+    >
+      {screen.label}
+    </button>
+  ))
 
   return (
     <div>
@@ -140,22 +180,52 @@ export default function RoleRotation({ groupLabel, caption, screens }) {
           horizontal row prefer it. Selected state is `text-cem-amber` plus a 2px
           amber rule, which is the accent as an indicator rather than as a second
           full-saturation surface. */}
-      <div className="mt-8 flex justify-center gap-2" role="group" aria-label={groupLabel}>
-        {screens.map((screen, index) => (
-          <button
-            key={screen.id}
-            type="button"
-            aria-pressed={index === active}
-            onClick={() => setActive(index)}
-            className={`inline-flex min-h-12 min-w-12 items-center justify-center rounded-cem-sm border-b-2 px-4 text-sm font-medium duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cem-text focus-visible:ring-offset-2 focus-visible:ring-offset-cem-base ${
-              index === active
-                ? 'border-cem-amber text-cem-amber'
-                : 'border-transparent text-cem-secondary hover:text-cem-text'
-            }`}
+      {/* The tab row, and ClickSpark.
+        *
+        * WHY THE SPARK IS HERE AND NOT ON THE CTA. Apple §16.8: delight is the
+        * result of getting the other seven right, not confetti tacked on top. §13:
+        * add feedback only where it earns its place. These tabs change what the
+        * demo is projecting, so the burst marks a real state change and lands
+        * exactly where the visitor's attention already is. The hero CTA leads to an
+        * empty section because B1 is undecided, and celebrating a dead end would be
+        * polish on a broken promise.
+        *
+        * The spark colour is `cem-amber` passed from Hero, resolved from the
+        * declared token class rather than a literal, because gate rule 01a forbids
+        * colour literals in src/. Amber is also exactly right here: it is the
+        * active/selected colour, and these buttons ARE the selected state, so the
+        * burst reinforces an existing rule rather than inventing one.
+        *
+        * GATING. ClickSpark's own rAF loop is perpetual from mount to unmount, so
+        * it is only mounted where it can be both seen and afforded: a real pointing
+        * device, and motion not reduced. Same gate as the wordmark canvas, and
+        * `.cem-spark-canvas` in index.css is the second line of defence.
+        *
+        * THE h-12 PARENT IS REQUIRED, not decoration. ClickSpark's root is
+        * `relative w-full h-full`, so its height resolves against its parent. With
+        * an auto-height parent that is zero and the canvas collapses to nothing.
+        * `h-12` matches the buttons' own `min-h-12`, and the inner row re-centres
+        * because ClickSpark is `w-full` and eats the whole line.
+        */}
+      {/* The grouping lives on THIS wrapper, not on the row inside ClickSpark:
+          ClickSpark renders its own div between them, so putting role=group on
+          the inner row would leave the accessible name one element too deep and
+          the tabs would lose their grouping for a screen reader. */}
+      <div className="mt-8 flex h-12 justify-center" role="group" aria-label={groupLabel}>
+        {canSpark ? (
+          <ClickSpark
+            sparkColor={sparkColor}
+            sparkSize={9}
+            sparkRadius={16}
+            sparkCount={7}
+            duration={380}
+            extraScale={1.1}
           >
-            {screen.label}
-          </button>
-        ))}
+            <div className="flex h-full items-center justify-center gap-2">{tabs}</div>
+          </ClickSpark>
+        ) : (
+          <div className="flex h-full items-center justify-center gap-2">{tabs}</div>
+        )}
       </div>
 
       <p className="mt-4 text-center text-sm text-cem-secondary">{current.blurb}</p>
