@@ -106,6 +106,45 @@ Per the gate, a one-judge report is a suspect and is not auto-fixed.
 
 `paths-injected` — `/home/antony/.agents/skills/design-taste-frontend/SKILL.md`, `/home/antony/.agents/skills/apple-design/SKILL.md`, `/home/antony/.agents/skills/emil-design-eng/SKILL.md`, `skills/cemurm-visual-system/SKILL.md`. All four verified present before launch and read in full by both judges. Both reported the taste skill versus visual system conflict rather than silently resolving it, and both honoured the rule that forbids hand-rolled icon paths while recording the repo's contrary justification.
 
+## Round 2 — scoped re-judgment and terminal verdict
+
+Both judges ran again over this frozen ledger plus the immutable round-1 delta `92490a3..1b06d35`, seeing only those two inputs. **Unanimous: all twelve returned FIXED.** Neither trusted the fix commit's own claims; both recomputed the LCP arithmetic from the current constants, and both landed on 1860ms at the floor and 2460ms at the backstop against the 2500ms target.
+
+Round 1 also created defects, which the re-judgment was entitled to record. Both judges independently found the same two, and round 2 (`6fd285e`) cleared them: the `PRESS` constant orphaned in `Accordion.jsx` and `Galeria.jsx` by the C-2 rewrite, which `no-unused-vars`' `varsIgnorePattern: '^[A-Z_]'` makes structurally invisible, and the prose across `Hero.jsx`, `Landing.jsx`, `Header.jsx` and `VideoBG.jsx` still describing the deleted video layer and parallax. Both judges also observed the tell that made this certain rather than a preference: the same commit rewrote `CtaFinal.jsx`'s equivalent comment to say it has no video, so `Hero.jsx` ended up arguing for and against one deletion inside one file.
+
+One ledger finding was refuted and not applied. C-10's guardian-consent half was going to be rewritten as promising machinery that does not exist. Migration `0031_guardian_consent_email.sql`, the `send-guardian-consent` edge function, `minors.js` and `RequireGuardianConsent` in `AuthGuards.jsx` show the feature ships. Both judges read `Landing.jsx`'s `console.log`, which is the **waitlist** handler, and inferred the FAQ was fiction. The fix actor refused the edit; the parent confirmed with an independent grep.
+
+```yaml
+target_identity: 2eebaf9220a3513594b6f8af185651c34860d4214c39a7b3f9910ede162a1377
+round: 2
+confirmed:
+  - C-1  # Header reduced-transparency, impossible selector -> real media queries, plus prefers-contrast added
+  - C-2  # invalid transition-property, plus the equal-specificity cascade collision
+  - C-3  # three per-event scroll listeners -> useScroll + IntersectionObserver, 8.4px parallax deleted
+  - C-4  # SpecularButton sweep never ran -> group/group-hover variants
+  - C-5  # video backgrounds painted behind the page fill -> dead layers removed
+  - C-6  # RevealText.jsx, 297 unreachable lines -> deleted, citations rewritten
+  - C-7  # colour rotation collapsed to amber -> permitted tokens only
+  - C-8  # 48px icon row and dead pl-12 gutter below sm -> collapsed
+  - C-9  # zero aria-live in the landing -> role=status + aria-invalid + aria-describedby
+  - C-10 # error string implied a system failure -> now names the address
+  - C-11 # h1 painted at 2860/4060ms -> 1860/2460ms
+  - C-12 # label and blurb printed twice -> printed once
+suspect: 16        # recorded, never touched
+contradictions: 2  # frame-fan crop and the C-1 mechanism; both escalated, neither auto-resolved
+info: 7
+fix_work_units:
+  - round1 # 12 units, 16 files, +444 -458, commit 1b06d35
+  - round2 # 3 units, 6 files, comment and dead-declaration only, commit 6fd285e
+scoped_rejudgment: not_run
+terminal_state: approved
+skill_resolution: paths-injected
+```
+
+`scoped_rejudgment: not_run` is deliberate. The second round changed two dead declarations and five comment blocks with **zero behavioural difference**, verified by all four gates green, `PRESS` at 0 references in both files, and the stale prose at 0. Spending another two blind judges on a delta with no runtime consequence would be ceremony, and the verdict shape admits `not_run` precisely for this case.
+
+Two SUGGESTION items were recorded and **not** cleared, both from a single judge. The C-8 wrapper moves `GlassIcon` from a blockified flex item into a block container at the only two sites where it is not a direct flex child, and its unsized `svg` resolves renderer-dependently, so the rendered delta cannot be settled without a browser. The C-4 sweep is the landing's first hover trigger without a `(hover: hover) and (pointer: fine)` gate, so a phone tap plays a 300ms crossing; the reason it was left alone is that `Features.jsx` already carried an ungated `group-hover` at the frozen base, so the fix follows existing local practice rather than establishing a worse convention.
+
 ## What both judges agree is already right
 
 Worth recording, because it is what the previous slices bought: the eyebrow count is exactly at budget (3 across 9 sections), the bento claims 8 of 8 cells with no empty one, six distinct layout families with none used more than twice, zero em-dashes or middle-dots in visible copy, zero Tailwind classes that emit nothing **except** C-2's invalid declaration, `inert` on both collapsed bodies, `aria-expanded` and `aria-controls` on all 12 accordion triggers, `:active:scale-[0.97]` on every pressable, `min-h-12` targets, `focus-visible` rings throughout, `motion` imported by exactly 8 files and no authenticated surface, and all four gates green with both ratchets exactly at ceiling.
