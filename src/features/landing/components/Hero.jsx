@@ -81,10 +81,29 @@ function MockupStack({ reduce }) {
           fan embracing the active frame). Perspective is on the parent; the crop is on this
           container; the active frame lifts with z-10 so it is never the most occluded one.
           figure wraps frames + caption because figcaption is only valid inside figure, and
-          preflight zeroes figure's margin, so this adds no space. */}
+          preflight zeroes figure's margin, so this adds no space.
+
+          MOBILE COLLAPSE, declared here because §4.7 requires the sub-768px fallback to
+          live in the component. Below `xl` the row is a scroll-snap track; from `xl` up it
+          is the centred fan again. The boundary is arithmetic: the active frame is the
+          FIRST child and `first:ml-0` zeroes its negative margin, so "fully inside the
+          container" reduces to `3W - 2M <= container`, which fails at every width below
+          1280 (375: 768 > 343, 26% visible; 768: 864 > 720, 78%; 1024: 1024 > 976, 94%)
+          and passes at 1280, where the container is 1232 against 1024 of content.
+          Narrowing W does not survive the scale: the middle frame's visible sliver is
+          `W - 2M`, so asking 24px of it caps W at 159.5, and the scale only offers
+          `w-36` (144) there, a 126px column that makes the projection window 1:2.5
+          portrait while dragging `md:w-80` and `lg:w-96` down too. Scaling the fan
+          scales the 14px label with it.
+          `justify-start` below `xl` puts the active frame at offset 0 with the NEXT frame
+          peeking from under it: 55px at 375, 70 at 390, 94 at 414, 400 at 768. That peek
+          plus `snap-mandatory` is the affordance, and it is structural rather than a
+          caption because copy is not editable here. Document-level horizontal scroll is
+          unaffected: the section is `overflow-hidden`, and the container now scrolls its
+          own overflow instead of letting it out. */}
       <figure className="m-0">
         <div
-          className="cem-perspective flex items-end justify-center overflow-hidden"
+          className="cem-perspective flex items-end justify-start overflow-y-hidden overflow-x-auto snap-x snap-mandatory xl:overflow-hidden xl:snap-none xl:justify-center"
           style={{ perspective: '1200px', transformStyle: 'preserve-3d' }}
         >
           {landing.hero.views.map((view, index) => {
@@ -92,7 +111,7 @@ function MockupStack({ reduce }) {
             return (
               <motion.div
                 key={view.id}
-                className={`-ml-12 w-72 shrink-0 origin-bottom first:ml-0 md:w-80 lg:-ml-16 lg:w-96 ${
+                className={`-ml-12 w-72 shrink-0 origin-bottom first:ml-0 snap-start md:w-80 lg:-ml-16 lg:w-96 ${
                   active ? 'z-10' : 'z-0'
                 }`}
                 animate={reduce ? { opacity: 1 } : {

@@ -44,10 +44,26 @@ const PRESS = 'transition-transform duration-150 ease-out active:scale-[0.97]'
 // quarter of every amber pill. Hence `inset-y-0 left-0 w-1/2` below: the box is
 // unambiguous, and it is off the pill at rest.
 //
+// THE CLIP BELONGS ON THE CONTROL, and that is the fix for a strip that painted
+// 113px of grey gradient immediately to the LEFT of the CTA at every width. The
+// utilities used to sit on a `<span>` around the control, and a non-replaced
+// INLINE box ignores `overflow`: the property applies to block, flex and grid
+// containers, so `overflow-hidden` there clipped nothing while `relative` on that
+// span still made it the strip's containing block. The control is `inline-flex`,
+// which IS a flex container, so `overflow-hidden` on it applies. `-translate-x-full`
+// is then invisible at rest, as it always meant to be: the strip is half the pill
+// wide, so it lands entirely outside, and the control's clip is the only thing that
+// makes that true. On hover it crosses the full pill width.
+//
 // Under reduced motion the strip does not travel at all. It becomes a brightness
 // step on the left half of the pill, which is a real override in src/app/index.css
 // rather than a claim in a comment.
 const SWEEP = 'relative overflow-hidden'
+
+// `w-fit` is the price of deleting that wrapper: as a flex item in Registro's and
+// CtaFinal's `flex flex-col` form the control would stretch to the column on a
+// phone, and `fit-content` is not `auto`, so `align-items: stretch` never applies.
+// In block flow it resolves identically to `w-auto`, so the hero CTA is unchanged.
 
 // Off the pill at rest, across the pill on hover or keyboard focus. `focus-visible`
 // is not optional: a keyboard user has to get the same specular read as a pointer,
@@ -77,41 +93,37 @@ export const SpecularButton = memo(function SpecularButton({
 
   const content = children ?? label
 
-  return (
-    <span className={SWEEP}>
-      {href ? (
-        <a
-          href={href}
-          className={`group inline-flex min-h-12 items-center justify-center whitespace-nowrap rounded-full px-6 text-sm font-semibold ${PRESS} ${FOCUS} ${
-            ghost
-              ? 'border border-cem-text/20 bg-transparent text-cem-text hover:bg-cem-text/10'
-              : 'bg-cem-amber text-cem-base border-t border-cem-text/20 hover:bg-cem-amber/90'
-          }`}
-          onPointerDown={handlePointerDown}
-          onClick={onClick}
-        >
-          {/* The light sweep — a thin highlighted strip that crosses the surface on
-              hover and on keyboard focus. Pure CSS, no JS, no colour literal (the
-              highlight is the near-white text token at low alpha, not amber). */}
-          <span className={SWEEP_STRIP} aria-hidden="true" />
-          <span className="relative z-10">{content}</span>
-        </a>
-      ) : (
-        <button
-          type={type}
-          className={`group inline-flex min-h-12 items-center justify-center whitespace-nowrap rounded-full px-6 text-sm font-semibold ${PRESS} ${FOCUS} ${
-            ghost
-              ? 'border border-cem-text/20 bg-transparent text-cem-text hover:bg-cem-text/10'
-              : 'bg-cem-amber text-cem-base border-t border-cem-text/20 hover:bg-cem-amber/90'
-          }`}
-          onPointerDown={handlePointerDown}
-          onClick={onClick}
-        >
-          <span className={SWEEP_STRIP} aria-hidden="true" />
-          <span className="relative z-10">{content}</span>
-        </button>
-      )}
-    </span>
+  return href ? (
+    <a
+      href={href}
+      className={`group ${SWEEP} inline-flex w-fit min-h-12 items-center justify-center whitespace-nowrap rounded-full px-6 text-sm font-semibold ${PRESS} ${FOCUS} ${
+        ghost
+          ? 'border border-cem-text/20 bg-transparent text-cem-text hover:bg-cem-text/10'
+          : 'bg-cem-amber text-cem-base border-t border-cem-text/20 hover:bg-cem-amber/90'
+      }`}
+      onPointerDown={handlePointerDown}
+      onClick={onClick}
+    >
+      {/* The light sweep — a thin highlighted strip that crosses the surface on
+          hover and on keyboard focus. Pure CSS, no JS, no colour literal (the
+          highlight is the near-white text token at low alpha, not amber). */}
+      <span className={SWEEP_STRIP} aria-hidden="true" />
+      <span className="relative z-10">{content}</span>
+    </a>
+  ) : (
+    <button
+      type={type}
+      className={`group ${SWEEP} inline-flex w-fit min-h-12 items-center justify-center whitespace-nowrap rounded-full px-6 text-sm font-semibold ${PRESS} ${FOCUS} ${
+        ghost
+          ? 'border border-cem-text/20 bg-transparent text-cem-text hover:bg-cem-text/10'
+          : 'bg-cem-amber text-cem-base border-t border-cem-text/20 hover:bg-cem-amber/90'
+      }`}
+      onPointerDown={handlePointerDown}
+      onClick={onClick}
+    >
+      <span className={SWEEP_STRIP} aria-hidden="true" />
+      <span className="relative z-10">{content}</span>
+    </button>
   )
 })
 
