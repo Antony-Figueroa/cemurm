@@ -72,18 +72,9 @@ export default function CtaFinal({ onSubmit }) {
         />
       </div>
 
-      {/* Subtle gradient with alpha classes over the video, no raw colour function (gate 01a). */}
-      <div
-        className="absolute inset-0 -z-10 bg-gradient-to-tr from-cem-amber/8 via-transparent to-cem-secondary/6"
-        aria-hidden="true"
-      />
-
       <div className="relative mx-auto max-w-2xl text-center">
-        {/* Eyebrow + headline + subtitle. */}
+        {/* Headline + subtitle. */}
         <div className="mb-6">
-          <p className="mb-6 text-xs font-semibold uppercase tracking-[0.18em] text-cem-secondary">
-            {landing.ctaFinal.eyebrow}
-          </p>
           <MaskedHeading
             as="h2"
             text={landing.ctaFinal.title}
@@ -110,7 +101,7 @@ export default function CtaFinal({ onSubmit }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={landing.registro.input.placeholder}
-              className={`flex-1 rounded-cem-md border border-cem-text/15 bg-cem-base/80 py-3 pl-12 pr-4 text-sm text-cem-text placeholder:text-cem-secondary/60 backdrop-blur-sm focus:border-cem-amber/50 focus:outline-none ${FOCUS}`}
+              className={`flex-1 rounded-cem-md border border-cem-text/15 bg-cem-base/80 py-3 pl-12 pr-4 text-sm text-cem-text placeholder:text-cem-secondary-elevated/70 backdrop-blur-sm focus:border-cem-amber/50 focus:outline-none ${FOCUS}`}
               aria-label={landing.registro.input.label}
             />
           </div>

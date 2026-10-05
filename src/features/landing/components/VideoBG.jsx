@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types -- the shape is { src, overlay } and neither
-   is required; the component renders a placeholder gradient when no src is given. */
+   is required; with no src the component renders an empty spacer. */
 
 import { memo, useEffect, useRef } from 'react'
 
@@ -8,17 +8,14 @@ import { memo, useEffect, useRef } from 'react'
 // What reduced motion DOES do is keep the parent's parallax rAF from starting, which is
 // where the actual synthetic motion lives.
 //
-// CLS is the real enemy here. The video has explicit width/height so the layout does not
-// jump when the file is large or slow; object-cover keeps it filling without aspect
-// distortion; the fallback block is the SAME size as the video so switching from
-// placeholder to real media does not shift anything.
+// CLS is the real enemy here. object-cover fills without aspect distortion, and the video
+// carries no width/height attributes, so the wrapper — not the media — sizes the layout.
 //
-// src is a placeholder until you connect the real file. The component accepts a real src
-// and renders a blank overlay block when none is present, so the layout is stable before
-// and after you drop in the file.
+// src is a placeholder until you connect the real file. The component accepts a real src and
+// renders an empty spacer when none is present.
 //
-// The placeholder gradient uses only Tailwind alpha classes (from-cem-amber/10, etc.) so the
-// source has no raw colour function — gate 01a compliant. No colour literals.
+// The no-src branch painted a placeholder gradient that sat at -z-10 behind the calling
+// section's opaque bg and never rendered; it was deleted rather than switched on.
 
 export const VideoBG = memo(function VideoBG({ src = '', overlay = true }) {
   const videoRef = useRef(null)
@@ -40,7 +37,7 @@ export const VideoBG = memo(function VideoBG({ src = '', overlay = true }) {
         <>
           <video
             ref={videoRef}
-            className="h-full w-full -translate-y-1/2 object-cover"
+            className="h-full w-full object-cover"
             src={src}
             autoPlay
             muted
@@ -57,14 +54,8 @@ export const VideoBG = memo(function VideoBG({ src = '', overlay = true }) {
           )}
         </>
       ) : (
-        /* Placeholder gradient — the same dark ramp the real video's overlay would
-            produce, so the layout holds its space and the section reads the same before
-            and after you drop in the media file. A linear gradient with alpha classes so the
-            source has no raw colour function (gate 01a). */
-        <div
-          className="absolute inset-0 bg-gradient-to-br from-cem-amber/10 via-transparent to-cem-secondary/6"
-          aria-hidden="true"
-        />
+        /* Empty spacer: the wrapper has no intrinsic height, so this paints no box. */
+        <div className="absolute inset-0" aria-hidden="true" />
       )}
     </div>
   )

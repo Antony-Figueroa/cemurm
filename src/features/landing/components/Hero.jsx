@@ -7,7 +7,6 @@ import { landing } from '../../../content/landing.es.js'
 import VideoBG from './VideoBG.jsx'
 import MaskedHeading from './MaskedHeading.jsx'
 import SpecularButton from './SpecularButton.jsx'
-import ClickSpark from './ClickSpark.jsx'
 import GlassIcon from './GlassIcon.jsx'
 import DeviceFrame from './DeviceFrame.jsx'
 
@@ -46,16 +45,8 @@ const PRESS = 'transition-transform duration-150 ease-out active:scale-[0.97]'
 const HEADLINE =
   'text-[length:clamp(2rem,6vw,4.5rem)] leading-tight tracking-[-0.02em]'
 
-// THE SPARK. Mounted only where a real pointer exists and motion is not reduced, same gate as
-// the repo's existing ClickSpark call sites. Spark color is cem.amber resolved from the token
-// class, never a literal.
-function canSpark() {
-  if (typeof window === 'undefined') return true
-  return (
-    window.matchMedia?.('(hover: hover) and (pointer: fine)').matches !== false &&
-    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches !== true
-  )
-}
+// THE SPARK. The hero no longer hosts one: it wrapped only screen-reader-only labels that
+// duplicated the visible captions below, so the spark fired on nothing.
 
 // The mockup stack, with parallax on scroll. Each frame is a DeviceFrame around one of the
 // three Stage Bus views, angled slightly so the stack reads as three objects in space rather
@@ -90,71 +81,44 @@ function MockupStack({ reduce }) {
 
       {/* The three frames, stacked with opposing tilts so the outer edges recede (a concave
           fan embracing the active frame). Perspective is on the parent; the crop is on this
-          container; the active frame lifts with z-10 so it is never the most occluded one. */}
-      <div
-        className="cem-perspective flex items-end justify-center overflow-hidden"
-        style={{ perspective: '1200px', transformStyle: 'preserve-3d' }}
-      >
-        {landing.hero.views.map((view, index) => {
-          const active = index === 0
-          return (
-            <motion.div
-              key={view.id}
-              className={`-ml-12 w-72 shrink-0 origin-bottom first:ml-0 md:w-80 lg:-ml-16 lg:w-96 ${
-                active ? 'z-10' : 'z-0'
-              }`}
-              animate={reduce ? { opacity: 1 } : {
-                opacity: active ? 1 : 0.45,
-                scale: active ? 1 : 0.92,
-                rotateY: active ? 0 : index < 1 ? 9 : -9,
-                rotateZ: active ? 0 : index < 1 ? 5 : -5,
-                translateY: offset * (active ? 0 : index < 1 ? 1 : -0.6),
-              }}
-              transition={{ duration: reduce ? 0 : 0.2, ease: [0.32, 0.72, 0, 1] }}
-            >
-              <MockupFrame view={view} index={index} />
-            </motion.div>
-          )
-        })}
-      </div>
-
-      {/* Caption — lives on the figure, not in the hero copy stack. Section 8.2 forbids
-          asserting a licence nobody has checked, and this is the honest place for that claim:
-          on the asset, next to the demo. Kept legible (text-sm, not caption-sized text-xs)
-          because a disclosure nobody can read is not a disclosure. */}
-      <figcaption className="mt-6 text-center text-sm leading-relaxed text-cem-secondary">
-        {landing.hero.caption}
-      </figcaption>
-
-      {/* The spark hosts the tab row on hover devices. Not on the CTA — the CTA leads to the
-          waitlist and a burst on a button that goes to an empty section is polish on a broken
-          promise (Apple §16.8: delight is the result of getting the other seven right). The
-          spark earns its place on the demo's own controls, where it marks a real state change
-          and lands where the visitor's attention already is. */}
-      {canSpark() && (
+          container; the active frame lifts with z-10 so it is never the most occluded one.
+          figure wraps frames + caption because figcaption is only valid inside figure, and
+          preflight zeroes figure's margin, so this adds no space. */}
+      <figure className="m-0">
         <div
-          className="mt-8 flex h-12 justify-center"
-          role="group"
-          aria-label="Vista del escenario"
+          className="cem-perspective flex items-end justify-center overflow-hidden"
+          style={{ perspective: '1200px', transformStyle: 'preserve-3d' }}
         >
-          <ClickSpark
-            sparkColor="bg-cem-amber"
-            sparkSize={9}
-            sparkRadius={16}
-            sparkCount={7}
-            duration={380}
-            extraScale={1.1}
-          >
-            <div className="flex h-full items-center justify-center gap-2">
-              {landing.hero.views.map((view) => (
-                <span key={view.id} className="sr-only">
-                  {view.label}
-                </span>
-              ))}
-            </div>
-          </ClickSpark>
+          {landing.hero.views.map((view, index) => {
+            const active = index === 0
+            return (
+              <motion.div
+                key={view.id}
+                className={`-ml-12 w-72 shrink-0 origin-bottom first:ml-0 md:w-80 lg:-ml-16 lg:w-96 ${
+                  active ? 'z-10' : 'z-0'
+                }`}
+                animate={reduce ? { opacity: 1 } : {
+                  opacity: active ? 1 : 0.45,
+                  scale: active ? 1 : 0.92,
+                  rotateY: active ? 0 : index < 1 ? 9 : -9,
+                  rotateZ: active ? 0 : index < 1 ? 5 : -5,
+                  translateY: offset * (active ? 0 : index < 1 ? 1 : -0.6),
+                }}
+                transition={{ duration: reduce ? 0 : 0.2, ease: [0.32, 0.72, 0, 1] }}
+              >
+                <MockupFrame view={view} index={index} />
+              </motion.div>
+            )
+          })}
         </div>
-      )}
+
+        {/* Caption — the honest place for the licence claim (Section 8.2 forbids asserting
+            one nobody has checked): on the asset, next to the demo. text-sm, not caption-sized
+            text-xs, because a disclosure nobody can read is not a disclosure. */}
+        <figcaption className="mt-6 text-center text-sm leading-relaxed text-cem-secondary">
+          {landing.hero.caption}
+        </figcaption>
+      </figure>
 
       {/* One-line caption under each frame, so the reader knows what each view is without
           chasing the tab label. */}
@@ -211,8 +175,10 @@ export default function Hero() {
       id="hero"
       className="relative overflow-hidden px-4 pb-16 pt-12 md:px-6 md:pb-24 md:pt-24"
     >
-      {/* Video background — placeholder until you connect the real file. The overlay is the
-          same dark scrim the rest of the landing uses, so text over it breathes. */}
+      {/* Video background — placeholder until you connect the real file. NOTE: -z-10 in a
+          section that is not a stacking context paints in the root negative layer, behind the
+          section's opaque bg, so this video and its scrim have never rendered. Left as-is:
+          switching them on needs a layering change nobody can review without a browser. */}
       <div className="absolute inset-0 -z-10">
         <VideoBG src="" overlay />
         {/* Extra dark gradient at the bottom so the headline area is the brightest part of the

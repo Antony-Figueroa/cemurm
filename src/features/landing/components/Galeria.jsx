@@ -5,8 +5,8 @@ import VideoBG from './VideoBG.jsx'
 import GlassIcon from './GlassIcon.jsx'
 import ClickSpark from './ClickSpark.jsx'
 
-// Dark section with subtle gradient (alpha classes), same treatment as the other sections.
-// No solid block, no raw colour function (gate 01a).
+// Dark section, flat (gate 01a). The alpha gradient this used to declare never painted: its
+// off-scale `to-` stop emits no CSS, and the layer sat at -z-10 behind the opaque bg.
 
 // Accordion. Each item expands to reveal its media (video or image placeholder) and its label.
 // The active panel has a glow layer (bg-cem-amber/10) behind it and a border-cem-amber/30, not a
@@ -48,11 +48,8 @@ export default function Galeria() {
       id="galeria"
       className="border-t border-cem-text/10 px-4 py-20 md:px-6 md:py-28 bg-cem-base overflow-hidden"
     >
-      {/* Background — subtle gradient with alpha classes, no raw colour function (gate 01a). */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-tr from-cem-secondary/8 via-transparent to-cem-amber/6" aria-hidden="true" />
-
       <div className="relative mx-auto max-w-7xl">
-        {/* Eyebrow + title. */}
+        {/* Eyebrow + title. Section 4 opens the second eyebrow run (1, 4, 7). */}
         <div className="mb-6 max-w-3xl">
           <p className="mb-6 text-xs font-semibold uppercase tracking-[0.18em] text-cem-secondary">
             {landing.galeria.eyebrow}
@@ -86,8 +83,10 @@ export default function Galeria() {
                 >
                   <GlassIcon kind="chart" color={color} />
                   <span className="text-base font-medium text-cem-text">{item.label}</span>
+                  {/* Spanish copy for the media kind: rendering `item.type` put English on a
+                      Spanish page six times. */}
                   <span className="ml-auto text-xs font-medium uppercase tracking-wider text-cem-secondary">
-                    {item.type}
+                    {landing.galeria.typeLabels[item.type]}
                   </span>
                   <svg
                     viewBox="0 0 24 24"
@@ -103,10 +102,12 @@ export default function Galeria() {
                   </svg>
                 </button>
 
-                {/* Body — the media + label, revealed on expand. */}
+                {/* Body — the media + label, revealed on expand. `inert` while collapsed: the
+                    height animation hides the box but not the subtree. */}
                 <motion.div
                   id={`galeria-${item.id}`}
                   className="overflow-hidden"
+                  inert={isActive ? undefined : ''}
                   animate={reduce ? { height: isActive ? 'auto' : 0 } : { height: isActive ? 'auto' : 0, opacity: isActive ? 1 : 0 }}
                   transition={{ duration: reduce ? 0 : 0.25, ease: [0.23, 1, 0.32, 1] }}
                 >
@@ -124,9 +125,10 @@ export default function Galeria() {
                       </div>
                     </div>
 
-                    {/* Caption. */}
+                    {/* Caption, from the content module: it lost its opening mark when it was
+                        hardcoded here. */}
                     <p className="mt-4 text-sm text-cem-secondary">
-                      {item.type === 'video' ? 'Video de la pantalla!' : 'Imagen de la pantalla!'}
+                      {landing.galeria.captions[item.type]}
                     </p>
                   </div>
                 </motion.div>

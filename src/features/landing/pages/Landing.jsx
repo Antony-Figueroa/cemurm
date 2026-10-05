@@ -45,7 +45,7 @@ export default function Landing() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-cem-base">
+    <div className="flex min-h-[100dvh] flex-col bg-cem-base">
       {/* Intro loader — full-viewport curtain with logo + progress bar, raised on ready. */}
       <IntroLoader />
 
@@ -63,9 +63,6 @@ export default function Landing() {
           className="border-t border-cem-text/10 px-4 py-20 md:px-6 md:py-28 bg-cem-base"
         >
           <div className="mx-auto max-w-3xl">
-            <p className="mb-6 text-xs font-semibold uppercase tracking-[0.18em] text-cem-secondary">
-              {landing.problema.eyebrow}
-            </p>
             <h2 className="text-3xl font-semibold tracking-tighter leading-[1.05] text-cem-text md:text-5xl">
               {landing.problema.title}
             </h2>
@@ -80,7 +77,7 @@ export default function Landing() {
         {/* Stage Bus — floating panel + carousel + dock mobile + click-spark + border-glow. */}
         <StageBus />
 
-        {/* Galeria — accordion of media items with overlay gradient + border-glow + spark. */}
+        {/* Galeria — accordion of media items + border-glow + spark. */}
         <Galeria />
 
         {/* Features — bento glass-icons coloridos + animated-list of steps. */}
@@ -92,9 +89,6 @@ export default function Landing() {
           className="border-t border-cem-text/10 px-4 py-20 md:px-6 md:py-28 bg-cem-base"
         >
           <div className="mx-auto max-w-3xl">
-            <p className="mb-6 text-xs font-semibold uppercase tracking-[0.18em] text-cem-secondary">
-              {landing.comoFunciona.eyebrow}
-            </p>
             <h2 className="text-3xl font-semibold tracking-tighter leading-[1.05] text-cem-text md:text-5xl">
               {landing.comoFunciona.title}
             </h2>

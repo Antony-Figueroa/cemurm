@@ -22,16 +22,25 @@ export default function Footer() {
                 {col.label}
               </p>
               <ul className="space-y-2">
-                {col.links.map((link) => (
-                  <li key={link}>
-                    <a
-                      href="#"
-                      className="text-sm text-cem-secondary hover:text-cem-text transition-colors duration-200"
-                    >
-                      {link}
-                    </a>
-                  </li>
-                ))}
+                {col.links.map((link) => {
+                  const id = landing.footer.anchors[link]
+                  return (
+                    <li key={link}>
+                      {/* Anchor only where this page has that section; an href="#" goes
+                          nowhere. */}
+                      {id ? (
+                        <a
+                          href={`#${id}`}
+                          className="text-sm text-cem-secondary hover:text-cem-text transition-colors duration-200"
+                        >
+                          {link}
+                        </a>
+                      ) : (
+                        <span className="text-sm text-cem-secondary">{link}</span>
+                      )}
+                    </li>
+                  )
+                })}
               </ul>
             </div>
           ))}

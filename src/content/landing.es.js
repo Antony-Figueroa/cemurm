@@ -76,18 +76,18 @@ export const landing = {
     views: [
       {
         id: 'musicos',
-        label: 'Musicos',
+        label: 'Músicos',
         blurb: 'Acordes sobre la letra, con tu tono.',
       },
       {
         id: 'publico',
-        label: 'Publico',
+        label: 'Público',
         blurb: 'La letra sin anotaciones, para emitir.',
       },
       {
         id: 'senal',
-        label: 'Senal',
-        blurb: 'Titulo y posicion, sin letra ni anotaciones.',
+        label: 'Señal',
+        blurb: 'Título y posición, sin letra ni anotaciones.',
       },
     ],
     // Caption that lives on the figure, not in the hero copy stack. Section
@@ -105,7 +105,7 @@ export const landing = {
       'Una hoja lleva un solo tono. En el setlist el tono acordado es uno y ' +
         'cada músico ve el chart canónico renderizado en el suyo, así que la ' +
         'misma pieza necesita una hoja distinta por mano. El setlist no: es el ' +
-        'mismo item.',
+        'mismo elemento.',
       'La hoja tampoco sabe si está lista. El readiness se calcula por versión, ' +
         'y si faltan la letra, el coro o el tono acordado, el selector del ' +
         'setlist lo avisa antes de que alguien lo descubra en el escenario.',
@@ -140,17 +140,17 @@ export const landing = {
     views: [
       {
         id: 'musicos',
-        label: 'Musicos',
+        label: 'Músicos',
         blurb: 'Tu tono, tu capo, tu tempo, sin conexión si hace falta.',
       },
       {
         id: 'publico',
-        label: 'Publico',
+        label: 'Público',
         blurb: 'La letra y el título, sin acordes ni anotaciones.',
       },
       {
         id: 'senal',
-        label: 'Senal',
+        label: 'Señal',
         blurb: 'Lo que la sala ve, sin lo que el músico escribe para sí.',
       },
     ],
@@ -196,6 +196,18 @@ export const landing = {
         type: 'image',
       },
     ],
+    // The media discriminator is data (`video` / `image`); the label a visitor reads is
+    // Spanish copy. Rendering `item.type` verbatim put English on a Spanish page six times.
+    typeLabels: {
+      video: 'Video',
+      image: 'Imagen',
+    },
+    // One caption per media kind, shown under the expanded media. The exclamation mark is
+    // part of the string: it was previously written in JSX text and lost its opening mark.
+    captions: {
+      video: '¡Video de la pantalla!',
+      image: '¡Imagen de la pantalla!',
+    },
   },
 
   // ── FEATURES ──────────────────────────────────────────────────────────────
@@ -220,7 +232,7 @@ export const landing = {
       {
         id: 'roles',
         eyebrow: 'Rol',
-        title: 'Capacidades por rol.',
+        title: 'Quién hace qué.',
         body:
           'El director de sistema administra el repertorio del sistema. Quien ' +
           'arma el setlist dirige. El músico ve su parte en su tono. El ' +
@@ -308,8 +320,8 @@ export const landing = {
       // handler can only validate the address locally. Saying "we added you" would
       // promise something the app does not do, which §8.3 forbids for any CTA or
       // confirmation the visitor reads.
-      success: 'Correo validado. No se envió nada: la lista de espera no está conectada.',
-      error: 'Algo salió mal. Intentá de nuevo.',
+      success: 'Correo validado. No se envió nada: este formulario no está conectado.',
+      error: 'Algo salió mal. Intenta de nuevo.',
     },
   },
 
@@ -375,7 +387,7 @@ export const landing = {
         a:
           'Sí. Tienes tu transposición, tu capo y tus anotaciones. Esas cosas ' +
           'son tuyas y no le aparecen a nadie más. Si quieres compartirlas, ' +
-          'prometes una versión nueva y queda registrada con su autor.',
+          'promueves una versión nueva y queda registrada con su autor.',
       },
     ],
   },
@@ -385,9 +397,11 @@ export const landing = {
   footer: {
     note: 'CEMURM está en beta. El acceso se abre por lista de espera.',
     license: 'Licencia MIT.',
-    // Four nav columns. `label` is the column header, `links` is the list.
-    // The header builds the anchors as `#${link}` so a link label can never
-    // point at a section that does not exist.
+    // Four nav columns. `label` is the column header, `links` is the list of labels.
+    // `anchors` names the labels that are also sections on this page — the exception list:
+    // the footer renders an anchor for those and plain text for every other label, because
+    // an href="#" announces itself as a link and then takes the reader to the top. Section
+    // ids are structure rather than copy, so they stay ASCII.
     columns: [
       {
         label: 'Repertorio',
@@ -425,11 +439,12 @@ export const landing = {
           'Documentación',
           'Ayuda',
           'Blog',
-          'Press',
+          'Prensa',
           'FAQ',
         ],
       },
     ],
+    anchors: { 'Stage Bus': 'stage-bus', FAQ: 'faq' },
     legal: {
       reserved: 'CEMURM. Derechos reservados.',
       mission:

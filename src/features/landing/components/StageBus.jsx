@@ -11,7 +11,8 @@ import DeviceFrame from './DeviceFrame.jsx'
 // APPLE §12 — the panel is the one place on the page where a translucent functional surface
 // is justified outside the header: it is a bright material floating over the dark section, and
 // the depth it carries is the point. The rest of the section is dark; only the panel is the
-// material.
+// material. There is no background wash: the alpha gradient this used to declare never
+// painted (off-scale `to-` stop emits no CSS, layer at -z-10 behind the opaque bg).
 
 // The one accent. The active panel has a glow layer (bg-cem-amber/10) behind it, not a
 // box-shadow with rgba — that keeps the source free of raw colour functions (gate 01a). The
@@ -51,15 +52,9 @@ export default function StageBus() {
       data-stage-bus
       className="border-t border-cem-text/10 px-4 py-20 md:px-6 md:py-28 bg-cem-base overflow-hidden"
     >
-      {/* Background — subtle gradient with alpha classes, no raw colour function (gate 01a). */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-tl from-cem-amber/10 via-transparent to-cem-secondary/8" aria-hidden="true" />
-
       <div className="relative mx-auto max-w-7xl">
-        {/* Eyebrow + title. */}
+        {/* Title. No eyebrow: one per three sections, and section 3 is mid-run. */}
         <div className="mb-6 max-w-3xl">
-          <p className="mb-6 text-xs font-semibold uppercase tracking-[0.18em] text-cem-secondary">
-            {landing.stageBus.eyebrow}
-          </p>
           <h2 className="text-3xl font-semibold tracking-tighter leading-[1.05] text-cem-text md:text-5xl">
             {landing.stageBus.title}
           </h2>
@@ -134,18 +129,15 @@ export default function StageBus() {
               </button>
             </div>
 
-            {/* The dock — mobile. */}
-            <div
-              className="flex w-full justify-center gap-2 sm:hidden"
-              role="tablist"
-              aria-label="Vista del escenario"
-            >
+            {/* The dock — mobile. Plain buttons, not a tablist: all three frames render at
+                once, so there is no tabpanel for role="tab" to point at. Selection is
+                aria-pressed, which a button may honestly carry. */}
+            <div className="flex w-full justify-center gap-2 sm:hidden">
               {landing.stageBus.views.map((view, index) => (
                 <button
                   key={view.id}
                   type="button"
-                  role="tab"
-                  aria-selected={index === active}
+                  aria-pressed={index === active}
                   onClick={() => setActive(index)}
                   className={`inline-flex h-10 min-w-10 items-center justify-center rounded-full border border-cem-text/10 bg-cem-surface text-xs font-medium ${PRESS} ${FOCUS} ${
                     index === active
@@ -158,18 +150,14 @@ export default function StageBus() {
               ))}
             </div>
 
-            {/* Desktop tab row — the same three labels as buttons between the arrows. */}
-            <div
-              className="hidden items-center gap-2 sm:flex"
-              role="tablist"
-              aria-label="Vista del escenario"
-            >
+            {/* Desktop row — the same three labels as buttons between the arrows. Plain
+                buttons, for the dock's reason. */}
+            <div className="hidden items-center gap-2 sm:flex">
               {landing.stageBus.views.map((view, index) => (
                 <button
                   key={view.id}
                   type="button"
-                  role="tab"
-                  aria-selected={index === active}
+                  aria-pressed={index === active}
                   onClick={() => setActive(index)}
                   className={`inline-flex min-h-12 min-w-12 items-center justify-center rounded-cem-sm border-b-2 px-4 text-sm font-medium transition-transform duration-150 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cem-text focus-visible:ring-offset-2 focus-visible:ring-offset-cem-base ${
                     index === active
@@ -214,8 +202,9 @@ export default function StageBus() {
 }
 
 // One view tile inside a DeviceFrame. A glass tile (icon + label + blurb) so the three frames
-// read as screens with content, not as empty black boxes. The icon color rotates through the
-// system set (amber / sky / emerald) so the three views differ while the material stays one.
+// read as screens with content, not as empty black boxes. The icon colour rotates through the
+// token set (amber / amberLight / secondary) so the three views differ while the material
+// stays one.
 function ViewTile({ view, index }) {
   const colors = ['amber', 'amberLight', 'secondary']
   return (

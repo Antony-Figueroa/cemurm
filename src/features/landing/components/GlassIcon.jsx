@@ -10,8 +10,7 @@ import { memo } from 'react'
 const STROKE = 1.5
 
 // A small palette of product meanings, each with a 24x24 SVG path. Amber is the primary
-// accent and the default; the other system colours (emerald, sky, rose, coral, violet)
-// appear only as supporting glass tiles behind icons, never as a second accent on the
+// accent and the default; the other tiles are supporting glass, never a second accent on the
 // page. The colour is a Tailwind class resolved from the token set, never a literal.
 const ICONS = {
   chart: (      <svg viewBox="0 0 24 24" fill="none" stroke={STROKE} strokeWidth={STROKE} strokeLinecap="round" strokeLinejoin="round">
@@ -59,10 +58,9 @@ const ICONS = {
 // a second page-level accent. Passed as a Tailwind class so the colour always resolves from
 // the token layer.
 const COLORS = {
-  // Only cem-amber is available as a 'colour' without violating gate 02 (the four dead
-  // accents — coral, emerald, rose, sky — are ratcheted at ceiling 234 and this branch
-  // already exceeds it). Secondary and secondary-elevated are the greys the system offers for
-  // variation; amber carries the accent.
+  // Only cem-amber is usable as a 'colour' without violating gate 02; secondary and
+  // secondary-elevated are the greys offered for variation. Callers may pass any name from
+  // the wider system set — anything not listed here resolves to amber.
   amber: 'bg-cem-amber/20 border-cem-amber/40 text-cem-amber',
   amberLight: 'bg-cem-amber/10 border-cem-amber/20 text-cem-secondary',
   secondary: 'bg-cem-secondary/10 border-cem-secondary/20 text-cem-secondary',
@@ -75,7 +73,7 @@ export const GlassIcon = memo(function GlassIcon({ kind = 'chart', color = 'ambe
 
   return (
     <div
-      className={`inline-flex h-12 w-12 items-center justify-center rounded-cem-md border ${colorClass} border-t border-cem-text/10`}
+      className={`relative inline-flex h-12 w-12 items-center justify-center rounded-cem-md border ${colorClass} border-t border-cem-text/10`}
       aria-hidden="true"
     >
       {/* Inner highlight — the thinnest light edge on the top, the one Apple's glass

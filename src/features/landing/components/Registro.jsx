@@ -7,13 +7,13 @@ import GlassIcon from './GlassIcon.jsx'
 import SpecularButton from './SpecularButton.jsx'
 import ClickSpark from './ClickSpark.jsx'
 
-// Dark section with subtle gradient (alpha classes), same treatment as the other sections.
-// No solid block, no raw colour function (gate 01a).
+// Dark section, flat. No background layer: an unpositioned section's -z-10 child paints behind
+// the section's own opaque bg, so the gradient this used to carry never rendered.
 
 // The form is a single email field + a specular CTA. The button is the amber primary; the
-// field is a glass tile with a system colour icon (sky, the "communication" colour in the set)
-// and a label that is the content module's input.label. The CTA fires on press and the feedback
-// (success / error) comes from the content module's registro.input success/error strings.
+// field is a glass tile with a system colour icon and a label that is the content module's
+// input.label. The CTA fires on press and the feedback (success / error) comes from the content
+// module's registro.input success/error strings.
 
 // Spark on press — mounted only where a real pointer exists and motion is not reduced, same
 // gate as the repo's existing ClickSpark call sites. Spark color is cem.amber, resolved from the
@@ -63,11 +63,9 @@ export default function Registro({ onSubmit }) {
       id="registro"
       className="border-t border-cem-text/10 px-4 py-20 md:px-6 md:py-28 bg-cem-base overflow-hidden"
     >
-      {/* Background — subtle gradient with alpha classes, no raw colour function (gate 01a). */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-tl from-cem-secondary/8 via-transparent to-cem-amber/6" aria-hidden="true" />
-
       <div className="relative mx-auto max-w-2xl">
-        {/* Eyebrow + title + subtitle. */}
+        {/* Eyebrow + title + subtitle. Section 7 closes the eyebrow run: 1, 4 and 7 carry one
+            and every other section stays bare. */}
         <div className="mb-6 text-center">
           <p className="mb-6 text-xs font-semibold uppercase tracking-[0.18em] text-cem-secondary">
             {landing.registro.eyebrow}
@@ -94,7 +92,7 @@ export default function Registro({ onSubmit }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={landing.registro.input.placeholder}
-              className={`flex-1 rounded-cem-md border border-cem-text/15 bg-cem-surface/80 py-3 pl-12 pr-4 text-sm text-cem-text placeholder:text-cem-secondary/60 backdrop-blur-sm focus:border-cem-amber/50 focus:outline-none ${FOCUS}`}
+              className={`flex-1 rounded-cem-md border border-cem-text/15 bg-cem-surface/80 py-3 pl-12 pr-4 text-sm text-cem-text placeholder:text-cem-secondary-elevated/70 backdrop-blur-sm focus:border-cem-amber/50 focus:outline-none ${FOCUS}`}
               aria-label={landing.registro.input.label}
             />
           </div>

@@ -3,8 +3,8 @@ import { useState } from 'react'
 import { landing } from '../../../content/landing.es.js'
 import ClickSpark from './ClickSpark.jsx'
 
-// Dark section with subtle gradient (alpha classes), same treatment as the other sections.
-// No solid block, no raw colour function (gate 01a).
+// Dark section, flat (gate 01a). The alpha gradient this used to declare never painted: its
+// off-scale `to-` stop emits no CSS, and the layer sat at -z-10 behind the opaque bg.
 
 // Accordion. Each item expands to reveal its answer with a staggered clip reveal (the answer
 // rises out of its own mask), critically damped spring per Apple default, reduced motion
@@ -43,15 +43,9 @@ export default function Accordion() {
       id="faq"
       className="border-t border-cem-text/10 px-4 py-20 md:px-6 md:py-28 bg-cem-base overflow-hidden"
     >
-      {/* Background — subtle gradient with alpha classes, no raw colour function (gate 01a). */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-tr from-cem-secondary/8 via-transparent to-cem-amber/6" aria-hidden="true" />
-
       <div className="relative mx-auto max-w-3xl">
-        {/* Eyebrow + title. */}
+        {/* Title. No eyebrow: this is section 9, and the run it belongs to ended at 7. */}
         <div className="mb-6 text-center">
-          <p className="mb-6 text-xs font-semibold uppercase tracking-[0.18em] text-cem-secondary">
-            {landing.faq.eyebrow}
-          </p>
           <h2 className="text-3xl font-semibold tracking-tighter leading-[1.05] text-cem-text md:text-5xl">
             {landing.faq.title}
           </h2>
@@ -65,7 +59,7 @@ export default function Accordion() {
             return (
               <div
                 key={index}
-                className={`border border-cem-text/10 rounded-cem-lg bg-cem-surface/60 overflow-hidden ${isActive ? 'border-cem-amber/30' : ''}`}
+                className={`relative border border-cem-text/10 rounded-cem-lg bg-cem-surface/60 overflow-hidden ${isActive ? 'border-cem-amber/30' : ''}`}
               >
                 {/* Glow layer behind the active item — bg-cem-amber/10, not a box-shadow with
                     rgba (gate 01a). */}
@@ -96,10 +90,12 @@ export default function Accordion() {
                   </svg>
                 </button>
 
-                {/* Answer — revealed on expand with a staggered clip reveal. */}
+                {/* Answer — revealed on expand with a staggered clip reveal. `inert` while
+                    collapsed: the height animation hides the box but not the subtree. */}
                 <motion.div
                   id={`faq-${index}`}
                   className="overflow-hidden"
+                  inert={isActive ? undefined : ''}
                   animate={reduce ? { height: isActive ? 'auto' : 0 } : { height: isActive ? 'auto' : 0, opacity: isActive ? 1 : 0 }}
                   transition={{ duration: reduce ? 0 : 0.25, ease: [0.23, 1, 0.32, 1] }}
                 >

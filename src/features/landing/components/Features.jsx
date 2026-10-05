@@ -2,15 +2,15 @@ import { motion, useReducedMotion } from 'motion/react'
 import { landing } from '../../../content/landing.es.js'
 import GlassIcon from './GlassIcon.jsx'
 
-// Dark section with subtle gradient (alpha classes), same treatment as the other sections.
-// No solid block, no raw colour function (gate 01a).
+// Dark section, flat (gate 01a). The alpha gradient this used to declare never painted: its
+// off-scale `to-` stop emits no CSS, and the layer sat at -z-10 behind the opaque bg.
 
 // BENTO. One card per body paragraph, derived from content, so an empty tile is not
-// expressible. The grid is 2-col on md+ with the first card spanning full width (the same
-// rhythm the existing L8 bento uses), and 1-col on mobile. Each card is glass-icon (colour
-// from the system set, amber default) + headline + one line, with a glow layer (bg-cem-amber/10)
-// on hover that fires amber (the one accent) and never a second colour. The glow is a layer
-// behind the card, not a box-shadow with rgba (gate 01a).
+// expressible. The grid is 2-col on md+, 1-col on mobile, and the FIRST and LAST cards span
+// both columns: 6 cards over 8 areas (4 rows x 2 cols), every area claimed, so `gap-px
+// bg-cem-text/15` never paints an empty cell as a light block. Each card is glass-icon
+// (colour from the system set, amber default) + eyebrow + headline + one line, with a glow
+// layer (bg-cem-amber/10) on hover: amber, the one accent, never a second colour.
 
 // ANIMATED LIST. The steps are an ordered list with staggered clip reveal on scroll entry
 // (IntersectionObserver with once:true), critically damped spring per Apple default, reduced
@@ -30,30 +30,24 @@ export default function Features() {
       id="features"
       className="border-t border-cem-text/10 px-4 py-20 md:px-6 md:py-28 bg-cem-base overflow-hidden"
     >
-      {/* Background — subtle gradient with alpha classes, no raw colour function (gate 01a). */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-cem-amber/10 via-transparent to-cem-secondary/8" aria-hidden="true" />
-
       <div className="relative mx-auto max-w-7xl">
-        {/* Eyebrow + title. */}
+        {/* Title. No eyebrow: one per three sections, and this one is mid-run. */}
         <div className="mb-6 max-w-3xl">
-          <p className="mb-6 text-xs font-semibold uppercase tracking-[0.18em] text-cem-secondary">
-            {landing.features.eyebrow}
-          </p>
           <h2 className="text-3xl font-semibold tracking-tighter leading-[1.05] text-cem-text md:text-5xl">
             {landing.features.title}
           </h2>
         </div>
 
-        {/* BENTO GRID. */}
+        {/* BENTO GRID. First and last cards span both columns so 6 cards claim all 8 areas. */}
         <div className="mt-12 grid grid-cols-1 gap-px bg-cem-text/15 md:grid-cols-2">
           {landing.features.cards.map((card, index) => {
             const color = COLORS[index % COLORS.length]
-            const isFirst = index === 0
+            const isBookend = index === 0 || index === landing.features.cards.length - 1
 
             return (
               <motion.div
                 key={card.id}
-                className={`relative bg-cem-elevated p-8 ${isFirst ? 'md:col-span-2' : ''}`}
+                className={`relative bg-cem-elevated p-8 ${isBookend ? 'md:col-span-2' : ''}`}
                 initial={{ opacity: 0, y: 12 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.3 }}
@@ -68,12 +62,15 @@ export default function Features() {
                   <GlassIcon kind={card.icon} color={color} />
                   <div>
                     {card.eyebrow && (
-                      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-cem-secondary">
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-cem-secondary-elevated">
                         {card.eyebrow}
                       </p>
                     )}
                     <h3 className="text-lg font-semibold text-cem-text">{card.title}</h3>
-                    <p className="mt-2 text-base leading-relaxed text-cem-secondary">
+                    {/* cem.secondary-elevated, not cem.secondary: on this card's own
+                        bg-cem-elevated fill the latter is 4.04:1 and fails AA. Rule 06 cannot
+                        see it because the background is inherited, not declared here. */}
+                    <p className="mt-2 text-base leading-relaxed text-cem-secondary-elevated">
                       {card.body}
                     </p>
                   </div>
@@ -83,11 +80,8 @@ export default function Features() {
           })}
         </div>
 
-        {/* ANIMATED LIST — the ordered steps. */}
+        {/* ANIMATED LIST — the ordered steps. No label: one eyebrow per three sections. */}
         <div className="mt-16 max-w-2xl">
-          <p className="mb-6 text-xs font-semibold uppercase tracking-[0.18em] text-cem-secondary">
-            Cómo funciona
-          </p>
           <ol className="space-y-6">
             {landing.features.steps.map((step, index) => (
               <li key={index} className="group">
