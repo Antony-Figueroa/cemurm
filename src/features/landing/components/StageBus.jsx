@@ -202,9 +202,10 @@ export default function StageBus() {
 }
 
 // One view tile inside a DeviceFrame. A glass tile (icon + label + blurb) so the three frames
-// read as screens with content, not as empty black boxes. The icon colour rotates through the
-// token set (amber / amberLight / secondary) so the three views differ while the material
-// stays one.
+// read as screens with content, not as empty black boxes. The icon tint walks the three names
+// GlassIcon declares (amber / amberLight / secondary), so the three views differ while the
+// material stays one. This call site was always honest about the rotation, and it is the
+// reference for the other three.
 function ViewTile({ view, index }) {
   const colors = ['amber', 'amberLight', 'secondary']
   return (

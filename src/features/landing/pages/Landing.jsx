@@ -20,23 +20,31 @@ import Footer from '../components/Footer.jsx'
 //
 // WATCHING THE HERO FOR THE HEADER CTA STATE. The header needs to know whether the hero's
 // primary amber pill is on screen so it can switch the header CTA between ghost and solid. The
-// page owns that state via a scroll observer on the hero; the header reads it as a prop. The
-// header never starts its own scroll listener for this, because that would be a second scroll
-// listener for the same decision.
+// page owns that state through ONE IntersectionObserver on the hero; the header reads it as a
+// prop. The header never starts an observer for this, because that would be a second observer for
+// the same decision.
 
 export default function Landing() {
   const [heroInView, setHeroInView] = useState(true)
 
+  // ONE INTERSECTIONOBSERVER, NOT A SCROLL LISTENER. This used to be a
+  // `window.addEventListener('scroll', ...)` that re-measured the hero's rect and called
+  // setState on every scroll event, with no frame coalescing at all. design-taste-frontend §5.D
+  // bans that pattern outright and names IntersectionObserver as the replacement.
+  //
+  // `isIntersecting` at threshold 0 is the SAME predicate the rect test computed,
+  // `rect.bottom > 0 && rect.top < window.innerHeight`, so the observable behaviour is
+  // unchanged. What changes is the cost: the measurement happens off the main thread and
+  // the callback fires once per enter and once per exit, not once per event.
   useEffect(() => {
     const hero = document.getElementById('hero')
-    if (!hero) return
-    const onScroll = () => {
-      const rect = hero.getBoundingClientRect()
-      setHeroInView(rect.bottom > 0 && rect.top < window.innerHeight)
-    }
-    window.addEventListener('scroll', onScroll, { passive: true })
-    onScroll()
-    return () => window.removeEventListener('scroll', onScroll)
+    if (!hero || typeof IntersectionObserver === 'undefined') return undefined
+    const observer = new IntersectionObserver(
+      ([entry]) => setHeroInView(entry.isIntersecting),
+      { threshold: 0 },
+    )
+    observer.observe(hero)
+    return () => observer.disconnect()
   }, [])
 
   // The registration handler — a placeholder until you wire the backend. For now it logs the

@@ -4,7 +4,6 @@
 import { useEffect, useState } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { landing } from '../../../content/landing.es.js'
-import VideoBG from './VideoBG.jsx'
 import MaskedHeading from './MaskedHeading.jsx'
 import SpecularButton from './SpecularButton.jsx'
 import GlassIcon from './GlassIcon.jsx'
@@ -21,10 +20,21 @@ import DeviceFrame from './DeviceFrame.jsx'
 // cannot re-trigger and it is gone before the visitor can act on anything else. The video's
 // own loop is ambient media, not a page motion moment.
 
-// Amount of parallax translate on the mockup stack, in px. Small — the stack is three frames,
-// and a big translate would push the outer frames off the section edge on a phone. This is the
-// Apple §9 rubber-band discipline: soft movement, soft boundaries, no hard throw.
-const PARALLAX = 14
+// THE PARALLAX IS GONE, AND THIS IS THE ARITHMETIC THAT REMOVED IT.
+//
+// It was `offset = (min(scrollY, 0.6 * vh) / vh) * PARALLAX` with PARALLAX = 14, so the
+// entire travel was 0.6 * 14 = 8.4px, reached across 0.6 viewport heights of scrolling.
+// Worse, the fan multiplied it per frame: `active ? 0 : index < 1 ? 1 : -0.6`. Index 0 is
+// the active frame, so it was multiplied by 0 and never moved at all; indexes 1 and 2 both
+// fell to the `-0.6` branch, so they moved by the same 5.04px. Two frames moving identically
+// is a group translate, not a parallax, and the one frame a viewer would most expect to see
+// drift was the one pinned still.
+//
+// 5.04px over 0.6 screen-heights sits under the ~8px per-frame perception floor, and
+// design-taste-frontend §5.D is explicit about the case: if the effect is imperceptible,
+// delete it rather than port it. Porting it to a motion value would have been the
+// defensible second-best answer and the wrong first one. What it cost per scroll event was a
+// React render plus three re-targeted 200ms tweens, which is the price of shipping nothing.
 
 const FOCUS =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cem-text ' +
@@ -33,8 +43,8 @@ const FOCUS =
 const PRESS = 'transition-transform duration-150 ease-out active:scale-[0.97]'
 
 // THE HEADLINE SCALE. Display size, clamped so a 375px phone does not overflow a 72px line.
-// Negative tracking (Apple §15) because it is display text. The type scale is the same
-// discipline RevealText and MaskedHeading already apply.
+// Negative tracking (Apple §15) because it is display text, and MaskedHeading applies the same
+// discipline to this very heading.
 //
 // THREE UTILITIES, NOT ONE ARBITRARY PROPERTY. Writing `font-size`, `leading-tight` and the
 // tracking inside a single `[..._...]` token asks Tailwind for one CSS declaration whose value
@@ -48,26 +58,12 @@ const HEADLINE =
 // THE SPARK. The hero no longer hosts one: it wrapped only screen-reader-only labels that
 // duplicated the visible captions below, so the spark fired on nothing.
 
-// The mockup stack, with parallax on scroll. Each frame is a DeviceFrame around one of the
-// three Stage Bus views, angled slightly so the stack reads as three objects in space rather
-// than three flat cards. The active frame lifts (z-10) and the others recede (z-0) so the
-// focused view is never the most occluded one. On scroll the whole stack translates y by a
-// small amount proportional to scroll position, capped so the outer frames do not leave the
-// section edge.
+// The mockup stack. Each frame is a DeviceFrame around one of the three Stage Bus views,
+// angled slightly so the stack reads as three objects in space rather than three flat cards.
+// The active frame lifts (z-10) and the others recede (z-0) so the focused view is never the
+// most occluded one. There is no scroll-driven translate on the stack; see the arithmetic on
+// PARALLAX above for why the one that used to be there was deleted rather than ported.
 function MockupStack({ reduce }) {
-  const [offset, setOffset] = useState(0)
-
-  useEffect(() => {
-    if (reduce) return undefined
-    const onScroll = () => {
-      const vh = window.innerHeight
-      const scrolled = Math.min(window.scrollY, vh * 0.6)
-      setOffset((scrolled / vh) * PARALLAX)
-    }
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [reduce])
-
   return (
     <div className="relative mx-auto mt-16 max-w-7xl md:mt-24">
       {/* Eyebrow — moved here from the hero copy stack, sitting directly above the frames
@@ -102,7 +98,6 @@ function MockupStack({ reduce }) {
                   scale: active ? 1 : 0.92,
                   rotateY: active ? 0 : index < 1 ? 9 : -9,
                   rotateZ: active ? 0 : index < 1 ? 5 : -5,
-                  translateY: offset * (active ? 0 : index < 1 ? 1 : -0.6),
                 }}
                 transition={{ duration: reduce ? 0 : 0.2, ease: [0.32, 0.72, 0, 1] }}
               >
@@ -120,27 +115,27 @@ function MockupStack({ reduce }) {
         </figcaption>
       </figure>
 
-      {/* One-line caption under each frame, so the reader knows what each view is without
-          chasing the tab label. */}
-      <div className="mt-4 flex justify-center gap-6 text-sm text-cem-secondary">
-        {landing.hero.views.map((view) => (
-          <span key={view.id} className="text-center">
-            <span className="block text-cem-amber text-xs font-semibold uppercase tracking-widest">
-              {view.label}
-            </span>
-            <span className="mt-1 block">{view.blurb}</span>
-          </span>
-        ))}
-      </div>
+      {/* THE PER-VIEW CAPTION ROW THAT USED TO SIT HERE IS GONE, AND THE COMMENT THAT
+          KEPT IT IS GONE WITH IT. The row printed every label and every blurb a second
+          time, about 40px below the identical pair inside the DeviceFrame it was
+          describing, so the page said the same six sentences twice and the second
+          reading was the one nobody needs. Its justification was that the reader should
+          not have to chase the tab label: the label is inside the frame it names, which
+          is the frame the reader is already looking at. MockupFrame renders the label
+          and the blurb inside the DeviceFrame, and if a view ever needs a caption that
+          is NOT its label, that belongs inside the frame too, where it describes
+          something. */}
     </div>
   )
 }
 
 // One mockup frame: a DeviceFrame around a glass tile (icon + label) so the three views read
-// as screens, not as empty black boxes. The icon is a glass tile with the system colour set,
-// amber as the default, so the three frames share one material and differ only in the colour.
+// as screens, not as empty black boxes. The icon is a glass tile whose tint walks the three
+// names GlassIcon declares for a one-accent page: amber, amberLight, secondary. Gate rule 02
+// bans the four dead accents anywhere in src/, so no wider set is available, and none is
+// needed: the material is one and only the tint moves.
 function MockupFrame({ view, index }) {
-  const colors = ['amber', 'sky', 'emerald']
+  const colors = ['amber', 'amberLight', 'secondary']
   return (
     <DeviceFrame anchor="top">
       <div className="flex h-full items-center justify-center">
@@ -162,7 +157,8 @@ export default function Hero() {
     const onReady = () => setReady(true)
     // The intro loader dispatches a cemurm:landing-ready event; this component polls the
     // dataset on documentElement AND subscribes, so it reveals correctly whether it mounts
-    // before or after the loader finishes (see RevealText.jsx for the same dual-path pattern).
+    // before or after the loader finishes. The poll is what makes it a dual path: the
+    // dataset survives the loader being gone, so a late mount does not miss the signal.
     if (document.documentElement.dataset.landingReady === 'true') {
       setReady(true)
     }
@@ -175,20 +171,39 @@ export default function Hero() {
       id="hero"
       className="relative overflow-hidden px-4 pb-16 pt-12 md:px-6 md:pb-24 md:pt-24"
     >
-      {/* Video background — placeholder until you connect the real file. NOTE: -z-10 in a
-          section that is not a stacking context paints in the root negative layer, behind the
-          section's opaque bg, so this video and its scrim have never rendered. Left as-is:
-          switching them on needs a layering change nobody can review without a browser. */}
-      <div className="absolute inset-0 -z-10">
-        <VideoBG src="" overlay />
-        {/* Extra dark gradient at the bottom so the headline area is the brightest part of the
-            hero and the CTA reads against it. */}
-        <div
-          className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-cem-base/90 via-cem-base/40 to-transparent"
-          aria-hidden="true"
-        />
-      </div>
+      {/* THERE IS NO VIDEO BACKGROUND HERE, AND THAT IS THE FIX.
+          The section used to carry an `absolute inset-0 -z-10` layer holding a
+          `VideoBG` and a bottom scrim. It has never rendered, for two independent
+          reasons, either of which is sufficient on its own:
 
+            1. `#hero` is `relative` with `z-index: auto`, which is NOT a stacking
+               context. A negative z-index child therefore paints in step 3 of the
+               ROOT stacking context, and Landing.jsx's opaque `bg-cem-base` wrapper
+               paints in step 4, on top of it. This is the same trap that killed the
+               seven decorative gradients in W2 and W3.
+            2. `VideoBG src=""` takes the no-src branch, which renders
+               `absolute inset-0` inside a wrapper with no intrinsic height. It is a
+               zero-height box: nothing to paint even when the layering is right.
+
+          So the honest choice is deletion rather than a layering fix. Making the
+          layer paintable would produce ZERO visible change, because there is no
+          asset: no video file exists anywhere in the repo and none was invented.
+          A scrim over an empty box is a scrim over the page background.
+
+          What would NOT have been honest is switching the layering on and leaving
+          `src=""` behind it. That is the version that looks like a fix in the diff
+          and renders nothing in a browser.
+
+          The scrim went with the layer for the same reason. It described a bottom
+          gradient that made the headline area "the brightest part of the hero", over
+          a video that never existed. The hero now has no background of its own and
+          sits on the page fill, which is what every other section does.
+
+          `VideoBG` itself is untouched: Galeria still mounts it inside an
+          `aspect-video` media box, where it holds that box's space until a real
+          file is connected. If a hero video ever ships, it needs a stacking context
+          on the section (`isolate`) AND a real src, and both changes are reviewable
+          only with a browser. */}
       <div className="relative mx-auto max-w-7xl">
         {/* Headline — masked reveal.*/}
         <div className="max-w-3xl">
@@ -215,7 +230,7 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Mockup stack — three Stage Bus views as angled frames with subtle parallax on scroll. */}
+      {/* Mockup stack — three Stage Bus views as angled frames. */}
       <MockupStack reduce={reduce} />
     </section>
   )

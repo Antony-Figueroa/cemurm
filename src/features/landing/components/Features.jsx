@@ -9,8 +9,8 @@ import GlassIcon from './GlassIcon.jsx'
 // expressible. The grid is 2-col on md+, 1-col on mobile, and the FIRST and LAST cards span
 // both columns: 6 cards over 8 areas (4 rows x 2 cols), every area claimed, so `gap-px
 // bg-cem-text/15` never paints an empty cell as a light block. Each card is glass-icon
-// (colour from the system set, amber default) + eyebrow + headline + one line, with a glow
-// layer (bg-cem-amber/10) on hover: amber, the one accent, never a second colour.
+// (tint from the four names GlassIcon declares, amber first) + eyebrow + headline + one line,
+// with a glow layer (bg-cem-amber/10) on hover: amber, the one accent, never a second colour.
 
 // ANIMATED LIST. The steps are an ordered list with staggered clip reveal on scroll entry
 // (IntersectionObserver with once:true), critically damped spring per Apple default, reduced
@@ -20,7 +20,11 @@ const FOCUS =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cem-text ' +
   'focus-visible:ring-offset-2 focus-visible:ring-offset-cem-base'
 
-const COLORS = ['amber', 'emerald', 'sky', 'rose', 'coral', 'violet']
+// The icon rotation, built from the four names GlassIcon declares and nothing else. Two of
+// the six names this array used to hold are gate-02 accents and one is not a token at all,
+// so every cell rendered amber and the source described a rotation the page never showed.
+// Four names over six cards means two pairs repeat, which is the honest result here.
+const COLORS = ['amber', 'amberLight', 'secondary', 'secondaryElevated']
 
 export default function Features() {
   const reduce = useReducedMotion()

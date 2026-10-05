@@ -84,16 +84,27 @@ export default function Registro({ onSubmit }) {
           className="flex flex-col gap-4 sm:flex-row sm:items-end"
           noValidate
         >
+          {/* BELOW `sm` THERE IS NO ICON ROW AND NO PADDING FOR ONE. §4.7 makes the
+              sub-768px collapse explicit per section, and here it is: the tile is
+              aria-hidden decoration, so on a phone it was a 48px decorative row above
+              the field plus 48px of empty padding inside it, buying nothing. The
+              padding comes back with the icon at `sm`, so the row that does have the
+              icon still has its indent. CtaFinal.jsx carries the identical rule, and the
+              two must stay identical. */}
           <div className="relative flex w-full flex-1 flex-col items-stretch gap-2 sm:flex-row">
-            <GlassIcon kind="chart" color="sky" />
+            <div className="hidden sm:block">
+              <GlassIcon kind="chart" color="amber" />
+            </div>
             <input
               type="email"
               name="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={landing.registro.input.placeholder}
-              className={`flex-1 rounded-cem-md border border-cem-text/15 bg-cem-surface/80 py-3 pl-12 pr-4 text-sm text-cem-text placeholder:text-cem-secondary-elevated/70 backdrop-blur-sm focus:border-cem-amber/50 focus:outline-none ${FOCUS}`}
+              className={`flex-1 rounded-cem-md border border-cem-text/15 bg-cem-surface/80 py-3 pl-4 pr-4 text-sm text-cem-text placeholder:text-cem-secondary-elevated/70 backdrop-blur-sm focus:border-cem-amber/50 focus:outline-none sm:pl-12 ${FOCUS}`}
               aria-label={landing.registro.input.label}
+              aria-invalid={error}
+              aria-describedby="registro-feedback"
             />
           </div>
 
@@ -126,8 +137,21 @@ export default function Registro({ onSubmit }) {
             cem.amber is reserved for the wordmark, the primary CTA and the selected state, so
             both pills stay neutral and are separated by their icon and their wording. That also
             keeps colour from being the only cue (WCAG 1.4.1). The two pills differ by surface:
-            the notice is a light wash, the error is a solid elevated block. */}
-        <div className="mt-4 text-center text-sm">
+            the notice is a light wash, the error is a solid elevated block.
+            ANNOUNCED, NOT ONLY DRAWN. This is the page's only conversion path and its only state
+            feedback, and it was a bare div: a screen-reader visitor pressed the CTA and nothing
+            happened in their channel at all. `role="status"` plus `aria-live="polite"` makes this
+            container the live region, `aria-atomic` makes the whole sentence read rather than the
+            diff, and the id is what the input points `aria-describedby` at, so the same string is
+            the field's description as well as the page's announcement. One region, one string,
+            no duplication. CtaFinal.jsx does the same with its own id. */}
+        <div
+          id="registro-feedback"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className="mt-4 text-center text-sm"
+        >
           {submitted && !error && (
             <span className="inline-flex items-center gap-2 rounded-full bg-cem-text/15 px-4 py-2 text-cem-text">
               <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

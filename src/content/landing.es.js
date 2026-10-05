@@ -317,7 +317,16 @@ export const landing = {
       // promise something the app does not do, which §8.3 forbids for any CTA or
       // confirmation the visitor reads.
       success: 'Correo validado. No se envió nada: este formulario no está conectado.',
-      error: 'Algo salió mal. Intenta de nuevo.',
+      // THE ERROR STRING SAYS WHAT THE CODE DOES, WHICH IS CHECK AN ADDRESS, NOT
+      // REACH A SYSTEM. The only condition behind this message is
+      // `!email || !email.includes('@')` in Registro.jsx and CtaFinal.jsx: nothing is
+      // sent, so nothing can fail in transit. "Algo salió mal. Intenta de nuevo."
+      // reported a system or network failure that did not happen, and told the visitor
+      // to retry a request that was never made. It now names the address and stays at
+      // the level the check can actually back: the check tests for a non-empty string
+      // containing an at sign, not deliverability, so the copy claims no more than that.
+      // Same rule, same reason as the success string above.
+      error: 'Ese correo no parece válido. Revísalo antes de continuar.',
     },
   },
 

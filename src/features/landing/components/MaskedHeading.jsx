@@ -14,8 +14,13 @@ const EASE_OUT = [0.16, 1, 0.3, 1]
 // THE REVEAL. Each word is wrapped in an overflow:hidden box; the inner span starts at
 // translateY(115%) with opacity 0 and animates to translateY(0)/opacity 1, so the text
 // rises out of its own mask rather than fading in place. That is the primitive the reactbits
-// masked-heading is built on, and it is the same one RevealText uses for words — this file
-// is the display-scale version for the hero headline.
+// masked-heading is built on, and this file is the display-scale version of it, used for the
+// hero headline.
+//
+// THE OTHER COPY OF THIS PRIMITIVE IS GONE. A sibling component used to implement the same
+// mask for section-scale text and this comment cited it as the precedent. It had zero
+// importers, so it was deleted rather than left as an unreachable 297 lines; nothing points
+// at it any more.
 //
 // LINE HEIGHT AND THE DESCENT RESERVE. This heading is the only line in the file that runs
 // line-height under 1, and that is intentional: display type is tight. The tighter the
@@ -27,8 +32,9 @@ const EASE_OUT = [0.16, 1, 0.3, 1]
 //
 // TRACKING. Display text wants NEGATIVE tracking as it grows (Apple §15): the letters read
 // too far apart as they get big, so pull them together. The hero headline is display size, so
-// it carries negative tracking. This is the same discipline RevealText applies — two
-// directions on the same page, one per size band — not one tracking value enforced everywhere.
+// it carries negative tracking. The page holds both directions on purpose, one per size
+// band, rather than one tracking value enforced everywhere: negative here and on the
+// section headings, positive on the small uppercase eyebrows.
 const LINE_LINE_HEIGHT = 0.9
 const LINE_RESERVE = 'pb-[0.16em]'
 

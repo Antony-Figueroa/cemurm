@@ -57,10 +57,15 @@ const ICONS = {
 // project's declared system colours, used ONLY as supporting glass behind icons, never as
 // a second page-level accent. Passed as a Tailwind class so the colour always resolves from
 // the token layer.
+//
+// THESE FOUR NAMES ARE THE ENTIRE CONTRACT, AND `?? COLORS.amber` IS WHAT MAKES THAT
+// MATTER. A caller passing anything else gets amber, silently and with no warning, which is
+// exactly what the landing's call sites used to do: they passed names that are not declared
+// here, one of which is not a token at all, and every tile on the page rendered amber while
+// the source described a rotation. So the caller arrays must be built from THIS list. Gate
+// rule 02 bans the four dead accents anywhere in src/, comments included, which leaves
+// amber, amberLight, secondary and secondaryElevated as the whole rotation.
 const COLORS = {
-  // Only cem-amber is usable as a 'colour' without violating gate 02; secondary and
-  // secondary-elevated are the greys offered for variation. Callers may pass any name from
-  // the wider system set — anything not listed here resolves to amber.
   amber: 'bg-cem-amber/20 border-cem-amber/40 text-cem-amber',
   amberLight: 'bg-cem-amber/10 border-cem-amber/20 text-cem-secondary',
   secondary: 'bg-cem-secondary/10 border-cem-secondary/20 text-cem-secondary',

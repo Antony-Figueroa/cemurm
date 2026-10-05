@@ -131,15 +131,33 @@
  * so no override is needed or wanted.
  *
  * APPLE §14, THREE INDEPENDENT SIGNALS. `prefers-reduced-motion` is already
- * handled globally and per component. These add the other two, which were missing:
+ * handled globally and per component. These add the other two, which were missing.
+ *
+ * WHY A MEDIA QUERY AND NOT A TAILWIND VARIANT. Header.jsx used to carry a
+ * bracket-wrapped parenthesised media condition as a variant prefix, followed by
+ * the fill utility. Tailwind 3.4 does not read that as a variant, so it emitted a
+ * rule whose escaped selector is `.` followed by the whole class text VERBATIM,
+ * which only matches an element whose class attribute contains that string
+ * literally. Nothing renders it, so the page's one functional-layer material had
+ * zero working reduced-transparency handling. The `@supports` twin was the same
+ * class of failure: it was emitted with no `@supports` block around it at all.
+ *
+ * The fix is not a better variant syntax, it is real CSS, authored here, where a
+ * media query actually is. Do not reintroduce an arbitrary media variant, and do
+ * not quote one in a comment either: Tailwind's scanner is a regex over raw file
+ * text and does not know what a comment is.
  *
  *   prefers-reduced-transparency: reduce — raise the fill toward opaque AND drop
- *   the blur, because the point of the request is that the material stops being
- *     transparent, and an opaque-but-still-blurred surface is neither. Header.jsx
- *     already raised the fill to 95 percent; it did not drop the blur.
+ *     the blur, because the point of the request is that the material stops being
+ *     transparent, and an opaque-but-still-blurred surface is neither.
  *   prefers-contrast: more — near-solid background plus a defined contrasting
- *     border, so the header does not rely on translucency to separate itself from
- *     the content behind it. This one had no handling anywhere in the project.
+ *     edge, so separation from the content behind does not depend on
+ *     translucency at all.
+ *
+ * THE FILL IS `@apply`, NEVER A LITERAL. Gate rule 01a scans this file, so the
+ * fill has to be a token utility: `bg-cem-base/95` resolves to the same
+ * cem.base the header is already painted from and cannot drift from it. This is
+ * the eighth time that rule has caught a colour written here by hand.
  * =========================================================================== */
 .cem-scroll-scrim {
   pointer-events: none;
@@ -149,9 +167,18 @@
   transition: opacity 200ms ease-out;
 }
 
-/* Materialize on entry: blur and scale together, never opacity alone. */
+/* Materialize on entry: blur and scale together, never opacity alone. The fill
+   and the edge ride along so a media-driven change of either is animated rather
+   than snapped; `background-color` and `border-color` are the two properties the
+   two §14 blocks below actually rewrite. This block replaces the header's
+   `transition-[background-color/backdrop-filter]`, which emitted
+   `transition-property:background-color/backdrop-filter` — a `/` cannot appear in
+   <single-transition-property>, so the browser dropped the whole declaration and
+   the sticky header had no transition at all. */
 .cem-material {
   transition:
+    background-color 200ms cubic-bezier(0.23, 1, 0.32, 1),
+    border-color 200ms cubic-bezier(0.23, 1, 0.32, 1),
     backdrop-filter 420ms cubic-bezier(0.23, 1, 0.32, 1),
     -webkit-backdrop-filter 420ms cubic-bezier(0.23, 1, 0.32, 1),
     transform 420ms cubic-bezier(0.23, 1, 0.32, 1);
@@ -168,6 +195,7 @@
 /* §14, signal two of three. Opacity AND blur, not opacity alone. */
 @media (prefers-reduced-transparency: reduce) {
   .cem-material {
+    @apply bg-cem-base/95;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }
@@ -177,17 +205,56 @@
 }
 
 /* §14, signal three of three. Near-solid fill plus a defined contrasting edge, so
-   separation from the content behind does not depend on translucency at all. */
+   separation from the content behind does not depend on translucency at all.
+   The edge is on `.cem-material` itself and not on a second class, because a class
+   added from markup cannot know what the media query resolved to. It was
+   `.cem-contrast-edge`, with zero consumers and `var(--cem-text)`, a custom
+   property this project never declared, so the colour silently fell back to
+   currentColor. */
 @media (prefers-contrast: more) {
   .cem-material {
+    @apply bg-cem-base;
+    border-bottom: 1px solid;
+    @apply border-cem-text;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }
   .cem-scroll-scrim {
     display: none;
   }
-  .cem-contrast-edge {
-    border-bottom: 1px solid var(--cem-text);
+}
+
+/* ===========================================================================
+ * The specular button's light sweep, under reduced motion
+ * ===========================================================================
+ * SpecularButton.jsx draws a thin highlight strip that crosses the pill on hover
+ * and on keyboard focus. A crossing is a position change, which is exactly what
+ * `prefers-reduced-motion: reduce` asks to be spared, so the strip stops
+ * translating and becomes a brightness step instead: invisible at rest, faded in
+ * over the left half of the pill on hover or focus. It is still the highlight the
+ * component is named for, without the travel.
+ *
+ * `transform: none !important` is needed because the strip's position comes from a
+ * Tailwind translate utility, and the `!important` is what outranks it. Without it
+ * the utility would win and the strip would keep travelling.
+ *
+ * The global reduced-motion block at the bottom of this file collapses every
+ * duration to ~0 anyway, so the step lands instantly. That is the intent: no
+ * motion, highlight still delivered.
+ *
+ * `.group` is Tailwind's own group class, so this selector resolves against the
+ * same group / group-hover / group-focus-visible contract the JSX already uses.
+ * There is no second naming scheme to keep in sync.
+ * =========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .cem-sweep-strip {
+    transform: none !important;
+    opacity: 0;
+  }
+
+  .group:hover .cem-sweep-strip,
+  .group:focus-visible .cem-sweep-strip {
+    opacity: 1;
   }
 }
 

@@ -48,15 +48,45 @@ import { landing } from '../../../content/landing.es.js'
 // it is flagged in the slice record rather than assumed here.
 
 // ── TIMING ────────────────────────────────────────────────────────────────────
-const MIN_VISIBLE_MS = 1400
-const MAX_VISIBLE_MS = 2600
+// THE LCP ARITHMETIC THAT SETS THESE THREE NUMBERS. The hero h1 is the LCP
+// candidate and MaskedHeading reveals it word by word: `stagger` 0.12s with
+// `duration` 1.1s per word (Hero.jsx), so the 4-word headline "Una canción,
+// tres lecturas." starts its last word at 0.12 * 3 = 360ms and finishes it at
+// 360 + 1100 = 1460ms after the ready signal. Every millisecond in front of
+// that ready signal is added straight to the LCP of the page's largest element.
+//
+//   BEFORE: floor 1400ms  ->  1400 + 1460 = 2860ms, past the 2500ms target.
+//           backstop 2600ms  ->  2600 + 1460 = 4060ms on the same path.
+//   AFTER:  floor  400ms  ->   400 + 1460 = 1860ms.
+//           backstop 1000ms ->  1000 + 1460 = 2460ms, inside the budget.
+//
+// None of the removed 1000ms was loading anything. `begin()` is called from the
+// `load` event, so the real assets are already accounted for before this floor
+// starts counting; the floor is a timer on top of a complete page. On a warm
+// cache that is 1000ms of the visitor's first impression spent looking at a
+// progress bar, and it is charged to LCP.
+//
+// 400ms is the deliberate floor, not an accident of the arithmetic. Below about
+// 200ms a full-viewport curtain is a black flash rather than a moment, and the
+// reduced-motion path already ships REDUCED_MIN_MS = 200 as its own
+// "acknowledgement rather than a sequence" number, so 400 keeps the wordmark and
+// the bar perceptible while returning the rest of the second to the page. If a
+// maintainer decides the curtain sequence is worth more than a 1.9s LCP, these
+// are the three numbers to change and the cost is written down here.
+//
+// The backstop is cut for the same reason and stays above the floor, because it
+// only fires when `load` never arrives. 1000ms is the worst case, not the norm.
+const MIN_VISIBLE_MS = 400
+const MAX_VISIBLE_MS = 1000
 const EXIT_MS = 850
 
-// The progress fill. Its 120ms delay plus 1280ms duration is 1400ms, which is
-// MIN_VISIBLE_MS exactly: the bar completes at the instant the curtain starts to
-// leave. That is not a coincidence to preserve by accident, so it is stated.
-const FILL_DELAY_MS = 120
-const FILL_MS = 1280
+// The progress fill. Its delay plus duration is MIN_VISIBLE_MS exactly: the bar
+// completes at the instant the curtain starts to leave. That is not a coincidence
+// to preserve by accident, so it is stated, and it is why the two numbers below
+// moved with the floor rather than staying behind it. A bar still filling when
+// the curtain has gone is a bar that lied about the page's progress.
+const FILL_DELAY_MS = 60
+const FILL_MS = 340
 
 // Under reduce the curtain is a 200ms acknowledgement rather than a sequence.
 const REDUCED_MIN_MS = 200
@@ -82,6 +112,14 @@ const READY_EVENT = 'cemurm:landing-ready'
 // src/app/main.jsx, so in development every effect runs mount, unmount, mount.
 // A lock that counted calls would leave the page permanently unscrollable after
 // the second release; setting and clearing properties cannot.
+//
+// HOW LONG THE PAGE IS LOCKED. From mount until `finish()` releases it, which is
+// MIN_VISIBLE_MS at the floor and MAX_VISIBLE_MS at the backstop: 400ms to 1000ms
+// on a warm cache, plus whatever `load` itself takes. It was 1400ms to 2600ms
+// before the LCP arithmetic above, which meant a visitor whose page was already
+// downloaded and rendered could not scroll for more than a second because of a
+// timer. The lock stays: the exit animation is 850ms long and a document that
+// scrolls underneath a moving curtain is worse than a brief lock.
 function lockScroll() {
   const root = document.documentElement
   root.style.position = 'relative'
@@ -175,7 +213,7 @@ export default function IntroLoader() {
     if (document.readyState === 'complete') begin()
     else window.addEventListener('load', begin, { once: true })
 
-    // THE UNMOUNT PATH. If the route changes inside the 1400ms window, React runs
+    // THE UNMOUNT PATH. If the route changes inside the MIN_VISIBLE_MS window, React runs
     // this: both timers are cleared, the load listener is detached, and the scroll
     // lock is released. Without the `release()` here the app would stay
     // unscrollable on every route after a mid-load navigation.

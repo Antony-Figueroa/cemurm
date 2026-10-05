@@ -28,10 +28,36 @@ const FOCUS =
 
 const PRESS = 'transition-transform duration-150 ease-out active:scale-[0.97]'
 
-// The light sweep. A píldora with a subtle highlight move on hover is the specular treatment;
-// it is a pure CSS sweep across the surface, not a new colour. Under reduced motion it is a
-// simple opacity/brightness shift instead of a moving highlight.
+// The light sweep. A pill with a subtle highlight move on hover is the specular
+// treatment: a pure CSS highlight crossing the surface, not a new colour. This is
+// what the component is named for, so the strip is wired to the control rather
+// than deleted. `group` sits on the control and `group-hover` /
+// `group-focus-visible` on the strip, which is the only way a child's variant can
+// react to the parent's pointer and keyboard state.
+//
+// THE PREVIOUS VERSION NEVER RAN. The strip sat at `-translate-x-full` with no
+// group, hover or focus variant anywhere in the file, so it never left the pill,
+// while a 300ms transform transition was paid for on every render. Worse,
+// `absolute inset-0 w-1/2` is over-constrained: `inset-0` sets all four offsets and
+// `width` then wins over the right offset, so the strip resolved to
+// `left: 0; width: 50%` and a permanent `from-cem-text/10` wash sat over the left
+// quarter of every amber pill. Hence `inset-y-0 left-0 w-1/2` below: the box is
+// unambiguous, and it is off the pill at rest.
+//
+// Under reduced motion the strip does not travel at all. It becomes a brightness
+// step on the left half of the pill, which is a real override in src/app/index.css
+// rather than a claim in a comment.
 const SWEEP = 'relative overflow-hidden'
+
+// Off the pill at rest, across the pill on hover or keyboard focus. `focus-visible`
+// is not optional: a keyboard user has to get the same specular read as a pointer,
+// and the component already refuses to show a `:focus` ring for the same reason it
+// shows one for `:focus-visible`.
+const SWEEP_STRIP =
+  'cem-sweep-strip pointer-events-none absolute inset-y-0 left-0 h-full w-1/2 ' +
+  '-translate-x-full bg-gradient-to-r from-cem-text/10 to-transparent ' +
+  'transition-transform duration-300 group-hover:translate-x-full ' +
+  'group-focus-visible:translate-x-full'
 
 export const SpecularButton = memo(function SpecularButton({
   href,
@@ -56,7 +82,7 @@ export const SpecularButton = memo(function SpecularButton({
       {href ? (
         <a
           href={href}
-          className={`inline-flex min-h-12 items-center justify-center whitespace-nowrap rounded-full px-6 text-sm font-semibold ${PRESS} ${FOCUS} ${
+          className={`group inline-flex min-h-12 items-center justify-center whitespace-nowrap rounded-full px-6 text-sm font-semibold ${PRESS} ${FOCUS} ${
             ghost
               ? 'border border-cem-text/20 bg-transparent text-cem-text hover:bg-cem-text/10'
               : 'bg-cem-amber text-cem-base border-t border-cem-text/20 hover:bg-cem-amber/90'
@@ -64,19 +90,16 @@ export const SpecularButton = memo(function SpecularButton({
           onPointerDown={handlePointerDown}
           onClick={onClick}
         >
-          {/* The light sweep — a thin highlighted strip that moves across the surface on
-              hover. Pure CSS, no JS, no colour literal (the highlight is white at low alpha,
-              not amber). */}
-          <span
-            className="pointer-events-none absolute inset-0 h-full w-1/2 -translate-x-full bg-gradient-to-r from-cem-text/10 to-transparent transition-transform duration-300"
-            aria-hidden="true"
-          />
+          {/* The light sweep — a thin highlighted strip that crosses the surface on
+              hover and on keyboard focus. Pure CSS, no JS, no colour literal (the
+              highlight is the near-white text token at low alpha, not amber). */}
+          <span className={SWEEP_STRIP} aria-hidden="true" />
           <span className="relative z-10">{content}</span>
         </a>
       ) : (
         <button
           type={type}
-          className={`inline-flex min-h-12 items-center justify-center whitespace-nowrap rounded-full px-6 text-sm font-semibold ${PRESS} ${FOCUS} ${
+          className={`group inline-flex min-h-12 items-center justify-center whitespace-nowrap rounded-full px-6 text-sm font-semibold ${PRESS} ${FOCUS} ${
             ghost
               ? 'border border-cem-text/20 bg-transparent text-cem-text hover:bg-cem-text/10'
               : 'bg-cem-amber text-cem-base border-t border-cem-text/20 hover:bg-cem-amber/90'
@@ -84,10 +107,7 @@ export const SpecularButton = memo(function SpecularButton({
           onPointerDown={handlePointerDown}
           onClick={onClick}
         >
-          <span
-            className="pointer-events-none absolute inset-0 h-full w-1/2 -translate-x-full bg-gradient-to-r from-cem-text/10 to-transparent transition-transform duration-300"
-            aria-hidden="true"
-          />
+          <span className={SWEEP_STRIP} aria-hidden="true" />
           <span className="relative z-10">{content}</span>
         </button>
       )}

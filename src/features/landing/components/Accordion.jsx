@@ -20,6 +20,16 @@ const FOCUS =
 
 const PRESS = 'transition-transform duration-150 ease-out active:scale-[0.97]'
 
+// ONE TRANSITION DECLARATION FOR A CONTROL THAT BOTH FILLS AND PRESSES. The
+// trigger used to carry a transition on every property beside PRESS, which is two
+// `transition-property` declarations at equal specificity; Tailwind emits
+// `.transition-transform` later, so the hover fill snapped. One explicit property
+// list removes the race and drops the wildcard. Press keeps his 150ms baseline, so
+// the fill moves from 200ms to 150ms, still inside the under-300ms UI band.
+// The wildcard class is deliberately not named in this comment: Tailwind scans
+// comments, so naming it would leave the rule in the built stylesheet unused.
+const PRESS_FILL = 'transition-[background-color,transform] duration-150 ease-out active:scale-[0.97]'
+
 export default function Accordion() {
   const reduce = useReducedMotion()
   const [open, setOpen] = useState(null)
@@ -71,7 +81,7 @@ export default function Accordion() {
                 <button
                   type="button"
                   onClick={(e) => handleOpen(index, e)}
-                  className={`flex w-full items-center justify-between gap-4 px-6 py-5 text-left transition-all duration-200 hover:bg-cem-surface/90 ${PRESS} ${FOCUS} relative z-10`}
+                  className={`flex w-full items-center justify-between gap-4 px-6 py-5 text-left hover:bg-cem-surface/90 ${PRESS_FILL} ${FOCUS} relative z-10`}
                   aria-expanded={isActive}
                   aria-controls={`faq-${index}`}
                 >
