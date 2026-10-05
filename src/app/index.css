@@ -109,7 +109,11 @@
  * header carried `border-b border-cem-text/10`, which is the hard divider the rule
  * names. Replaced by a gradient scrim painted just below the header's own bottom
  * edge: content passing under it fades into the material rather than being cut by
- * a line, and there is no rule anywhere because nothing needs one.
+ * a line, so there is no divider rule in the default state because nothing needs
+ * one. The single exception is `prefers-contrast: more` further down, where Apple
+ * §14 asks for a defined contrasting edge and a fading scrim is exactly the kind of
+ * low-contrast affordance that signal exists to remove. That border is written per
+ * signal, not as the default separator.
  *
  * WHY A SCIM AND NOT A MASK: `mask-image` would erase the header's own pixels,
  * which is wrong, since the header is the thing that must stay legible. A scrim

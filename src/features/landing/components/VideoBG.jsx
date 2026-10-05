@@ -5,8 +5,10 @@ import { memo, useEffect, useRef } from 'react'
 
 // A video background is a visitor's ambient media choice, not an app motion decision,
 // so reduced motion does NOT kill it — the visitor chose to play the page with video.
-// What reduced motion DOES do is keep the parent's parallax rAF from starting, which is
-// where the actual synthetic motion lives.
+// Only Galeria mounts this component now, inside a real `aspect-video` box. Hero and
+// CtaFinal each carried a copy behind an `absolute inset-0 -z-10` layer that could never
+// paint, and both were deleted rather than made ready: with no asset in the repo, an
+// empty `src` renders a zero-height box either way.
 //
 // CLS is the real enemy here. object-cover fills without aspect distortion, and the video
 // carries no width/height attributes, so the wrapper — not the media — sizes the layout.

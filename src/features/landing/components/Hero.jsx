@@ -9,16 +9,18 @@ import SpecularButton from './SpecularButton.jsx'
 import GlassIcon from './GlassIcon.jsx'
 import DeviceFrame from './DeviceFrame.jsx'
 
-// APPLE §14 — reduced motion. The video is the visitor's ambient media choice and is NOT
-// killed by reduced motion. What IS killed is the synthetic parallax on the mockups and the
-// rAF layers the parent would otherwise start, because those are the actual synthetic motion
-// here. The headline reveal still cross-fades under reduced motion (a comprehension aid) but
+// APPLE §14 — reduced motion. The hero has no ambient media of its own: the video layer
+// was deleted because `absolute inset-0 -z-10` inside a section with `z-index: auto` is
+// not a stacking context, so it painted in step 3 of the root stacking context while the
+// page's opaque `bg-cem-base` painted in step 4 and covered it. What reduced motion
+// kills here is the fan's rotation, which is the synthetic motion.
+// The headline reveal still cross-fades under reduced motion (a comprehension aid) but
 // does not translate.
 
 // The one non-user-triggered motion moment the page budgets. The hero's reveal is a response
 // to the page becoming visible (the intro loader hands off a READY signal), not a loop; it
-// cannot re-trigger and it is gone before the visitor can act on anything else. The video's
-// own loop is ambient media, not a page motion moment.
+// cannot re-trigger and it is gone before the visitor can act on anything else. The fan's
+// settle animation is a transition on user state, not a page motion moment.
 
 // THE PARALLAX IS GONE, AND THIS IS THE ARITHMETIC THAT REMOVED IT.
 //

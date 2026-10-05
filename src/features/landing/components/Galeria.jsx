@@ -22,14 +22,13 @@ const FOCUS =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cem-text ' +
   'focus-visible:ring-offset-2 focus-visible:ring-offset-cem-base'
 
-const PRESS = 'transition-transform duration-150 ease-out active:scale-[0.97]'
-
 // ONE TRANSITION DECLARATION FOR A CONTROL THAT BOTH FILLS AND PRESSES. The
-// trigger used to carry a transition on every property beside PRESS, which is two
-// `transition-property` declarations at equal specificity; Tailwind emits
-// `.transition-transform` later, so the hover fill snapped. One explicit property
-// list removes the race and drops the wildcard. Press keeps his 150ms baseline, so
-// the fill moves from 200ms to 150ms, still inside the under-300ms UI band.
+// trigger used to carry a transition on every property beside a second
+// `transition-transform` utility, which is two `transition-property`
+// declarations at equal specificity; Tailwind emits `.transition-transform`
+// later, so the hover fill snapped. One explicit property list removes the
+// race and drops the wildcard. Press keeps his 150ms baseline, so the fill
+// moves from 200ms to 150ms, still inside the under-300ms UI band.
 // The wildcard class is deliberately not named in this comment: Tailwind scans
 // comments, so naming it would leave the rule in the built stylesheet unused.
 const PRESS_FILL = 'transition-[background-color,transform] duration-150 ease-out active:scale-[0.97]'

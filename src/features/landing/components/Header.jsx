@@ -32,9 +32,9 @@ import { landing } from '../../../content/landing.es.js'
 // is not theoretical: this paragraph's first draft named the class and the rule
 // survived the fix that removed it from the constant. Describe the shape instead.
 //
-// FILL. The header floats over a moving background (hero video + parallax), so the
-// effective backdrop under the text changes as the page scrolls. The fill is the
-// only thing that can carry the text's contrast across that moving backdrop, and it
+// FILL. The header is sticky, so page content scrolls beneath it at every viewport,
+// and the sections it floats over are not all the same fill. The fill is the only
+// thing that can carry the text's contrast across that moving backdrop, and it
 // has to clear the floor against the WORST thing under it, not the average one.
 // cem.base/85 is the smallest step that carries cem.secondary-elevated clear of the
 // 4.5:1 floor with real margin against near-white text passing beneath (see index.css

@@ -64,7 +64,7 @@ export default function Landing() {
       <Header heroInView={heroInView} />
 
       <main className="flex-1">
-        {/* Hero — video + masked-heading + specular CTA + Stage Bus mockups with parallax. */}
+        {/* Hero — masked-heading + specular CTA + Stage Bus mockups in a rotating fan. */}
         <Hero />
 
         {/* Problema — editorial, no component noise. */}
@@ -111,7 +111,7 @@ export default function Landing() {
         {/* Registro — email + specular CTA + spark + feedback. */}
         <Registro onSubmit={handleRegister} />
 
-        {/* CtaFinal — second video + masked-heading + email + ghost CTA pointing up. */}
+        {/* CtaFinal — masked-heading + email + ghost CTA pointing up. */}
         <CtaFinal onSubmit={handleRegister} />
 
         {/* Faq — accordion with staggered clip reveal + border-glow. */}
