@@ -226,8 +226,28 @@ export default function Hero() {
           on the section (`isolate`) AND a real src, and both changes are reviewable
           only with a browser. */}
       <div className="relative mx-auto max-w-7xl">
-        {/* Headline — masked reveal.*/}
-        <div className="max-w-3xl">
+        {/* Headline — masked reveal.
+            THE MEASURE IS SIZED FROM THE TYPE, NOT PICKED. Measured in Chromium with
+            `white-space: nowrap` and `width: max-content`, the string needs 893px at the
+            clamp's 72px ceiling, and it needs that at every viewport from 1200px up,
+            because 6vw reaches 4.5rem exactly there. `max-w-3xl` is 768px, so the
+            headline wrapped to two lines on the widest screens and one line on the
+            narrow ones, which is backwards: giving the layout more room made it worse.
+            The crossover was about 1030px, where the clamp gives 61.44px and the string
+            needs 762px, clearing the 768px measure by 6px.
+
+            `max-w-5xl` at 1024px is the first token with real margin: 131px over the
+            893px. `max-w-4xl` at 896px technically fits, by 3px, which is not a margin
+            but a rounding error, and it breaks the moment a visitor raises their default
+            text size — Apple §15 asks for Dynamic Type to be respected, and a display
+            line with 3px of slack does not respect it.
+
+            This wrapper constrains the headline and nothing else. The subtitle carries
+            its own `max-w-2xl` at 672px, which is a readable body measure and is well
+            under 65ch at its 18px size, and the CTA is `w-fit`. Widening this column
+            widens the h1 alone, so display type gets the measure it needs and body copy
+            keeps the one it already had. */}
+        <div className="max-w-5xl">
           <MaskedHeading
             as="h1"
             className={`${HEADLINE} text-cem-text font-semibold`}
