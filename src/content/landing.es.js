@@ -1,6 +1,6 @@
 // Marketing copy for the landing surface.
 //
-// Every string a landing component renders resolves from this module — the
+// Every string a landing component renders resolves from this module, and the
 // components hold no marketing literals of their own. A later slice adds
 // `landing.en.js` plus a `useLocale()` hook; no i18n library, and no change
 // to any app file. A `sections[].id` is the anchor target the header nav and
@@ -22,9 +22,9 @@
 //      page names the live moment `concierto` and `culto` where the concept
 //      needs a word.
 //   3. `repertorio` is singular, and `Repertorios` belongs to the brand name
-//      alone — so the brand string below is bare.
+//      alone, so the brand string below is bare.
 //
-// VIDEO/ASSET PLACEHOLDERS — none of these files is real yet. Each component
+// VIDEO/ASSET PLACEHOLDERS: none of these files is real yet. Each component
 // that references one accepts a src and renders a placeholder block until the
 // real file is connected. Do not read these strings as asset paths that exist.
 
@@ -50,7 +50,7 @@ export const landing = {
     href: '#registro',
   },
 
-  // Intro loader — short label shown under the logo on the curtain.
+  // Intro loader: short label shown under the logo on the curtain.
   loader: {
     tag: 'CEMURM',
     note: 'El cuaderno digital de música.',
@@ -99,7 +99,6 @@ export const landing = {
   // ── PROBLEMA ──────────────────────────────────────────────────────────────
 
   problema: {
-    eyebrow: 'El problema',
     title: 'Una hoja no alcanza en el escenario.',
     body: [
       'Una hoja lleva un solo tono. En el setlist el tono acordado es uno y ' +
@@ -118,7 +117,6 @@ export const landing = {
   // ── STAGE BUS ─────────────────────────────────────────────────────────────
 
   stageBus: {
-    eyebrow: 'Stage Bus',
     title: 'Stage Bus.',
     intro:
       'Stage Bus es una sola fuente (el chart canónico y el setlist) que ' +
@@ -161,7 +159,7 @@ export const landing = {
   galeria: {
     eyebrow: 'Galería',
     title: 'El repertorio en cada pantalla.',
-    // Each item pairs a media src (video or image — both accepted, both
+    // Each item pairs a media src (video or image; both accepted, both
     // placeholder until you connect the real file) with a one-line label. The
     // component decides the layout; this module decides the copy.
     items: [
@@ -213,7 +211,6 @@ export const landing = {
   // ── FEATURES ──────────────────────────────────────────────────────────────
 
   features: {
-    eyebrow: 'Capacidades',
     title: 'Capacidades por rol.',
     // Bento copy. Each card is one concept, one headline, one line. No tier
     // billboards, no user counts.
@@ -296,7 +293,6 @@ export const landing = {
   // ── COMO-FUNCIONA ─────────────────────────────────────────────────────────
 
   comoFunciona: {
-    eyebrow: 'Cómo funciona',
     title: 'Desde el repertorio hasta el escenario.',
     body:
       'El repertorio se arma una vez y se actualiza desde aquí. El setlist fija ' +
@@ -328,7 +324,6 @@ export const landing = {
   // ── CTA FINAL ─────────────────────────────────────────────────────────────
 
   ctaFinal: {
-    eyebrow: 'Lista de espera',
     title: 'El repertorio en tu escenario.',
     subtitle:
       'Gratis durante la beta. Sin planes, sin niveles. El acceso se abre por ' +
@@ -342,7 +337,6 @@ export const landing = {
   // ── FAQ ───────────────────────────────────────────────────────────────────
 
   faq: {
-    eyebrow: 'FAQ',
     title: 'Preguntas frecuentes.',
     items: [
       {
@@ -398,7 +392,7 @@ export const landing = {
     note: 'CEMURM está en beta. El acceso se abre por lista de espera.',
     license: 'Licencia MIT.',
     // Four nav columns. `label` is the column header, `links` is the list of labels.
-    // `anchors` names the labels that are also sections on this page — the exception list:
+    // `anchors` names the labels that are also sections on this page: the exception list:
     // the footer renders an anchor for those and plain text for every other label, because
     // an href="#" announces itself as a link and then takes the reader to the top. Section
     // ids are structure rather than copy, so they stay ASCII.

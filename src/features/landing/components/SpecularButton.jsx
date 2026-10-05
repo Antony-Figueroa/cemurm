@@ -68,7 +68,7 @@ export const SpecularButton = memo(function SpecularButton({
               hover. Pure CSS, no JS, no colour literal (the highlight is white at low alpha,
               not amber). */}
           <span
-            className="pointer-events-none absolute inset-0 h-full w-1/2 -translate-x-full bg-gradient-to-r from-cem-text/10 via-cem-text/6 to-transparent transition-transform duration-300"
+            className="pointer-events-none absolute inset-0 h-full w-1/2 -translate-x-full bg-gradient-to-r from-cem-text/10 to-transparent transition-transform duration-300"
             aria-hidden="true"
           />
           <span className="relative z-10">{content}</span>
@@ -85,7 +85,7 @@ export const SpecularButton = memo(function SpecularButton({
           onClick={onClick}
         >
           <span
-            className="pointer-events-none absolute inset-0 h-full w-1/2 -translate-x-full bg-gradient-to-r from-cem-text/10 via-cem-text/6 to-transparent transition-transform duration-300"
+            className="pointer-events-none absolute inset-0 h-full w-1/2 -translate-x-full bg-gradient-to-r from-cem-text/10 to-transparent transition-transform duration-300"
             aria-hidden="true"
           />
           <span className="relative z-10">{content}</span>

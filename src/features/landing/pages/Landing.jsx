@@ -11,7 +11,9 @@ import CtaFinal from '../components/CtaFinal.jsx'
 import Accordion from '../components/Accordion.jsx'
 import Footer from '../components/Footer.jsx'
 
-// The new landing. Thirteen sections in the agreed order, all copy from the content module.
+// The new landing. Nine sections in the agreed order, all copy from the content module:
+// Hero, problema, Stage Bus, Galería, Capacidades, Cómo funciona, Registro, CTA final, FAQ.
+// Header, Footer and the intro curtain are page chrome, not sections.
 // The header CTA is the ghost outline variant while the hero's primary amber pill is on screen,
 // and the solid amber pill once the hero has scrolled out — so the two amber CTAs never sit on
 // screen together.

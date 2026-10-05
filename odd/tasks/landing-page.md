@@ -6,8 +6,9 @@
 
 ## 1. Objective
 
-Ship a real marketing landing as a route in the app: 13 sections, dark ramp + one amber
-accent, macOS/Apple visual language, under a measured performance budget.
+Ship a real marketing landing as a route in the app: nine sections, dark ramp + one amber
+accent, macOS/Apple visual language, under a measured performance budget. The upstream plan's
+thirteen were cut to nine, and the count plus the render order are recorded in §10.
 
 ## 2. Problem / why now
 
@@ -255,6 +256,23 @@ nobody reads.
 
 The hero is the single memorable thing. Spend the budget there and nowhere else.
 
+**The table above was written for the pre-rewrite page and no longer describes the code.** All
+three gaps are recorded here instead of being edited away, because closing them is a §7.7 budget
+call for the maintainer rather than a documentation fix.
+
+1. `el ciclo` is not one of the nine sections that ship. The component that applied
+   `.cem-cycle-rail` has not been imported by a page since `e3e28e2`, and `src/app/index.css`
+   keeps that block with no consumer, annotated as a documented pattern rather than as live
+   styling.
+2. `motion` is imported by eight landing components (IntroLoader, RevealText, MaskedHeading, Hero,
+   StageBus, Galeria, Features, Accordion), so "all others: nothing" is not what the code does.
+   Row 6 of §9.1 refuses parallax on a container, and `Hero.jsx`'s `MockupStack` applies exactly
+   that on scroll.
+3. The hero's role rotation was deleted with its component set, so §9.1 row 5's parenthetical and
+   §12.3's "(hero rotation)" name nothing any more. `IntroLoader.jsx` claims the single
+   non-user-triggered moment §7.7 budgets; `Hero.jsx`'s own header comment still claims it for the
+   hero reveal. The two claims cannot both be right.
+
 ### 9.3 Hard constraints
 
 - **Firefox has no scroll-driven animations.** Verified. Guard with `@supports` and let it degrade
@@ -292,6 +310,32 @@ Before trusting any local result, confirm the toolchain is current — the main 
 / Vitest 5.0.2). `pnpm install --frozen-lockfile` first.
 
 ## 10. Progress
+
+### What renders today: nine sections, in order
+
+Counted from `src/features/landing/pages/Landing.jsx` on the `feat/landing-page` branch, not from
+the slice names below. `IntroLoader`, `Header` and `Footer` are page chrome, not sections, exactly
+as that file's header comment says.
+
+| # | Section | Where it is defined | id |
+|---|---|---|---|
+| 1 | Hero | `Hero.jsx` | `#hero` |
+| 2 | Problema | inline in `Landing.jsx` | `#problema` |
+| 3 | Stage Bus | `StageBus.jsx` | `#stage-bus` |
+| 4 | Galería | `Galeria.jsx` | `#galeria` |
+| 5 | Capacidades | `Features.jsx` | `#features` |
+| 6 | Cómo funciona | inline in `Landing.jsx` | `#como-funciona` |
+| 7 | Registro | `Registro.jsx` | `#registro` |
+| 8 | CTA final | `CtaFinal.jsx` | `#cta-final` |
+| 9 | FAQ | `Accordion.jsx` | `#faq` |
+
+**The section names in the L3a to L4 rows below are the pre-rewrite names.** `alcance`, `ciclo`,
+`split`, `limites`, `offline`, `organizacion`, `precios`, `roles` and `waitlist` are not sections
+of this page: the approved rewrite in `7479e87` cut the upstream plan's thirteen sections down to
+the nine above, before any W-slice ran. The rows stay exactly as delivered evidence. Two of them
+still read in the present tense and are now stale: the L3d row says `faq` and `waitlist` "remain
+empty frames", and `faq` is filled today (six questions with answers, see §12.5) while `waitlist`
+was dropped as a section entirely.
 
 | ID | State | Evidence |
 |---|---|---|
@@ -414,10 +458,10 @@ that no-ops a misconfigured build would be worse than a heavy one.
 1. **B3, lazy client.** Up to −57.5 kB. Lands at ~159 kB: still over 120, so B3 alone is
    necessary and NOT sufficient.
 2. **`motion` at 40.58 kB is 19% of the landing.** §7.3 budgets it for the landing chunk and
-   §9.1 makes the hero rotation the one thing worth paying for, so it stays — but this is the
-   number to attack if 120 kB must be hit. The lever is `motion/mini` or reimplementing a
-   three-step cross-fade in ~20 lines of CSS; both change the motion budget in §7.7, which is a
-   product decision, not a build one.
+   §9.1 makes the landing's orchestrated motion the one thing worth paying for, so it stays.
+   This is the number to attack if 120 kB must be hit. The lever is `motion/mini` or
+   reimplementing a three-step cross-fade in ~20 lines of CSS; both change the motion budget in
+   §7.7, which is a product decision, not a build one.
 3. **Font payload, still unaddressed.** `main.jsx` imports four static Inter weights; 16 woff2
    files ship today against §7.7's 2-file target. This is §7.4 and moved to L6.
 4. The `vendor` chunk at 76.20 kB gzip is the floor no visitor gets under.
@@ -505,7 +549,7 @@ sets `SRC_DIR="src"`, so `public/` is outside the scan path. No threshold was to
 | Font payload | ≤ 45 kB / 2 files | **94.48 kB / 4 files** | **MISSED** |
 | LCP, 4G throttle, mid-tier Android | < 2.0 s | — | **UNMEASURED** |
 | CLS from fonts | 0 | — | **UNMEASURED** |
-| Non-user-triggered motion moments | 1 | **1** (hero rotation) | **MET** |
+| Non-user-triggered motion moments | 1 | **1** at measurement (the hero rotation, deleted since; see §9.2) | **MET** |
 | Runtime dependencies | 5 → 8 | **5 → 6** (`motion` added) | not reached |
 
 **The two UNMEASURED rows are honestly unmeasured.** There is no Lighthouse, no WebPageTest and
@@ -533,20 +577,26 @@ first combination that actually reaches 120. All three are owner decisions.
 
 ### 12.5 The waitlist CTA IS a dead end — reported, not faked
 
-**Verified, and left alone.** The header CTA is `landing.cta = { label: 'Unirme a la lista de
-espera', href: '#waitlist' }` and the `waitlist` registry entry carries **only `eyebrow` and
-`title`** — no `body`, no `steps`. Grepping the landing for `<form`, `onSubmit` or a
-`type="email"` input returns nothing.
+**Re-verified for W4: the original write-up no longer matches the code.** It cited
+`landing.cta = { label: 'Unirme a la lista de espera', href: '#waitlist' }`, a `waitlist`
+registry entry carrying only `eyebrow` and `title`, and a landing that greps clean for `<form`,
+`onSubmit` and a `type="email"` input. None of those three still hold.
 
-So today a visitor clicks a button that promises "join the waitlist", scrolls to a section that
-repeats the same sentence as a heading, and finds **no way to join**. That is a dead end, and it
-is the direct consequence of B1 being undecided: there is no target to point at.
+**What the code says now.** `landing.cta.href` is `#registro`
+(`src/content/landing.es.js:48-51`), `#registro` is a real section, and `Registro.jsx` and
+`CtaFinal.jsx` each render a `<form>` with `type="email"` and an `onSubmit` handler. There is no
+`waitlist` entry in `landing.es.js` at all.
 
-**Nothing was wired to paper over it.** A form that cannot submit, or a `mailto:` to an address
-`docs/product-brief.md:89-90` says does not exist, would both violate §8.3's rule that a CTA
-says exactly what happens. **Two ways out, both owner calls:** (a) B1 lands and L6b builds the
-real form; (b) until then, hide the header CTA — but that removes the page's only conversion
-action, so it is a marketing decision, not a build one.
+**What has not changed: there is still no way to join.** B1 is undecided, so nothing sits behind
+the form. `Registro.jsx` validates the address locally and then says so in the UI: the success
+string is "Correo validado. No se envió nada: este formulario no está conectado.", and
+`Landing.jsx` only logs the address. The dead end is no longer silent, because §8.3 forces the
+page to state what happens, but the visitor still cannot join. That is B1.
 
-`faq` is the second empty frame and has the same shape of problem: §8.1 row 13 wants six real
-questions from a system director, and inventing them is forbidden.
+**Still owner calls:** (a) B1 lands and the form posts to a real endpoint; (b) until then, hide the
+CTA, which removes the page's only conversion action and is therefore a marketing decision rather
+than a build one. A `mailto:` to an address `docs/product-brief.md:89-90` says does not exist
+remains ruled out by §8.3.
+
+**`faq` is no longer an empty frame either.** `landing.faq.items` carries six questions with
+answers and `Accordion.jsx` renders them, so the second half of the original note here is closed.

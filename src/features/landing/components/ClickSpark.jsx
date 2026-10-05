@@ -14,30 +14,33 @@
 //      assignment rather than painting white. Both call sites pass a token, so the
 //      default is unreachable either way.
 //   2. This banner and the repo's lint header.
-//   3. `...rest` is accepted and spread onto the root div. Five call sites pass a
+//   3. `...rest` is accepted and spread onto the root div. Four call sites pass a
 //      host `style` (position: fixed at the press point, pointer-events: none)
 //      that upstream silently drops, so the root kept `relative w-full h-full`
 //      inside an auto-height parent: a zero-height box, therefore a zero-height
 //      canvas and nothing to paint on. The spread is placed BEFORE the component's
 //      own className and onClick so a caller cannot clobber the layout or the
-//      trigger; the only prop in use today is `style`.
+//      trigger; the only prop in use today is `style`. The fifth call site,
+//      StageBus, wraps children instead and passes no style.
 //
 // NOT CHANGED, and reported rather than quietly fixed:
 //
 //   THE rAF LOOP IS PERPETUAL. Line 108/111 re-arms unconditionally on every
 //   frame, so this runs continuously from mount to unmount and calls
-//   `ctx.clearRect` on each frame even with zero live sparks. Unlike TechText,
-//   whose loop is event driven, this one never idles. The mitigation is at the
-//   call site: RoleRotation only mounts it where `(hover: hover) and (pointer:
-//   fine)` matches and reduced motion is off, so a phone and a reduced-motion
-//   visitor never start it at all. Making the loop event driven would be a
-//   behavioural change to vendored source and was not in scope.
+//   `ctx.clearRect` on each frame even with zero live sparks: it never idles.
+//   The mitigation is at the call site: each of the five callers mounts it only
+//   where `(hover: hover) and (pointer: fine)` matches and reduced motion is off,
+//   via the `canSpark` gate in Accordion, CtaFinal, Galeria, Registro and
+//   StageBus, so a phone and a reduced-motion visitor never start it at all.
+//   Making the loop event driven would be a behavioural change to vendored source
+//   and was not in scope.
 //
 //   THE TRIGGER IS `onClick`, NOT POINTER-DOWN. Apple §1 wants feedback on press.
 //   The burst therefore lands one event late, roughly 50 to 150ms after the
 //   finger lands, which is a real miss and not something the call site can fix
 //   because the handler is internal. The press-scale feedback that IS fixable is
-//   applied directly to the buttons in RoleRotation.
+//   applied directly to the buttons: the `PRESS` constant in Header, Hero,
+//   StageBus, Galeria and Accordion, and in SpecularButton.
 //
 //   NO REDUCED-MOTION HANDLING UPSTREAM. Handled at the call site, same as the
 //   canvas question above.

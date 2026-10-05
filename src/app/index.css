@@ -135,8 +135,8 @@
  *
  *   prefers-reduced-transparency: reduce — raise the fill toward opaque AND drop
  *   the blur, because the point of the request is that the material stops being
- *     transparent, and an opaque-but-still-blurred surface is neither. LandingHeader
- *     already raised the opacity to 95 percent; it did not drop the blur.
+ *     transparent, and an opaque-but-still-blurred surface is neither. Header.jsx
+ *     already raised the fill to 95 percent; it did not drop the blur.
  *   prefers-contrast: more — near-solid background plus a defined contrasting
  *     border, so the header does not rely on translucency to separate itself from
  *     the content behind it. This one had no handling anywhere in the project.
@@ -234,13 +234,17 @@
    all v4 additions (verified against both v3.tailwindcss.com/docs/rotate and
    tailwindcss.com/docs/rotate). So on this project's pinned 3.4.19 every one of
    `perspective-[1200px]`, `rotate-x-6`, `rotate-y-6`, `preserve-3d` and
-   `backface-hidden` emits NOTHING and trips no check — the same silent no-op as
-   `backdrop-saturate-180` in LandingHeader, and the concrete reason the project
-   stays on 3.4 rather than taking v4's 3D utilities.
+   `backface-hidden` emits NOTHING and trips no check. The same silent no-op hit
+   `backdrop-saturate-180` when the landing header carried it: the default
+   `backdrop-saturate` scale stops at 150, so `-180` emits no rule at all, and
+   `Header.jsx` now sits on the scale's real top value, `backdrop-saturate-150`.
+   That class of silent failure is the concrete reason the project stays on 3.4
+   rather than taking v4's 3D utilities.
 
    Hence the split: `perspective` is declared here, and the rotation and the Z
    offset travel through `motion`, which composes its own inline transform string.
-   See RoleRotation.jsx.
+   See Hero.jsx: the rotateY / rotateZ / translateY fan on the three mockup frames
+   is composed there, not written as a Tailwind class.
 
    1400px is the perspective distance, and its job is to make a 9-degree Y
    rotation read as depth rather than as a flat shear: a shorter distance
@@ -307,8 +311,11 @@
  * literals anywhere in src/, including this file, and no custom property in the
  * project holds the accent — `--cem-radius-*` are the only `cem` tokens adopted
  * so far. A colour literal in a @keyframes block fails the gate. So the scroll
- * timeline moves geometry and the accent stays a Tailwind class. See
- * CycleSequence.jsx for how that split is made.
+ * timeline moves geometry and the accent stays a Tailwind class. That split is
+ * a project decision, not a component's: rule 01a would fail a colour literal
+ * here whether or not anything applies the class. Nothing in src/ applies
+ * `.cem-cycle-rail` any more, since the section that carried it went out in W4,
+ * so the block below stands as the documented pattern rather than as live styling.
  *
  * DEGRADATION, in the order it happens:
  *   - Firefox has no scroll-driven animations (verified). The @supports guard

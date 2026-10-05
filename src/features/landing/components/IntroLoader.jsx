@@ -37,15 +37,15 @@ import { landing } from '../../../content/landing.es.js'
 // the sequence replay correctly.
 //
 // ── DOES THIS SPEND THE ONE NON-USER-TRIGGERED MOTION MOMENT (§7.7)? ─────────
-// Claimed: no. §7.7 budgets one, and `RoleRotation` owns it. The reasoning a
-// reviewer should check is the difference in KIND, not duration: the rotation is
-// an orchestrated sequence that auto-advances on its own for 2.8s while the page
-// sits there, competing for attention whether or not the visitor wants it. This
-// is a one-shot loading state tied to the page becoming usable, it cannot loop,
-// it cannot re-trigger, and it is gone before the visitor can act on anything
-// else. A reviewer who counts load-triggered reveals as moments would put §7.7's
-// table at 2 rather than 1; that is a rule call, not a fact, and it is flagged in
-// the slice record rather than assumed here.
+// Claimed: yes, and it is now the only candidate. §7.7 budgets one; the hero role
+// rotation that used to spend it was deleted in W4 along with the component set
+// it lived in, so the count is carried by this curtain alone. The reasoning a
+// reviewer should check is the KIND, not the duration: this is a one-shot loading
+// state tied to the page becoming usable, it cannot loop, it cannot re-trigger,
+// and it is gone before the visitor can act on anything else. A reviewer who
+// counts only sequences that hold the page and auto-advance without any event
+// would put §7.7's table at 0 rather than 1; that is a rule call, not a fact, and
+// it is flagged in the slice record rather than assumed here.
 
 // ── TIMING ────────────────────────────────────────────────────────────────────
 const MIN_VISIBLE_MS = 1400
