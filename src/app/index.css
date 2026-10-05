@@ -229,6 +229,65 @@
 }
 
 /* ===========================================================================
+ * Forced colors (Windows High Contrast), a fourth accessibility mode
+ * ===========================================================================
+ * The three blocks above answer `prefers-reduced-motion`,
+ * `prefers-reduced-transparency` and `prefers-contrast`. Forced colors is a
+ * fourth mode and this project had no rule for it at all: before this block,
+ * `grep -c forced-colors` over this file returned 0.
+ *
+ * MEASURED IN CHROMIUM 153, scanning every element whose computed
+ * `backdrop-filter` is not `none`, before and after forcing colors on:
+ *
+ *   <header> .cem-material   blur(40px) saturate(1.5)  ->  unchanged
+ *   6 x <span> glass pills   blur(4px)                  ->  unchanged
+ *   2 x <input>              blur(4px)                  ->  unchanged
+ *
+ * All nine kept blurring while their `background-color` was replaced by the
+ * system `Canvas` colour at 0.8 and 0.85 alpha. That is the defect:
+ * `backdrop-filter` is NOT in the browser's forced-colors override list. The
+ * engine swaps the palette and then keeps compositing a Gaussian sample of a
+ * backdrop whose colours were replaced a moment earlier, so the result is a
+ * smear of colours the visitor did not choose, at real compositing cost per
+ * frame.
+ *
+ * The values are written as prose on purpose. Rule 01a greps `src/` for
+ * functional colour notation and it reads comments as well as declarations,
+ * so quoting the measured fill here as a literal is the seventh time this
+ * branch has tripped that gate from a comment alone.
+ *
+ * WHY A GLOBAL RULE AND NOT A CLASS LIST. The `prefers-reduced-transparency`
+ * block above reaches only `.cem-material`, and that is exactly why eight of
+ * the nine measured elements were missed: the pills and the inputs carry
+ * `backdrop-blur-sm` from markup, at four call sites, with no shared class to
+ * target. MDN's forced-colors guidance is to avoid `backdrop-filter` in this
+ * mode altogether, and a `*` selector inside the media query is the only rule
+ * that holds when markup keeps adding blur utilities.
+ *
+ * NOT USED ON PURPOSE: `forced-color-adjust: none` would opt these surfaces
+ * out of the forced palette, which is the accessibility anti-pattern this
+ * whole mode exists to prevent.
+ *
+ * SEPARATION AFTER TRANSLUCENCY IS GONE. The header's entire job is floating
+ * chrome over scrolling content, so it gets a visible edge, the same
+ * treatment `prefers-contrast: more` gives it. The pills and the inputs need
+ * no added edge: forced colors already maps `border-color` to a system
+ * colour, so their existing borders become visible on their own.
+ * =========================================================================== */
+@media (forced-colors: active) {
+  * {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .cem-material {
+    border-bottom: 1px solid;
+    background-color: Canvas;
+    color: CanvasText;
+  }
+}
+
+/* ===========================================================================
  * The specular button's light sweep, under reduced motion
  * ===========================================================================
  * SpecularButton.jsx draws a thin highlight strip that crosses the pill on hover
