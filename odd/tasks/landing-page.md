@@ -81,6 +81,39 @@ pass. He does **not** implement logic, schema, or backend.
 | B3 | **Lazy Supabase client** (§7.1) — moving the `src/data/supabase.js` throw from module load to first authenticated use is a **contract change** | **needs the owner** |
 | B4 | Any auth/route contract change the landing forces | needs the owner |
 
+### B3, measured — what it actually costs, and why a Proxy will not do it
+
+Measured 2026-10-10 on the built chunks, gzip level 6. `/landing` downloads:
+
+| chunk | gzip | how it gets there |
+|---|---|---|
+| `vendor` | 77,884 | static from `index` |
+| `supabase` | **58,693** | **static from `index`** |
+| `motion` | 43,986 | dynamic, from `Landing` |
+| `index` | 28,449 | entry |
+| `Landing` | 10,731 | dynamic, from `index` |
+| | **219,743 B = 214.6 KiB** | budget is ≤120 kB |
+
+The landing never touches Supabase and still pays 58.7 kB for it, because
+`router.jsx` imports `AppLayout` and `AuthGuards` statically, both of which reach
+the client through `data/repositories/auth.js` and `minors.js` — and `<AuthProvider>`
+wraps `<RouterProvider>` at the root, so **every** route mounts it.
+
+Dropping `supabase` alone lands at 157.3 KiB, still over. Dropping `supabase` **and**
+`motion` lands at 114.3 KiB, which meets the budget.
+
+**Why a lazy Proxy cannot do it.** `supabase-js` is synchronous after init: the
+repository layer calls `supabase.rpc(...)` and reads the result without awaiting
+anything. A Proxy that defers the import gives back a Promise, which turns all 16
+importing modules async. The only shape that preserves the sync contract is a
+dynamic `import()` resolved **before** the repositories run — which means moving the
+guarantee to a mount boundary, not into the client module.
+
+**The low-risk shape, and its cost.** Put `/landing` outside `AuthProvider`, the
+same way `/external-display` and `/overlay/:token` already sit outside `AppLayout`.
+That is a router restructure, and it changes *when* a missing-env throw fires for
+every authenticated route. That is exactly what B3 is, and it stays with the owner.
+
 **Neither side blocks the other.** Every section except the CTA form renders with static
 content, so the landing can be built and reviewed in full while B1–B4 are open. The CTA is
 designed against a frozen prop shape and wired when B2 lands.
