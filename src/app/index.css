@@ -163,14 +163,6 @@
  * cem.base the header is already painted from and cannot drift from it. This is
  * the eighth time that rule has caught a colour written here by hand.
  * =========================================================================== */
-.cem-scroll-scrim {
-  pointer-events: none;
-  position: absolute;
-  inset: 100% 0 auto 0;
-  height: 1.5rem;
-  transition: opacity 200ms ease-out;
-}
-
 /* Materialize on entry: blur and scale together, never opacity alone. The fill
    and the edge ride along so a media-driven change of either is animated rather
    than snapped; `background-color` and `border-color` are the two properties the
@@ -203,9 +195,6 @@
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }
-  .cem-scroll-scrim {
-    display: none;
-  }
 }
 
 /* §14, signal three of three. Near-solid fill plus a defined contrasting edge, so
@@ -222,9 +211,6 @@
     @apply border-cem-text;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-  }
-  .cem-scroll-scrim {
-    display: none;
   }
 }
 
@@ -321,32 +307,23 @@
   }
 }
 
-/* ===========================================================================
- * The hero wordmark canvas, gated on a real pointing device
- * ===========================================================================
- * Emil's rule: hover work belongs behind `@media (hover: hover) and (pointer:
- * fine)`. A touch screen reports `hover: none` and `pointer: coarse`, and this is
- * a canvas component whose entire effect is cursor driven: no hover, no drag, no
- * reason to exist, yet it still allocates a backing store, a scratch canvas and
- * two observers.
- *
- * THIS IS THE SECOND LINE OF DEFENCE, NOT THE FIRST. Hero.jsx refuses to MOUNT
- * the canvas when the media query does not match or when reduced motion is set,
- * and that is what actually stops the rAF loop and the observers. A CSS-only gate
- * would leave the loop running behind a hidden canvas. This rule exists so that a
- * regression in the mount gate still leaves the canvas invisible, and so the
- * condition is written once, declaratively, where it can be read.
- *
- * The static wordmark is the counterpart and is NOT hidden by this rule: it is
- * what a phone gets and it must stay visible. `.cem-wordmark-canvas` is only ever
- * applied to the canvas wrapper, and `.cem-spark-canvas` only to ClickSpark's.
- * =========================================================================== */
-@media not all and (hover: hover) and (pointer: fine) {
-  .cem-wordmark-canvas,
-  .cem-spark-canvas {
-    display: none;
-  }
-}
+/* The touch gate for the two canvases, `.cem-wordmark-canvas` and
+   `.cem-spark-canvas`, was removed here, and with it the `display: none` it
+   declared under `(hover: none) and (pointer: coarse)`.
+
+   It was documented as a second line of defence rather than the first, and
+   that framing is what made it dead rather than load-bearing: a CSS-only gate
+   cannot stop a requestAnimationFrame loop, so the thing that actually
+   protects a touch device is the mount gate in JavaScript, which refuses to
+   mount the canvas when the media query does not match. Both classes had no
+   consumer for two different reasons. TechText, which owned the wordmark
+   canvas, was deleted as unreachable in the Judgment Day round. ClickSpark
+   survives but never applied `cem-spark-canvas`; it gates in JS at each of
+   its five call sites through `canSpark()`.
+
+   So the rule was guarding nothing, and the guard that matters was never in
+   this file. Do not reintroduce it as the primary gate: hidden canvas, loop
+   still running. */
 
 /* The ghost-word treatment is GONE (L8). R1 put a giant low-opacity word behind
    five sections, read through `content: attr(data-word)`. Rendered, they collided
@@ -384,103 +361,29 @@
   perspective: 1400px;
 }
 
-/* The hero copy entrance. `@starting-style` plus a transition, which is plan
-   9.1 row 3 — "element enters for the first time" — and costs zero bytes
-   because it is CSS, not `motion`. That is the whole reason it is not written
-   as a motion variant: section 7.7 budgets ONE non-user-triggered motion
-   moment and the role rotation already spends it. An entrance is not a repeat
-   of it either, because it cannot run twice — there is no trigger, no loop
-   and no auto-advance — but it is free, so there is no reason to argue.
-
-   `translate`, not `transform`: `motion` writes `transform` inline on the demo
-   row, and using the independent property here means the two never collide.
-
-   Under `prefers-reduced-motion: reduce` the block at the bottom of this file
-   sets `transition-duration: 0.01ms !important`, so the whole entrance
-   collapses to its end state in 0.01ms. No override is needed or wanted.
-
-   `:nth-child` staggers the four hero copy elements without an inline
-   `--index` style, because this repo is Tailwind-only with no inline styles.
-   The four `.cem-enter` elements must stay siblings for these to resolve. */
-.cem-enter {
-  transition:
-    opacity 520ms cubic-bezier(0.32, 0.72, 0, 1),
-    translate 520ms cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-@starting-style {
-  .cem-enter {
-    opacity: 0;
-    translate: 0 16px;
-  }
-}
-
-.cem-enter:nth-child(2) { transition-delay: 70ms; }
-.cem-enter:nth-child(3) { transition-delay: 140ms; }
-.cem-enter:nth-child(4) { transition-delay: 210ms; }
+/* The hero copy entrance, `.cem-enter`, was removed here. The rewrite gave the
+   hero `MaskedHeading` plus `motion`, which animates the headline directly, so
+   the four-element CSS stagger had no elements left to stagger. The plan's
+   reason for preferring CSS over a motion variant still holds as a record;
+   only the rule is gone. */
 
 /* ===========================================================================
- * El ciclo del culto — scroll-driven sequence highlighting
- * ===========================================================================
+ * El ciclo del culto, `.cem-cycle-rail` and `@keyframes cem-cycle-fill`, were
+ * removed here.
  *
- * Plan section 9.1 is a decision procedure and this is the one row that says
- * "section enters / leaves the viewport → animation-timeline: view()". No
- * JavaScript, no motion, no bundle cost. Because it is driven by scrolling it is
- * USER-TRIGGERED, so it does not spend the single non-user-triggered motion
- * moment section 7.7 budgets — that one went to the hero rotation.
+ * This was the plan's one scroll-driven row: `animation-timeline: view()` with
+ * no JavaScript and no bundle cost, animating transform only so a rail that
+ * FILLS still reads as progress to a viewer who cannot perceive the movement.
+ * The reasoning was sound and it is kept in the plan document, which is where a
+ * decision record belongs.
  *
- * IT ANIMATES TRANSFORM ONLY. Reference 6.4 rule 4 forbids animating anything
- * but `transform` and `opacity`, and there is a second reason to pick `transform`
- * here: a rail that FILLS is a shape change, so it reads as progress even for a
- * viewer who cannot perceive the movement. Opacity on body copy was rejected —
- * dimming prose to 0.35 drops it far under the 4.5:1 floor in reference 3.4, and
- * this section must stay readable at every scroll position.
- *
- * WHY THE AMBER IS NOT IN THE KEYFRAMES. The obvious thing to animate here is
- * the rail's colour, and it is impossible: gate rule 01a forbids raw colour
- * literals anywhere in src/, including this file, and no custom property in the
- * project holds the accent — `--cem-radius-*` are the only `cem` tokens adopted
- * so far. A colour literal in a @keyframes block fails the gate. So the scroll
- * timeline moves geometry and the accent stays a Tailwind class. That split is
- * a project decision, not a component's: rule 01a would fail a colour literal
- * here whether or not anything applies the class. Nothing in src/ applies
- * `.cem-cycle-rail` any more, since the section that carried it went out in W4,
- * so the block below stands as the documented pattern rather than as live styling.
- *
- * DEGRADATION, in the order it happens:
- *   - Firefox has no scroll-driven animations (verified). The @supports guard
- *     means the animation is never declared, the rail renders at its natural
- *     full width, and the section stays a complete, numbered, readable sequence.
- *   - prefers-reduced-motion. The guard below is `no-preference`, so under
- *     reduce the animation is not merely shortened — it is never declared.
- *     That is deliberate belt-and-braces: the block at the bottom of this file
- *     sets `animation-duration: 0.01ms !important`, and whether a view timeline
- *     ignores that or is broken by it cannot be checked without a browser. The
- *     nested media query makes the question moot either way, and it does not
- *     modify or override that block.
- *
- * The rail's resting state is the FINISHED state, not the empty one, so
- * degrading yields six complete rules rather than six empty ones.
- */
-@keyframes cem-cycle-fill {
-  from {
-    transform: scaleX(0);
-  }
-
-  to {
-    transform: scaleX(1);
-  }
-}
-
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .cem-cycle-rail {
-      animation: cem-cycle-fill linear both;
-      animation-timeline: view();
-      animation-range: entry 20% entry 80%;
-    }
-  }
-}
+ * The section it served is not on the page. The rewrite landed nine sections
+ * instead of thirteen and "el ciclo" is not one of the nine, so nothing applies
+ * the class. A scroll-driven animation for a section that does not exist is a
+ * pattern description pretending to be styling, and it is worse than absent:
+ * the next reader has to work out whether the section is missing or the rule
+ * is stale. If the section comes back, this block is the reference.
+ * =========================================================================== */
 
 /* docs/ux-spec.md 253: reduced motion reduces transitions and animations to
    near-zero. The 0.01ms is deliberate and must not be "corrected" to 0: some

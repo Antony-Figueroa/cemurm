@@ -23,10 +23,17 @@ import ReactDOM from 'react-dom/client'
 // latin files measure 96,744 bytes against the variable font's ~45 kB, so the
 // remaining saving is roughly 51 kB for a decision that belongs to a slice which
 // may also spend package.json.
-import '@fontsource/inter/latin-400.css'
-import '@fontsource/inter/latin-500.css'
-import '@fontsource/inter/latin-600.css'
-import '@fontsource/inter/latin-700.css'
+//
+// RESOLVED. Inter is now one variable face covering all four weights, declared
+// in public/fonts.css beside the metric-compatible fallback and preloaded from
+// index.html: 48,256 bytes for 400/500/600/700, against the four static latin
+// files' 96,744. The metrics were measured, not assumed — fontTools 4.66 on the
+// variable and the static file reports the same upm, ascent, descent, lineGap
+// and xAvgCharWidth, so the fallback's `size-adjust: 105.31%` still holds.
+//
+// Nothing imports a font from this module any more. `@fontsource/inter` is no
+// longer used at runtime; the woff2 is copied into public/fonts/ so it is
+// resolvable before the CSS bundle parses.
 import App from './router.jsx'
 import './index.css'
 import { startOfflineSync } from '../offline/drainer.js'
