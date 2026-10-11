@@ -100,7 +100,7 @@ export function MorphSlider({
   const scaleY = useTransform(stretch, [0, 1], [1, 0.7])
   const fillW = useTransform(springPos, (v) => clamp(v, 0, options.length - 1) * STEP + 28)
 
-  // Token names in, resolved rgb() strings out. Empty on the first pass, so the
+  // Token names in, resolved colour strings out. Empty on the first pass, so the
   // structure renders first and paints colour on the layout pass after — the
   // ordering colors.js is written for.
   const colors = useTokenColors({
