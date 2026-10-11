@@ -13,6 +13,7 @@ pnpm preview     # serve dist/
 pnpm lint        # ESLint — --max-warnings 0, --report-unused-disable-directives
 pnpm test        # Vitest run — characterization tests, node environment
 pnpm test:watch  # Vitest watch mode
+pnpm test:gherkin  # Vitest run over src/test/gherkin/ — BDD scenarios, separate tier
 pnpm typecheck   # tsc --noEmit  (see "Type checking" below)
 ```
 
@@ -41,16 +42,34 @@ against that. Compare the built bundle before and after as well: a major bump ca
 size with no gate noticing. For #236 the JS bundle moved +3.2 kB (+0.35%), and the >500 kB chunk
 warning was already there on Vite 5.
 
-## CI does not run typecheck
+## What CI actually runs
 
-`.github/workflows/ci.yml` (push to `main` + every PR) runs pnpm 11 / Node 22:
+`.github/workflows/ci.yml` (push to `main` + every PR) runs pnpm 11 / Node 22, in this order:
 
 ```
-pnpm install --frozen-lockfile → pnpm lint → bash scripts/check-visual-contract.sh → pnpm test → pnpm build
+pnpm install --frozen-lockfile
+→ pnpm lint
+→ pnpm typecheck
+→ bash scripts/check-visual-contract.sh
+→ pnpm test
+→ pnpm test:gherkin
+→ pnpm build
 ```
 
-**`pnpm typecheck` is absent from CI.** Type errors ship with a green check. Run it locally
-before you claim a change is done.
+**Step order is load-bearing, not cosmetic.** The job fails fast, so a step placed *after* the
+visual gate never executes when the gate goes red — it would report success while proving
+nothing. #277 added `pnpm typecheck` deliberately *before* the gate for that reason, and #287
+added `pnpm test:gherkin`. **When you add a CI step, put it before `check-visual-contract.sh`.**
+
+`pnpm typecheck` was absent from CI until #277 (merged 2026-10-07); before that it genuinely had
+to be run locally. It is in CI now. `pnpm test:gherkin` is a separate Vitest tier over
+`src/test/gherkin/` — it is not part of `pnpm test`, and its scenarios are BDD coverage that
+`pnpm test` does not reach.
+
+**`supabase/functions/**` is still outside every gate.** No `tsc` (its `include` has no
+`supabase` path), no ESLint (`--ext js,jsx` never enumerates `.ts`), and no Deno step as of
+`main` = `6a8f414`. Changes there carry no static check until #314 lands — see #312. A green
+check there means nothing yet.
 
 ## Type checking is per-file opt-in
 
@@ -103,7 +122,7 @@ TypeScript is **7.0.2** (not 5.x). Two quirks already cost time:
 
 ## SQL smoke tests (manual only)
 
-`scripts/smoke/*.sql` — **13 files**, one per migration from `0021_plan_freeze.sql` through
+`scripts/smoke/*.sql` — **13 files**, one per migration from `0034_plan_freeze.sql` through
 `0033_feedback.sql` (an earlier version of this line said "6 files, `0023`–`0028`", which was true
 before the plan-freeze, projection, minors, DOB, guardian-email, overlay-token and feedback smokes
 landed; re-count rather than trusting it). They are **not** in CI and **not** wired to any pnpm
@@ -126,8 +145,8 @@ docker exec -i supabase_db_cemurm psql -U postgres -d postgres -X -f - < scripts
 **Local, not hosted.** `docs/local-dev.md` is authoritative: this project is NOT linked to a hosted Supabase project. (`README.md` and `docs/technical-spec.md` used to name a hosted project URL; that text was corrected on 2026-09-30.)
 
 Migrations: **33 files on `main`**, numbered `0001`–`0033` with **no gap in between**. The
-`0020`–`0022` window is **closed** — `0020_review_batch1.sql`, `0021_plan_freeze.sql` and
-`0022_projection.sql` are all on `main`. `0029` is taken as well (`0029_fail_closed_minors.sql`),
+`0020`–`0022` window is **closed** — `0020_review_batch1.sql`, `0034_plan_freeze.sql` and
+`0035_projection.sql` are all on `main`. `0029` is taken as well (`0029_fail_closed_minors.sql`),
 and `0032` went with it (`0032_overlay_access_token.sql`, the OBS overlay capability token, landed
 in #225). **The next free number is `0034`,** and it is free unconditionally — nothing is claiming
 it any more.
@@ -143,7 +162,7 @@ that check, both learned the hard way:
   `0033_feedback.sql`, while `0029` was taken in the meantime by an unrelated migration. "It was
   free when I looked" was true twice and false both times.
 - A number free on `main` is not free *for you*. `0021` stayed free for the whole life of the four
-  Hito 5 branches, which is why `0021_plan_freeze.sql` merged without a renumber — and that merge
+  Hito 5 branches, which is why `0034_plan_freeze.sql` merged without a renumber — and that merge
   is what closed it. A slot is consumed when the PR carrying it lands, not when you pick it.
 
 Filename order is the dependency order, so placement is a constraint, not a formality: `supabase db
