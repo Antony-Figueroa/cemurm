@@ -130,7 +130,7 @@ export default function Galeria() {
                         the real file. The real media goes inside the same box and replaces the
                         placeholder without shifting the layout. */}
                     <div className="relative overflow-hidden rounded-cem-md bg-cem-elevated aspect-video">
-                      <VideoBG src="" overlay />
+                      <VideoBG src={item.type === 'video' ? '/videos/placeholder.mp4' : ''} overlay />
                       {/* Label over the media. */}
                       <div className="absolute bottom-3 left-4 right-4">
                         <span className="inline-block rounded-full bg-cem-base/80 px-3 py-1 text-xs font-medium uppercase tracking-wider text-cem-secondary backdrop-blur-sm">

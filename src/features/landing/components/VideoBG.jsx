@@ -56,8 +56,13 @@ export const VideoBG = memo(function VideoBG({ src = '', overlay = true }) {
           )}
         </>
       ) : (
-        /* Empty spacer: the wrapper has no intrinsic height, so this paints no box. */
-        <div className="absolute inset-0" aria-hidden="true" />
+        /* Placeholder: the wrapper has no intrinsic height, so this paints a stable
+           gradient spacer until the real file is connected. CLS-safe: the box always
+           occupies the same space, matching the video-playing branch. */
+        <div
+          className="absolute inset-0 bg-gradient-to-b from-cem-base/70 via-cem-base/40 to-cem-base/80"
+          aria-hidden="true"
+        />
       )}
     </div>
   )
