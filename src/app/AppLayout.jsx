@@ -2,23 +2,25 @@ import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from './providers/useAuth.jsx'
 import { useNotifications } from '../hooks/shared/useNotifications.js'
+import { useModeration } from '../hooks/shared/useModeration.js'
 import FeedbackForm from '../features/feedback/components/FeedbackForm.jsx'
 
-const navLinks = [
+const baseNavLinks = [
   { to: '/', label: 'Home' },
   { to: '/songs', label: 'Repertoire' },
   { to: '/library', label: 'Library' },
-  { to: '/moderation', label: 'Moderation' },
   { to: '/setlists', label: 'Setlists' },
   { to: '/gigs', label: 'Gigs' },
   { to: '/bandmates', label: 'Bandmates' },
-{ to: '/organizations', label: 'Organizations' },
+  { to: '/organizations', label: 'Organizations' },
   { to: '/services', label: 'Services' },
   { to: '/rehearsals', label: 'Rehearsals' },
   { to: '/notifications', label: 'Notifications' },
   { to: '/settings', label: 'Settings' },
   { to: '/settings/storage', label: 'Storage' },
 ]
+
+const moderationNavLink = { to: '/moderation', label: 'Moderation' }
 
 const linkClass = ({ isActive }) =>
   `text-sm font-medium ${isActive ? 'text-cem-amber' : 'text-cem-secondary hover:text-cem-text'}`
@@ -41,8 +43,14 @@ function UnreadBadge() {
 
 function AppLayout() {
   const { user, signOut } = useAuth()
+  const { isMod, isSystemAdmin } = useModeration()
   const navigate = useNavigate()
   const [feedbackOpen, setFeedbackOpen] = useState(false)
+
+  // Show Moderation nav link only to moderators and system admins
+  const navLinks = user && (isMod || isSystemAdmin)
+    ? [...baseNavLinks, moderationNavLink]
+    : baseNavLinks
 
   async function handleSignOut() {
     await signOut()

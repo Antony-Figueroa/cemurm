@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react'
 import { usePreferences } from '../../../hooks/shared/usePreferences.js'
 import { useMidi } from '../../../hooks/shared/useMidi.js'
 import { useAuth } from '../../../app/providers/useAuth.jsx'
-import { describeOutput, loadMidiSettings } from '../../../integrations/webMidi.js'
+import { describeOutput, loadMidiSettings } from '../../../lib/midi.js'
 import {
   disconnectSpotify,
   ensureSpotifyConnected,

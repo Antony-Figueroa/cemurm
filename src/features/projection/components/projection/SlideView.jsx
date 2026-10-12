@@ -6,11 +6,11 @@
 // the only song content on screen is the plain lyric text.
 
 const coverLine = 'text-cem-text font-semibold'
-const subLine = 'text-cem-secondary'
+const subLine = 'text-cem-secondary-elevated'
 
 export default function SlideView({ slide, settings }) {
   const scale = settings?.fontScale ?? 1
-  const contrast = settings?.highContrast ? 'bg-cem-base text-cem-stage-lyric' : ''
+  const contrast = settings?.highContrast ? 'bg-cem-base text-cem-text' : ''
 
   if (!slide) {
     return (
