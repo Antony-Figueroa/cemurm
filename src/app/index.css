@@ -94,6 +94,143 @@
   }
 }
 
+/* ListBox — the BEM surface laid over RAC's own data attributes.
+   These BEM classes are PUBLIC API, exactly like the
+   `.skeleton--*` block above: any caller may write them, so they live here and
+   not in reference.css (which is reserved for the reactbits reference ports).
+   That is also why the states below are written out once and in full, instead
+   of only for the cases this page happens to demo.
+
+   RAC supplies the BEHAVIOUR (keyboard, typeahead, focus, selection,
+   virtualization, ARIA) and no styles at all, so everything below is the part
+   that would have to be hand-written under rule 04 either way.
+
+   EVERY COLOUR IS @apply OF A TOKEN. Rule 01a (`enforcing`) greps src/ for hex
+   literals and for colour functions, so a literal written here fails CI — and a
+   comment NAMES them, which the gate cannot tell apart from code. That is why
+   this paragraph describes the rule instead of quoting its pattern; the Skeleton
+   block above has the same constraint and the same solution. Rule 04
+   (`enforcing`) freezes the palette at its 17 leaves, so no token may be added
+   either: the danger variant below reuses an already-declared accent instead of
+   declaring a `cem.danger` token of its own.
+
+   `.list-box` avoids `display: flex` on purpose: the
+   Virtualizer puts a single `position: relative` child with an explicit 48000px
+   height inside the listbox, and flex shrinking would collapse it and break
+   scrollbar sizing. That constraint is the reason the row rhythm comes from
+   margins on direct children instead of `gap`. */
+
+.list-box {
+  @apply relative w-full overflow-clip rounded-xl p-1 outline-none;
+  @apply bg-cem-base;
+
+  /* Spacing between direct children, without flex — see above. */
+  > * + * {
+    margin-top: 0.25rem;
+  }
+}
+
+/* `data-focus-visible` rather than `:focus-visible` alone. RAC moves the real
+   DOM focus onto the focused row, so the pseudo-class works too, but the data
+   attribute is what RAC guarantees on every render and it is the selector a
+   caller overriding these classes would reach for first; the two selectors are
+   equivalent in effect. */
+.list-box[data-focus-visible='true'] {
+  @apply outline-none;
+}
+
+.list-box-item {
+  @apply flex min-h-10 cursor-default items-center gap-3 rounded-lg px-3 py-2;
+  @apply text-sm text-cem-text outline-none transition-colors duration-100;
+
+  &:hover,
+  &[data-hovered='true'] {
+    /* cem.hover is a RAISED fill, so the label moves to cem.text with it.
+       Rule 06 (`enforcing`) forbids pairing cem.secondary with cem.elevated or
+       cem.hover in one className: it measures 2.96:1 there, under the 4.5:1 AA
+       floor for normal text. cem.text on cem.hover measures 6.5:1. */
+    @apply bg-cem-hover text-cem-text;
+  }
+
+  &[data-selected='true'] {
+    /* The ONE accent: the visual system's hard rule 2 says amber marks the
+       selected state and nothing else. A selected row therefore needs no second
+       channel — the leading bar in the Navigation demo is a nav affordance,
+       not a list contract. */
+    @apply bg-cem-amber/15 text-cem-text;
+  }
+
+  /* Keyboard focus, distinct from hover: a focus ring and a selection fill are
+     the same signal at different moments, and the palette has one accent. The
+     inset keeps the ring inside the row's rounded box. */
+  &[data-focus-visible='true'] {
+    @apply ring-2 ring-inset ring-cem-amber;
+  }
+
+  /* WCAG 1.4.11 exempts a disabled control from the contrast requirement, so
+     opacity is the honest signal here and needs no second grey token. */
+  &[data-disabled='true'] {
+    @apply cursor-not-allowed opacity-50;
+
+    /* A disabled row must not paint a hover fill either: hovering something you
+       cannot pick is a lie about what the control does. */
+    &:hover,
+    &[data-hovered='true'] {
+      @apply bg-transparent text-cem-text;
+    }
+  }
+}
+
+/* Danger is a VARIANT, not a state: `variant="danger"` is set by the caller, so
+   this class has to outrank the hover/selected fills above.
+
+   DEVIATION FROM THE DEFAULT CONTRACT, enforced by two rules.
+   This repo has no red token available: the single red in the palette appears
+   on rule 02's retired list, and the gate refuses to grow past its ceiling
+   (17 leaves, frozen). Rule 2 of the visual system reserves amber exclusively
+   for the selected state, so a destructive row cannot borrow it. Consequently
+   the variant is carried by WEIGHT instead of hue, which is also the more
+   honest reading of a dark surface: a heavier row on a near-black list signals
+   "destructive" without introducing a second colour channel. The glyph is the
+   caller's (an icon, per the product's own icon set), because an icon is data
+   and a colour is not. The `variant` prop and this class survive; only the
+   colour does not, and that is recorded as a deviation rather than papered over. */
+.list-box-item--danger {
+  @apply font-medium text-cem-text;
+
+  &:hover,
+  &[data-hovered='true'] {
+    @apply bg-cem-elevated text-cem-text;
+  }
+
+  &[data-selected='true'] {
+    @apply bg-cem-elevated text-cem-text;
+  }
+}
+
+/* The check. `data-visible` is the contract, and the element stays in the DOM
+   either way so a row's text never reflows when the selection changes. */
+.list-box-item__indicator {
+  @apply ml-auto flex size-4 shrink-0 items-center justify-center;
+  @apply text-cem-amber;
+
+  &[data-visible='false'] {
+    visibility: hidden;
+  }
+}
+
+.list-box-section {
+  @apply mt-1;
+
+  /* A section label reads as a label, not as a row: small, semibold, secondary
+     ink on the list's own surface — cem.base, which is NOT a raised fill, so
+     cem.secondary is legal here and measures 5.7:1. Rule 06's remedy tokens
+     exist for raised fills; a list surface is not one. */
+  > header {
+    @apply px-3 pb-1 pt-2 text-xs font-semibold text-cem-secondary;
+  }
+}
+
 /* docs/ux-spec.md 253: reduced motion reduces transitions and animations to
    near-zero. The 0.01ms is deliberate and must not be "corrected" to 0: some
    engines skip a transition whose duration is exactly zero, so `transitionend`
