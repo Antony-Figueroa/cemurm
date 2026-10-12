@@ -8,7 +8,7 @@ import { useSongs } from '../../../hooks/shared/useSongs.js'
 import { usePreferences } from '../../../hooks/shared/usePreferences.js'
 import { parseChordPro } from '../../../domain/chart/parser.js'
 import { initialSemitones, transposeParsed, transposeKey } from '../../../domain/music/transpose.js'
-import { loadMidiSettings } from '../../../integrations/webMidi.js'
+import { loadMidiSettings } from '../../../lib/midi.js'
 import { getCachedPdfBlob, objectUrlForBlob } from '../../../data/repositories/pdfCharts.js'
 import PdfChartViewer from '../../../ui/patterns/PdfChartViewer.jsx'
 import {
