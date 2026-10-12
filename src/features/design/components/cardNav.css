@@ -38,7 +38,13 @@
   transform: translateX(-50%);
   width: 90%;
   max-width: 800px;
-  z-index: 99;
+  /* 50, NOT the reference's 99. Every modal in this app is `fixed inset-0
+     z-50` — FeedbackForm, ReportDialog, SongDetail, StageMode, Projection — so
+     a bar at 99 sat ABOVE its own Feedback modal and the dialog rendered
+     underneath it, unclickable. 50 is the project's own modal layer, so the
+     nav now shares it and the source order decides: the dialog is rendered
+     after the nav in the DOM and therefore paints on top. */
+  z-index: 50;
   box-sizing: border-box;
 }
 

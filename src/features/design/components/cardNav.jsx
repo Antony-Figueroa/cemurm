@@ -97,6 +97,9 @@ export function CardNav({
   // Changes to this value close the menu. The caller owns the router, so this
   // stays a plain prop instead of the component importing one.
   routeKey = null,
+  // Same contract, for closes that are NOT navigations — opening a modal is
+  // the case that motivated it. A counter, so repeated opens are distinct.
+  closeSignal = 0,
 }) {
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
@@ -277,6 +280,17 @@ const closeMenu = () => {
     closeMenu()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [routeKey])
+
+  // ...and the same for a non-navigation close (a modal opening). Kept as its
+  // own effect so the two triggers cannot interfere: a route change while a
+  // modal opens still runs each exactly once.
+  const lastCloseSignal = useRef(closeSignal)
+  useEffect(() => {
+    if (lastCloseSignal.current === closeSignal) return
+    lastCloseSignal.current = closeSignal
+    closeMenu()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [closeSignal])
 
   const setCardRef = i => el => {
     if (el) cardsRef.current[i] = el

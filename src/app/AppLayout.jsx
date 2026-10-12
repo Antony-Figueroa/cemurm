@@ -84,6 +84,10 @@ function AppLayout() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const [feedbackOpen, setFeedbackOpen] = useState(false)
+  // Bumped whenever something outside the router needs the menu to close (the
+  // Feedback dialog). Passed to CardNav as `closeSignal`; it is a counter rather
+  // than a boolean so two opens in a row are two distinct changes.
+  const [closeSignal, setCloseSignal] = useState(0)
   const orgName = useActiveOrgName()
 
   async function handleSignOut() {
@@ -113,6 +117,15 @@ function AppLayout() {
     </NavLink>
   )
 
+  // FEEDBACK IS A MODAL, NOT A LINK — and that changes the nav's behaviour.
+  // `routeKey` closes the menu on navigation, but Feedback navigates nowhere,
+  // so the menu would have stayed open with the dialog rendering underneath it.
+  // Closing it here means the dialog arrives on a collapsed bar.
+  function openFeedback() {
+    setCloseSignal(n => n + 1)
+    setFeedbackOpen(true)
+  }
+
   // The user strip: the fourth card, below the three areas. CardNav has exactly
   // three fixed slots — hamburger, logo, CTA — and all three are spoken for, so
   // this is where the identity block lives.
@@ -141,7 +154,7 @@ function AppLayout() {
 
       <span className="nav-user-push" />
 
-      <button type="button" className="nav-user-button" onClick={() => setFeedbackOpen(true)}>
+      <button type="button" className="nav-user-button" onClick={openFeedback}>
         <HugeiconsIcon icon={Chat01Icon} size={16} className="nav-user-icon" aria-hidden="true" />
         Feedback
       </button>
@@ -212,6 +225,8 @@ function AppLayout() {
         // query-string and hash changes are not navigations and should leave
         // the menu alone.
         routeKey={pathname}
+        // Opens the Feedback dialog, which is not a navigation.
+        closeSignal={closeSignal}
       />
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 pt-10 pb-8">
