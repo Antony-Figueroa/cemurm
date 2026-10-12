@@ -114,6 +114,7 @@ function UnreadBadge() {
 
 function AppLayout() {
   const { user, signOut } = useAuth()
+  const { isMod, isSystemAdmin } = useModeration()
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const [feedbackOpen, setFeedbackOpen] = useState(false)
@@ -122,6 +123,11 @@ function AppLayout() {
   // than a boolean so two opens in a row are two distinct changes.
   const [closeSignal, setCloseSignal] = useState(0)
   const orgName = useActiveOrgName()
+
+  // Show Moderation nav link only to moderators and system admins
+  const navLinks = user && (isMod || isSystemAdmin)
+    ? [...baseNavLinks, moderationNavLink]
+    : baseNavLinks
 
   async function handleSignOut() {
     await signOut()
