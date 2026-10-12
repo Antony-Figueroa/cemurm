@@ -26,7 +26,6 @@ import Notifications from '../features/notifications/pages/Notifications.jsx'
 import StageMode from '../features/stage/pages/StageMode.jsx'
 import Overlay from '../features/stage/pages/Overlay.jsx'
 import ExternalDisplay from '../features/stage/pages/ExternalDisplay.jsx'
-import Projection from '../features/projection/pages/Projection.jsx'
 import ProjectionDisplay from '../features/projection/pages/ProjectionDisplay.jsx'
 import Auth from '../features/auth/pages/Auth.jsx'
 import GuardianConfirm from '../features/auth/pages/GuardianConfirm.jsx'
@@ -72,7 +71,6 @@ const router = createBrowserRouter([
               { path: '/organizations', element: <Organizations /> },
               { path: '/services', element: <Services /> },
               { path: '/services/:id', element: <ServiceDetail /> },
-              { path: '/services/:id/projection', element: <Projection /> },
               { path: '/assignment/:serviceId', element: <SubstitutionAssignment /> },
               { path: '/rehearsals', element: <Rehearsals /> },
               { path: '/rehearsals/:id', element: <RehearsalDetail /> },
