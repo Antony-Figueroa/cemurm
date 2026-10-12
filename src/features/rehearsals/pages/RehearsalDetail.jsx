@@ -44,6 +44,10 @@ export default function RehearsalDetail() {
     let cancelled = false
     setLoading(true)
     setError('')
+    setNotice('')
+    setDraftNotes({})
+    // Clear data when route id changes to avoid showing stale data
+    setData(null)
     rehearsalStore.getRehearsal(id)
       .then((next) => { if (!cancelled) setData(next) })
       .catch((err) => { if (!cancelled) setError(err.message) })
@@ -345,7 +349,7 @@ export default function RehearsalDetail() {
       ) : (
         <ol className="mt-4 divide-y divide-cem-elevated rounded-lg border border-cem-elevated bg-cem-surface shadow-sm">
           {items.map((item, index) => {
-            const carriedOver = Boolean(item.carryOverTo) || (Boolean(item.notes) && !item.outcome)
+            const carriedOver = Boolean(item.carryOverTo)
             const duration = item.durationSeconds ?? item.latestVersionDurationSeconds
             const declinedParts = item.parts.filter(
               (p) => p.userId && rsvps.some((r) => r.userId === p.userId && r.status === 'declined'),
