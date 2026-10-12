@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 // cardNav.jsx — ported from the reference source (reactbits
 // `src/content/Components/CardNav/CardNav.jsx`, with its `CardNav.css` ported
-// into reference.css).
+// into cardNav.css — see that file's header for why it is not reference.css).
 //
 // WHAT IT IS: a navigation bar, not the card deck that used to carry this name
 // in blocks.jsx — a hamburger button, a 60px bar with the logo centred and the
@@ -43,13 +43,36 @@
 //     when react-icons is unavailable. The arrow is `ArrowUpRight01Icon`
 //     (Hugeicons) at size 16, which is upstream's 1em at a 16px font, keeping
 //     the `nav-card-link-icon` class and the `aria-hidden`.
+//
+// THREE MORE, added by the CEMURM app nav (AppLayout). Each is an OPT-IN prop
+// defaulting to the upstream behaviour, so the /design demo renders exactly as
+// before and its characterisation tests keep passing:
+//   * `renderLink` — replaces the `<a href>`. Upstream's anchor navigates by
+//     full page load; inside a react-router app that tears down the SPA and
+//     drops the Supabase session, so the app passes a `NavLink` renderer.
+//   * `footerSlot` — a fourth card, full width, below the three. It is how the
+//     user block (display name, organisation, Log Out) survives the redesign:
+//     the component has three fixed slots — hamburger, logo, CTA — and those
+//     are all spoken for. Rendering `null` (the default) leaves the card out
+//     entirely, so the demo is unaffected.
+//   * `ctaLabel` — upstream hardcodes the button text "Get Started". Passing
+//     `null` removes the button; the app nav has no such call to action.
+//
+// The footer card is deliberately NOT a footer: `.nav-user-strip` in
+// reference.css shares `.nav-card`'s padding, gap and radius and takes only
+// `flex: 1 1 100%`, so it reads as a fourth card in the same grid rather than a
+// full-bleed bar bolted underneath.
 
 import { useLayoutEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { ArrowUpRight01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { useTokenColors } from './colors.js'
-import './reference.css'
+// cardNav.css, NOT reference.css. The CardNav stylesheet was split out of the
+// gallery's reference.css precisely because AppLayout now renders this eagerly —
+// importing the whole gallery sheet cost every app user ~29 kB. See the header
+// of cardNav.css.
+import './cardNav.css'
 
 export function CardNav({
   logo,
@@ -61,6 +84,13 @@ export function CardNav({
   menuColor = 'base',
   buttonBgColor = 'base',
   buttonTextColor = 'text',
+  // --- CEMURM app-nav additions. See the header comment for why each exists.
+  // All three default to upstream's behaviour, so /design is unchanged.
+  renderLink,
+  footerSlot = null,
+  footerBgColor = 'base',
+  footerTextColor = 'text',
+  ctaLabel = 'Get Started',
 }) {
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
@@ -84,6 +114,12 @@ export function CardNav({
     text1: list[1]?.textColor,
     bg2: list[2]?.bgColor,
     text2: list[2]?.textColor,
+    // The footer card is a FOURTH card, so it needs its own pair — reusing
+    // bg0 would make it identical to Play. Defaults are `base` with `text`
+    // ink: 17.06:1, measured, and the darkest fill of the four so the strip
+    // recedes under the three areas above it.
+    footerBg: footerBgColor,
+    footerText: footerTextColor,
   })
 
   const calculateHeight = () => {
@@ -226,13 +262,15 @@ export function CardNav({
             <img src={logo} alt={logoAlt} className="logo" />
           </div>
 
-          <button
-            type="button"
-            className="card-nav-cta-button"
-            style={{ backgroundColor: colors.buttonBg, color: colors.buttonText }}
-          >
-            Get Started
-          </button>
+          {ctaLabel && (
+            <button
+              type="button"
+              className="card-nav-cta-button"
+              style={{ backgroundColor: colors.buttonBg, color: colors.buttonText }}
+            >
+              {ctaLabel}
+            </button>
+          )}
         </div>
 
         <div className="card-nav-content" aria-hidden={!isExpanded}>
@@ -245,20 +283,37 @@ export function CardNav({
             >
               <div className="nav-card-label">{item.label}</div>
               <div className="nav-card-links">
-                {item.links?.map((lnk, i) => (
-                  <a key={`${lnk.label}-${i}`} className="nav-card-link" href={lnk.href} aria-label={lnk.ariaLabel}>
-                    <HugeiconsIcon
-                      icon={ArrowUpRight01Icon}
-                      size={16}
-                      className="nav-card-link-icon"
-                      aria-hidden="true"
-                    />
-                    {lnk.label}
-                  </a>
-                ))}
+                {item.links?.map((lnk, i) =>
+                  renderLink ? (
+                    renderLink(lnk, `${item.label}-${i}`)
+                  ) : (
+                    <a
+                      key={`${lnk.label}-${i}`}
+                      className="nav-card-link"
+                      href={lnk.href}
+                      aria-label={lnk.ariaLabel}
+                    >
+                      <HugeiconsIcon
+                        icon={ArrowUpRight01Icon}
+                        size={16}
+                        className="nav-card-link-icon"
+                        aria-hidden="true"
+                      />
+                      {lnk.label}
+                    </a>
+                  )
+                )}
               </div>
             </div>
           ))}
+          {footerSlot && (
+            <div
+              className="nav-card nav-user-strip"
+              style={{ backgroundColor: colors.footerBg, color: colors.footerText }}
+            >
+              {footerSlot}
+            </div>
+          )}
         </div>
       </nav>
     </div>

@@ -7,7 +7,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import SlideView from '../components/SlideView.jsx'
+import SlideView from '../components/projection/SlideView.jsx'
 import { useAuth } from '../../../app/providers/useAuth.jsx'
 import { getSong, invalidateSongs } from '../../../data/repositories/songs.js'
 import {
@@ -31,7 +31,7 @@ import {
   saveDeck,
   syncState,
   wasActive,
-} from '../../../data/repositories/projection.js'
+} from '../../../lib/projection.js'
 
 const btn = 'rounded-md px-3 py-1.5 text-sm font-medium'
 const primaryBtn = `${btn} bg-cem-amber text-cem-base hover:bg-cem-amber/90 disabled:opacity-60`

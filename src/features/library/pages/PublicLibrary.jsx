@@ -11,7 +11,7 @@
 
 /* eslint-disable react/prop-types */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { filterPublicEntries } from '../../../domain/library/search.js'
 import { usePublicLibrary } from '../hooks/usePublicLibrary.js'
@@ -114,6 +114,12 @@ export default function PublicLibrary() {
   const [reportTarget, setReportTarget] = useState(null)
   const [alreadyReported, setAlreadyReported] = useState({})
 
+  // Reset alreadyReported when reportTarget changes to avoid showing
+  // stale reasons from a previous entry (issue #154).
+  useEffect(() => {
+    setAlreadyReported({})
+  }, [reportTarget])
+
   const filtersActive = Boolean(search.trim() || licenseFilter)
   const visible = filterPublicEntries(entries, { query: search, license: licenseFilter })
   const mine = entries.filter((entry) => entry.contributor_id === userId)
@@ -146,7 +152,9 @@ export default function PublicLibrary() {
 
   async function submitReport(publicSongId, reason) {
     await moderation.reportEntry(publicSongId, reason)
-    setReportTarget(null)
+    // Do NOT clear reportTarget here — ReportDialog will call onClose
+    // after showing the confirmation screen. Clearing it here unmounts
+    // the dialog before the submitted state can render.
   }
 
   return (
