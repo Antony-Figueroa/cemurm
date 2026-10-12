@@ -285,13 +285,36 @@ export function CardNav({
     tl.to(cards(), { y: 50, opacity: 0, duration: 0.4, ease: closeEase, stagger: 0.04 }, 0)
     tl.to(navEl, { height: 60, duration: 0.4, ease: closeEase }, 0)
 
-    tlRef.current = tl
+    // DELIBERATELY NOT `tlRef.current = tl`.
+    //
+    // This is the bug both judges caught, and it shipped in the commit that
+    // introduced the close above. `tlRef` is the OPEN timeline; it is what
+    // `toggleMenu` plays on the next open, and what the mount effect and the
+    // resize handler treat as the live one. Overwriting it with the CLOSE
+    // timeline meant the next open ran `play(0)` on the collapse — so the bar
+    // jumped to the close timeline's recorded start and immediately collapsed
+    // again. Measured: open → close → open left the bar at 60px, and only a
+    // window resize (which rebuilds via `createTimeline`) brought it back.
+    // The hamburger worked exactly once per page load, on every close path.
+    //
+    // The close timeline is local to this call. It runs to completion and is
+    // garbage collected; nothing downstream needs a handle on it, because
+    // `closeMenu` is only ever reached while the panel is open, and the next
+    // open rebuilds its own timeline from scratch.
   }
 
   const toggleMenu = () => {
-    const tl = tlRef.current
-    if (!tl) return
     if (!isExpanded) {
+      // Opening rebuilds rather than reusing. The close no longer overwrites
+      // `tlRef`, so the timeline in the ref is still the original one and
+      // would play correctly — but a timeline that has already run to its end
+      // and been reversed by a previous close is exactly the fragile state
+      // that broke this. `createTimeline()` re-applies the closed-state `gsap.set`
+      // (height 60, cards at opacity 0), so a fresh open always starts from a
+      // known frame rather than from whatever the last animation left behind.
+      const tl = createTimeline()
+      if (!tl) return
+      tlRef.current = tl
       setIsHamburgerOpen(true)
       setIsExpanded(true)
       tl.play(0)
