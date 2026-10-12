@@ -884,7 +884,7 @@ export default function StageMode() {
               >
                 {pairing ? 'Pairing…' : '🎛 Pair foot pedal'}
               </button>
-              {error && <span className="text-xs text-cem-rose">{error}</span>}
+              {error && <span className="text-xs text-cem-stage-lyric/80">{error}</span>}
             </>
           )}
           <span className="text-sm text-cem-stage-lyric/60">Swipe or use ← → / PgUp PgDn</span>
