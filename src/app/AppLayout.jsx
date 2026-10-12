@@ -1,33 +1,65 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import {
+  ArrowUpRight01Icon,
+  Building03Icon,
+  Logout01Icon,
+  User02Icon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { useAuth } from './providers/useAuth.jsx'
 import { useNotifications } from '../hooks/shared/useNotifications.js'
+import { useActiveOrgName } from '../hooks/shared/useActiveOrgName.js'
 import FeedbackForm from '../features/feedback/components/FeedbackForm.jsx'
+import { CardNav } from '../features/design/components/cardNav.jsx'
 
-const navLinks = [
-  { to: '/', label: 'Home' },
-  { to: '/songs', label: 'Repertoire' },
-  { to: '/library', label: 'Library' },
-  { to: '/moderation', label: 'Moderation' },
-  { to: '/setlists', label: 'Setlists' },
-  { to: '/gigs', label: 'Gigs' },
-  { to: '/bandmates', label: 'Bandmates' },
-{ to: '/organizations', label: 'Organizations' },
-  { to: '/services', label: 'Services' },
-  { to: '/rehearsals', label: 'Rehearsals' },
-  { to: '/notifications', label: 'Notifications' },
-  { to: '/settings', label: 'Settings' },
-  { to: '/settings/storage', label: 'Storage' },
+// The same thirteen destinations the flat nav carried, grouped into the three
+// cards the component draws. `href` stays the route: CardNav's own anchor is
+// replaced by `renderNavLink` below, and it reads this field.
+//
+// Coverage is 13/13 against the old `navLinks` — verified with a diff, not by
+// eye. Nothing was dropped and nothing was invented.
+const NAV_CARDS = [
+  {
+    label: 'Play',
+    bgColor: 'surface',
+    textColor: 'text',
+    links: [
+      { label: 'Home', href: '/', ariaLabel: 'Go to Home' },
+      { label: 'Repertoire', href: '/songs', ariaLabel: 'Go to Repertoire' },
+      { label: 'Library', href: '/library', ariaLabel: 'Go to Library' },
+      { label: 'Setlists', href: '/setlists', ariaLabel: 'Go to Setlists' },
+      { label: 'Gigs', href: '/gigs', ariaLabel: 'Go to Gigs' },
+    ],
+  },
+  {
+    label: 'Band',
+    bgColor: 'elevated',
+    textColor: 'text',
+    links: [
+      { label: 'Rehearsals', href: '/rehearsals', ariaLabel: 'Go to Rehearsals' },
+      { label: 'Bandmates', href: '/bandmates', ariaLabel: 'Go to Bandmates' },
+      { label: 'Organizations', href: '/organizations', ariaLabel: 'Go to Organizations' },
+      { label: 'Services', href: '/services', ariaLabel: 'Go to Services' },
+    ],
+  },
+  {
+    label: 'System',
+    bgColor: 'hover',
+    textColor: 'text',
+    links: [
+      { label: 'Moderation', href: '/moderation', ariaLabel: 'Go to Moderation' },
+      { label: 'Notifications', href: '/notifications', ariaLabel: 'Go to Notifications' },
+      { label: 'Settings', href: '/settings', ariaLabel: 'Go to Settings' },
+      { label: 'Storage', href: '/settings/storage', ariaLabel: 'Go to Storage' },
+    ],
+  },
 ]
 
-const linkClass = ({ isActive }) =>
-  `text-sm font-medium ${isActive ? 'text-cem-amber' : 'text-cem-secondary hover:text-cem-text'}`
-
 /**
- * Unread badge on the Notifications nav link (Feed7, task 2.5). Rendered
- * only when authed; hidden at 0; capped at "99+". Its useNotifications
- * instance converges with the feed page via the realtime echo of read_at
- * UPDATEs.
+ * Unread badge on the Notifications link (Feed7, task 2.5). Rendered only when
+ * authed; hidden at 0; capped at "99+". Its useNotifications instance converges
+ * with the feed page via the realtime echo of read_at UPDATEs.
  */
 function UnreadBadge() {
   const { unreadCount } = useNotifications()
@@ -43,56 +75,106 @@ function AppLayout() {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
   const [feedbackOpen, setFeedbackOpen] = useState(false)
+  const orgName = useActiveOrgName()
 
   async function handleSignOut() {
     await signOut()
     navigate('/')
   }
 
+  // Replaces the reference's `<a href>`. That anchor navigates by full page
+  // load, which inside a react-router app tears down the SPA and drops the
+  // Supabase session — so every route here is a router transition instead.
+  //
+  // `end` mirrors the flat nav's `end={link.to === '/' || link.to ===
+  // '/settings'}`: `/` must not stay highlighted on every path, and `/settings`
+  // must not stay lit on `/settings/storage` (which is its own card link).
+  // Both are explicit per-link because `end` cannot be derived from the route.
+  const renderNavLink = (lnk) => (
+    <NavLink
+      key={lnk.href}
+      to={lnk.href}
+      end={lnk.href === '/' || lnk.href === '/settings'}
+      className="nav-card-link"
+      aria-label={lnk.ariaLabel}
+    >
+      <HugeiconsIcon icon={ArrowUpRight01Icon} size={16} className="nav-card-link-icon" aria-hidden="true" />
+      {lnk.label}
+      {lnk.href === '/notifications' && user && <UnreadBadge />}
+    </NavLink>
+  )
+
+  // The user strip: the fourth card, below the three areas. CardNav has exactly
+  // three fixed slots — hamburger, logo, CTA — and all three are spoken for, so
+  // this is where the identity block lives.
+  //
+  // This whole strip is INSIDE the expanded panel, which is a real behaviour
+  // change: Log Out used to be visible in the bar at all times and now takes one
+  // tap to reach. It is the cost of the grouped layout, stated rather than
+  // buried.
+  const userStrip = (
+    <>
+      <span className="nav-user-item">
+        <HugeiconsIcon icon={User02Icon} size={16} className="nav-user-icon" aria-hidden="true" />
+        <span className="nav-user-name">{user ? user.displayName : 'Signed out'}</span>
+      </span>
+
+      {/* Hidden, not blanked: the hook resolves to '' when there is no active
+          membership, and an empty flex child would still take the gap. */}
+      {orgName && (
+        <span className="nav-user-item">
+          <HugeiconsIcon icon={Building03Icon} size={16} className="nav-user-icon" aria-hidden="true" />
+          <span className="nav-user-name" title={orgName}>
+            {orgName}
+          </span>
+        </span>
+      )}
+
+      <span className="nav-user-push" />
+
+      <button type="button" className="nav-user-button" onClick={() => setFeedbackOpen(true)}>
+        Feedback
+      </button>
+
+      {user ? (
+        <button type="button" className="nav-user-button" onClick={handleSignOut}>
+          <HugeiconsIcon icon={Logout01Icon} size={16} className="nav-user-icon" aria-hidden="true" />
+          Log Out
+        </button>
+      ) : (
+        <NavLink to="/auth" end className="nav-user-button">
+          Sign In
+        </NavLink>
+      )}
+    </>
+  )
+
   return (
     <div className="min-h-screen flex flex-col bg-cem-base">
-      <header className="bg-cem-surface shadow">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <NavLink to="/" className="text-xl font-bold text-cem-text">
-            CEMURM
-          </NavLink>
-          <div className="flex items-center gap-4">
-            <nav className="flex gap-4">
-              {navLinks.map((link) => (
-                <NavLink key={link.to} to={link.to} end={link.to === '/' || link.to === '/settings'} className={linkClass}>
-                  <span className="flex items-center gap-1.5">
-                    {link.label}
-                    {link.to === '/notifications' && user && <UnreadBadge />}
-                  </span>
-                </NavLink>
-              ))}
-            </nav>
-            <button
-              type="button"
-              onClick={() => setFeedbackOpen(true)}
-              className="text-sm font-medium text-cem-secondary hover:text-cem-text"
-            >
-              Feedback
-            </button>
-            {user ? (
-              <div className="flex items-center gap-4 border-l border-cem-elevated pl-4">
-                <span className="text-sm font-medium text-cem-text">{user.displayName}</span>
-                <button
-                  type="button"
-                  onClick={handleSignOut}
-                  className="text-sm font-medium text-cem-secondary hover:text-cem-text"
-                >
-                  Log Out
-                </button>
-              </div>
-            ) : (
-              <NavLink to="/auth" end className={linkClass}>
-                Sign In
-              </NavLink>
-            )}
-          </div>
-        </div>
-      </header>
+      {/* `.app-nav` in reference.css takes the bar back into normal flow, so
+          this spacer is not reserving the bar's own height — it is the 2em of
+          breathing room that the reference used as `top: 2em`. Without it the
+          bar would sit flush against the top of the viewport. */}
+      <header className="h-[2em] shrink-0" aria-hidden="true" />
+
+      <CardNav
+        logo="/cemurm-wordmark.svg"
+        logoAlt="CEMURM"
+        items={NAV_CARDS}
+        ease="circ.out"
+        className="app-nav"
+        // `circ.out` is the requested curve. The reference default is
+        // `power3.out`, kept as the prop default so /design is untouched.
+        baseColor="surface"
+        menuColor="text"
+        // The CTA slot carries no call to action in this app — every user is
+        // already signed in and the identity block moved to the strip.
+        ctaLabel={null}
+        renderLink={renderNavLink}
+        footerSlot={userStrip}
+        footerBgColor="base"
+        footerTextColor="text"
+      />
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-8">
         <Outlet />
