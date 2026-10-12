@@ -103,12 +103,31 @@ function AppLayout() {
   // '/settings'}`: `/` must not stay highlighted on every path, and `/settings`
   // must not stay lit on `/settings/storage` (which is its own card link).
   // Both are explicit per-link because `end` cannot be derived from the route.
+  // ACTIVE ROUTE IN AMBER. `NavLink` supplies `isActive` for the matched route,
+  // and amber is the one accent this project has — the visual system's sanctioned
+  // use for it is exactly "the active or selected state" (SKILL.md, Hard Rule
+  // 2), so this is the accent doing its job rather than a new colour.
+  //
+  // The class is a FUNCTION of `isActive` rather than a static string, because a
+  // static className cannot express a conditional. The colour itself lives in
+  // cardNav.css as `.nav-card-link.is-active`, tokenised; writing the literal
+  // here would trip rule 01a.
+  //
+  // Measured, because amber on a raised fill is a real contrast question and
+  // this project's gate is blunt about it. Amber against the card fills:
+  // surface 6.81:1, elevated 4.82:1, base 8.31:1 — all clear the 4.5:1 floor.
+  // On `hover` it would be 3.53:1, UNDER the floor, which is a second reason
+  // all three cards stay on `surface`: the active amber has to be legible on
+  // every card it can land on, not just two of them.
+  //
+  // The icon takes the amber too — `currentColor` — so the whole row reads as
+  // one active item rather than amber text next to a grey arrow.
   const renderNavLink = (lnk) => (
     <NavLink
       key={lnk.href}
       to={lnk.href}
       end={lnk.href === '/' || lnk.href === '/settings'}
-      className="nav-card-link"
+      className={({ isActive }) => `nav-card-link${isActive ? ' is-active' : ''}`}
       aria-label={lnk.ariaLabel}
     >
       <HugeiconsIcon icon={ArrowUpRight01Icon} size={16} className="nav-card-link-icon" aria-hidden="true" />

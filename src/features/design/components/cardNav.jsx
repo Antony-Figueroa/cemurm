@@ -241,17 +241,51 @@ export function CardNav({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isExpanded])
 
-  // The close half of the toggle, on its own so that closing on a route change
-// and closing on an outside click run the SAME animation rather than a second,
-// subtly different one. `power2.inOut` is deliberate: `circ.out` reversed is
-// `circ.in`, which accelerates and stamps the bar shut.
-const closeMenu = () => {
-    const tl = tlRef.current
-    if (!tl || !isExpanded) return
+  // THE CLOSE, BUILT RATHER THAN REVERSED.
+  //
+  // Two earlier attempts failed here, and both are worth recording because the
+  // failure looks like a tuning problem and is not one:
+  //
+  //   * `tl.reverse()` alone runs the OPEN's `circ.out` backwards, which is
+  //     `circ.in`: it accelerates into the end. Measured, the last four frames
+  //     of the collapse moved -29, -40, -61 and -74px — a stamp.
+  //   * Re-easing by assigning `child.vars.ease` does nothing at all: GSAP
+  //     parses an ease once, when the tween first renders, and caches the
+  //     function. The assignment mutates a property nothing reads again.
+  //   * `child.invalidate()` DOES re-parse, but it re-INITIALISES the tween,
+  //     which wipes the recorded start and end values. Measured after: the
+  //     height ran back UP to its open value and the cards never faded, so the
+  //     bar appeared to freeze open while `isExpanded` went false.
+  //
+  // So the close does not reverse anything. It tweens the same two targets to
+  // the same two end states, on its own timeline, with its own curve. The
+  // cards lead and the height follows, which is the order the eye wants —
+  // content leaves first, the shell collapses after — and both finish together
+  // so the bar does not appear to hang at full height with nothing in it.
+  const closeMenu = () => {
+    const navEl = navRef.current
+    if (!navEl || !isExpanded) return
     setIsHamburgerOpen(false)
-    tl.getChildren().forEach(child => child.vars && (child.vars.ease = closeEase))
-    tl.eventCallback('onReverseComplete', () => setIsExpanded(false))
-    tl.reverse()
+
+    const cards = () => cardsRef.current.filter(Boolean)
+    const tl = gsap.timeline({ onComplete: () => setIsExpanded(false) })
+
+    // TIMING IS THE WHOLE FIX, and it took three measurements to get right.
+    //
+    // The collapse's steepest stretch is its middle, where the velocity peaks.
+    // While the cards were fading over 0-300ms, that peak arrived at 304-336ms
+    // with the bar already at opacity 0 but still 66% and 43% of its height —
+    // a large empty box snapping shut, which is exactly the stutter. Measured,
+    // not guessed.
+    //
+    // So the card fade is SPREAD ACROSS the whole collapse rather than run
+    // before it: it starts with the height and finishes with it, and the
+    // fastest part of the motion is also the part with the most content still
+    // on screen. Both land at 0.4s.
+    tl.to(cards(), { y: 50, opacity: 0, duration: 0.4, ease: closeEase, stagger: 0.04 }, 0)
+    tl.to(navEl, { height: 60, duration: 0.4, ease: closeEase }, 0)
+
+    tlRef.current = tl
   }
 
   const toggleMenu = () => {

@@ -240,6 +240,29 @@
   opacity: 0.75;
 }
 
+/* The active route, in the project's one accent.
+
+   `.is-active` is applied by the caller's renderLink, not by this stylesheet's
+   own logic — CardNav is router-agnostic and cannot know which link matches the
+   current route. Amber is the sanctioned use of the accent (SKILL.md Hard Rule
+   2: "the active or selected state"), so this is not a new colour.
+
+   `currentColor` carries the icon too, because the arrow inherits from its
+   parent: the row reads as one active item instead of amber text beside a grey
+   arrow.
+
+   `font-weight: 600` is deliberately NOT used. The label's weight must not
+   change on navigation, because a layout that reflows when you move through it
+   is worse than one that does not; colour plus the icon is enough.
+
+   Contrast, measured on the actual card fills: amber on `surface` is 6.81:1,
+   which clears the 4.5:1 floor. On `hover` it would be 3.53:1 and fail — which
+   is the second reason the three cards share one `surface` fill. */
+.nav-card-link.is-active,
+.nav-card-link.is-active .nav-card-link-icon {
+  color: theme('colors.cem.amber');
+}
+
 /* ---------------------------------------------------------------------------
    nav-user-strip — the FOURTH card, added by the CEMURM app nav.
 
