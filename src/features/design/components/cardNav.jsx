@@ -127,7 +127,13 @@ export function CardNav({
     if (!navEl) return 260
 
     const isMobile = window.matchMedia('(max-width: 768px)').matches
-    if (isMobile) {
+    // Mobile always measures. Desktop measures ONLY when the footer strip is
+    // present, because the reference's fixed 260 was sized for three cards and
+    // nothing else: the strip adds a second row, and the tallest card decides
+    // the rest. Measured on the app nav at 258/260 — 2px of headroom, which
+    // clipped every card the moment a link was added. /design keeps the fixed
+    // 260, so the reference demo renders exactly as it always has.
+    if (isMobile || footerSlot) {
       const contentEl = navEl.querySelector('.card-nav-content')
       if (contentEl) {
         const wasVisible = contentEl.style.visibility
@@ -259,7 +265,17 @@ export function CardNav({
           </div>
 
           <div className="logo-container">
-            <img src={logo} alt={logoAlt} className="logo" />
+            {/* `logo` takes a src string (upstream, and what /design passes) or a
+                node. The CEMURM app passes a text brand instead: the wordmark
+                SVG bakes a hardcoded dark ink into its letters, which is ink
+                for a LIGHT background and goes near-invisible on this dark
+                bar. The string form is untouched, so /design still renders its
+                image. */}
+            {typeof logo === 'string' ? (
+              <img src={logo} alt={logoAlt} className="logo" />
+            ) : (
+              logo
+            )}
           </div>
 
           {ctaLabel && (
@@ -274,7 +290,13 @@ export function CardNav({
         </div>
 
         <div className="card-nav-content" aria-hidden={!isExpanded}>
-          {(items || []).slice(0, 3).map((item, idx) => (
+          {/* The three area cards get their OWN flex row. They used to be direct
+              children of `.card-nav-content` alongside the user strip; with the
+              strip on `flex: 1 1 100%` the summed basis filled the row, free
+              space was zero, and all three collapsed to width 0. A separate row
+              removes the competition. See `.card-nav-cards` in cardNav.css. */}
+          <div className="card-nav-cards">
+            {(items || []).slice(0, 3).map((item, idx) => (
             <div
               key={`${item.label}-${idx}`}
               className="nav-card"
@@ -306,6 +328,7 @@ export function CardNav({
               </div>
             </div>
           ))}
+          </div>
           {footerSlot && (
             <div
               className="nav-card nav-user-strip"

@@ -3,6 +3,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   ArrowUpRight01Icon,
   Building03Icon,
+  Chat01Icon,
   Logout01Icon,
   User02Icon,
 } from '@hugeicons/core-free-icons'
@@ -133,6 +134,7 @@ function AppLayout() {
       <span className="nav-user-push" />
 
       <button type="button" className="nav-user-button" onClick={() => setFeedbackOpen(true)}>
+        <HugeiconsIcon icon={Chat01Icon} size={16} className="nav-user-icon" aria-hidden="true" />
         Feedback
       </button>
 
@@ -151,28 +153,43 @@ function AppLayout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-cem-base">
-      {/* `.app-nav` in reference.css takes the bar back into normal flow, so
-          this spacer is not reserving the bar's own height — it is the 2em of
-          breathing room that the reference used as `top: 2em`. Without it the
-          bar would sit flush against the top of the viewport. */}
-      <header className="h-[2em] shrink-0" aria-hidden="true" />
+      {/* The bar is `position: absolute` (`.app-nav` in cardNav.css), so it floats
+          over the page and expanding it never moves the content — that is the
+          whole point. The space the CLOSED bar occupies is reserved here as a
+          spacer, and `<main>` keeps its own top padding, so nothing sits under
+          the bar at rest either. */}
+      <header className="h-[calc(1rem+60px)] shrink-0" aria-hidden="true" />
 
       <CardNav
-        logo="/cemurm-wordmark.svg"
+        logo={
+          <NavLink
+            to="/"
+            className="text-lg font-bold tracking-wider text-cem-text"
+            aria-label="CEMURM home"
+          >
+            CEMURM
+          </NavLink>
+        }
         logoAlt="CEMURM"
         items={NAV_CARDS}
         ease="circ.out"
         className="app-nav"
         // `circ.out` is the requested curve. The reference default is
         // `power3.out`, kept as the prop default so /design is untouched.
-        baseColor="surface"
+        //
+        // The bar is `base` (the darkest step) so the three cards read as
+        // surfaces ON it. An earlier pass put the bar on `surface` and Play on
+        // `surface` too — same token, so Play vanished into the bar with no
+        // edge to separate them. The cards then step surface → elevated →
+        // hover, so each is distinct from its neighbour and from the bar.
+        baseColor="base"
         menuColor="text"
         // The CTA slot carries no call to action in this app — every user is
         // already signed in and the identity block moved to the strip.
         ctaLabel={null}
         renderLink={renderNavLink}
         footerSlot={userStrip}
-        footerBgColor="base"
+        footerBgColor="surface"
         footerTextColor="text"
       />
 

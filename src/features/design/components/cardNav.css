@@ -141,11 +141,35 @@
   bottom: 0;
   padding: 0.5rem;
   display: flex;
-  align-items: flex-end;
+  /* COLUMN, and the three cards live in `.card-nav-cards` below. They were
+     direct children of this row before the user strip was added, and that is
+     what broke them — see `.card-nav-cards`. */
+  flex-direction: column;
   gap: 12px;
   visibility: hidden;
   pointer-events: none;
   z-index: 1;
+}
+
+/* The three area cards, in their own row.
+
+   THE BUG THIS STRUCTURE FIXES. All four cards used to be flex items of ONE
+   row. The three area cards are `flex: 1 1 0` and the user strip was
+   `flex: 1 1 100%`, so the summed flex-basis was already 100% of the
+   container: free space computed to zero, nothing was left to distribute, and
+   the three cards collapsed to zero width while the strip took the full row.
+   Text then spilled out of a zero-width box, which is what the first render
+   showed.
+
+   Giving the strip its own row removes the competition entirely. The three
+   cards are now the only flex items of this row, so `1 1 0` does what it is
+   supposed to: split the width three ways. */
+.card-nav-cards {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .card-nav.open .card-nav-content {
@@ -208,8 +232,13 @@
    rule has nothing to catch.
 --------------------------------------------------------------------------- */
 .nav-user-strip {
-  flex: 1 1 100%;
+  /* Its own ROW now, so no `flex: 1 1 100%` — that basis was what starved the
+     three cards. It stretches across the column on the cross axis only, and
+     takes its height from its content. */
+  flex: 0 0 auto;
+  width: 100%;
   height: auto;
+  min-height: 44px;
   flex-direction: row;
   align-items: center;
   gap: 16px;
@@ -269,29 +298,27 @@
 /* ---------------------------------------------------------------------------
    app-nav — the CEMURM app shell.
 
-   The reference was designed to FLOAT over a landing page: `.card-nav-container`
-   is `position: absolute; top: 2em; left: 50%; transform: translateX(-50%);
-   z-index: 99`. In the app shell that is wrong twice over — it escapes the flex
-   column, and at `top: 2em` it lands on top of the routed page instead of
-   pushing it down.
+   THE BAR MUST FLOAT, NOT PUSH. The reference is already `position: absolute`
+   with `z-index: 99`, and that is correct for an app shell: the panel opens
+   OVER the routed page. An earlier version of this file forced
+   `position: relative`, which put the bar back into flow — and because GSAP
+   animates the nav's height from 60px to its measured height, every expansion
+   physically pushed the whole page down. That is the behaviour this block
+   exists to prevent, so the absolute positioning is deliberately left alone.
 
-   `.app-nav` pins it back into normal flow. The shell's `<header>` carries the
-   matching spacer height (`calc(2em + 60px)`), so the reserved space and the
-   offset this class removes stay in step: change one, change the other.
+   WHAT CHANGES IS THE WIDTH, not the positioning. The reference caps itself at
+   800px and centres with `translateX(-50%)`, which is right for a hero and
+   wrong for an app: it would leave the 13 routes in a narrow pill. Here the bar
+   is full width, centred by `left: 50%` + the transform that `auto` below
+   replaces.
 
-   The 800px max-width is the reference's, and it is kept — it is what makes
-   this read as a floating bar rather than a full-bleed header, and the three
-   cards fit comfortably inside it.
+   The 2em of breathing room moves from `top:` to `padding-top`, so the offset
+   survives without depending on `top` at all.
 --------------------------------------------------------------------------- */
 .card-nav-container.app-nav {
-  position: relative;
-  top: auto;
-  left: auto;
-  transform: none;
   width: 100%;
   max-width: 100%;
-  margin: 0 auto;
-  padding: 2em 1rem 0;
+  padding-top: 1rem;
   box-sizing: border-box;
 }
 
@@ -321,12 +348,19 @@
   }
 
   .card-nav-content {
-    flex-direction: column;
-    align-items: stretch;
     gap: 8px;
     padding: 0.5rem;
     bottom: 0;
     justify-content: flex-start;
+  }
+
+  /* On mobile the three cards stack vertically — the reference's own
+     behaviour. They are already a column's worth of row, so the inner
+     container turns to a column too. */
+  .card-nav-cards {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
   }
 
   .nav-card {
