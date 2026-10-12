@@ -39,4 +39,3 @@ jobs:
       - run: pnpm test:gherkin
 
       - run: pnpm build
-# test trigger
