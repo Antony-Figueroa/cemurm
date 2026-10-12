@@ -62,6 +62,13 @@
 > Añadido 2026-09-28. **Bloquea toda la cola de landing.** Los 23 PRs abiertos entran por fork
 > mientras esto siga así. No es una molestia: es un commit que no se puede subir.
 
+> **Actualizado 2026-10-11.** El ruleset `PR` (id `24085467`) **ya no existe**: se partió en
+> `checks` (id `24904685`, **sin bypass** — exige `lint-and-build`, `GitGuardian Security Checks` y
+> `CodeQL`, más CodeQL/code-quality e integridad de rama) y `review` (id `24904691`, **bypass del
+> mantenedor en modo `pull_request`**, solo para la aprobación). El scope hoy es `~DEFAULT_BRANCH` en
+> ambos rulesets, así que el diagnóstico de abajo —que describe `include: ["~ALL"]` y
+> `bypass_actors: []`— es histórico.
+
 - **Evaluación**: el ruleset se llama `PR`, id `24085467`, `target: branch`, `conditions.ref_name`
   `include: ["~ALL"]`, `enforcement: active`, `bypass_actors: []`. Exige
   **`GitGuardian Security Checks`** con **`do_not_enforce_on_create: false`**. Un commit recién
@@ -122,6 +129,12 @@
 ## 12. La cláusula 6 de `AGENTS.md` ("pedir revisor siempre") es inalcanzable
 
 > Añadido 2026-10-01. **Estructuralmente imposible, no un descuido de ejecución.**
+
+> **Actualizado 2026-10-11.** La mitad bloqueante quedó resuelta: el ruleset `review` (id
+> `24904691`) da al mantenedor un bypass en modo `pull_request`, así que **un PR propio ya se puede
+> mergear sin aprobación** (sigue forzado a pasar por un PR). Lo que sigue siendo cierto es el no-op
+> de `--add-reviewer` sobre el propio PR: la cláusula 6 de `AGENTS.md` todavía describe ese
+> mecanismo, y la notificación fuera de banda (mención en el PR) sigue siendo el disparador real.
 
 - **Evaluación**: `gh pr edit <n> --add-reviewer davidjesus516` sobre un PR **autorizado por** davidjesus516 sale `0`, imprime la URL, y **no crea nada**. Medido: #273 (propio) → `reviewRequests: []`; #194 (autor `Antony-F Figueroa`) → `reviewRequests: ["davidjesus516"]`, y ese sí notifica.
 - **Por qué importa**: combinado con `require_last_push_approval: true` del ruleset activo, un PR propio **no tiene ninguna vía de aprobación dentro de la plataforma** — solo `--admin`. La cláusula 6 dice "notifica, no esperes en silencio", y su mecanismo **reporta éxito sin accomplishir nada**. Es peor que no tenerla: genera la sensación de que se ha notificado.
