@@ -92,6 +92,9 @@ import './cardNav.css'
 
 // The motion constants, in one place so reduced-motion can zero them.
 const OPEN_DURATION = 0.4
+// The panel deploys slower than the cards rise, on purpose: with both at 0.4s
+// and `circ.out`, the panel finished first and the content trailed it.
+const PANEL_DURATION = 0.55
 const CLOSE_DURATION = 0.4
 // Two curves, because reversing an `out` ease yields `circ.in`, which
 // accelerates and stamps the bar shut — measured, the last four frames of a
@@ -167,11 +170,11 @@ export function CardNav({
 
   // HOW TALL IS THE PANEL WHEN OPEN?
   //
-  // Measured in JS, animated in CSS. The measurement has to be here because the
-  // height depends on the content and on the viewport; the animation does NOT
-  // have to be here, and moving it out is the point of this rewrite (see the
-  // file header: GSAP was 82 kB of eager bundle against Hard Rule 5, and it
-  // animated `height`, a layout property).
+  // Measured in JS because the height depends on the content and on the
+  // viewport. ANIMATED BY GSAP, not by CSS: an earlier version transitioned
+  // `height` in CSS and removed the library, and it measured better on every
+  // axis that is easy to measure while looking worse, because independent CSS
+  // transitions cannot overlap the way `createTimeline` does. See the header.
   //
   // CLAMPED TO THE VIEWPORT. Unclamped, a 375x667 phone produced an 888px panel:
   // the user strip fell below the fold, and the only way to reach it was a
@@ -222,15 +225,6 @@ export function CardNav({
     return Math.min(natural, Math.max(window.innerHeight, ceiling))
   }
 
-  // Publish the measured height as a custom property. CSS transitions to it.
-  // Runs on mount, on resize, and whenever the items change — a different set of
-  // links is a different panel height.
-  const syncHeight = useCallback(() => {
-    const navEl = navRef.current
-    if (!navEl) return
-    navEl.style.setProperty('--nav-h', `${measureOpenHeight()}px`)
-  }, [])
-
   const createTimeline = () => {
     const navEl = navRef.current
     if (!navEl) return null
@@ -250,24 +244,28 @@ export function CardNav({
 
     tl.to(navEl, {
       height: measureOpenHeight,
-      duration: OPEN_DURATION,
+      duration: PANEL_DURATION,
       ease: EASE_OPEN,
     })
 
-    // '-=0.1' IS THE WHOLE FEEL. The cards begin their rise 100ms BEFORE the
-    // height finishes, so content is already arriving while the panel is still
-    // growing. Without the overlap the panel reads as deploying and the cards
-    // as animating afterwards, which is what a set of independent CSS
-    // transitions cannot express and what this rewrite got wrong the first
-    // time.
-    tl.to(cards(), { y: 0, opacity: 1, duration: OPEN_DURATION, ease: EASE_OPEN, stagger: 0.08 }, '-=0.1')
+    // THE OVERLAP IS A POSITION, NOT A COMMENT.
+    //
+    // The previous `'-=0.1'` placed the cards at 300ms, believing that was
+    // "100ms before the height finishes". It is not: `circ.out` front-loads, so
+    // the panel reaches 95% of its height at ~256ms — BEFORE the first card had
+    // even started. A reviewer measured the consequence: 1152ms with the panel
+    // fully deployed and empty, then the content arriving. That is precisely the
+    // "deploys first, animates after" defect this whole commit was meant to
+    // justify restoring GSAP over.
+    //
+    // So the cards start almost immediately (60ms), the panel takes longer to
+    // deploy (PANEL_DURATION) so it does not outrun its content, and both land
+    // together: cards finish at 60 + 400 + 3x50 = 610ms against the panel's
+    // 550ms. Content is arriving for the whole growth, not after it.
+    tl.to(cards(), { y: 0, opacity: 1, duration: OPEN_DURATION, ease: EASE_OPEN, stagger: 0.05 }, 0.06)
 
     return tl
   }
-
-  useLayoutEffect(() => {
-    syncHeight()
-  }, [syncHeight, items])
 
   // Owns the OPEN timeline for the lifetime of the component: built once, and
   // rebuilt after a resize so the measured height follows the viewport.
@@ -282,10 +280,9 @@ export function CardNav({
 
   useLayoutEffect(() => {
     const onResize = () => {
-      if (!isExpanded) {
-        syncHeight()
-        return
-      }
+      // Closed: nothing to do. The height is measured when the panel opens, not
+      // continuously, so there is nothing to re-measure until then.
+      if (!isExpanded) return
       tlRef.current?.kill()
       const next = createTimeline()
       tlRef.current = next
@@ -304,13 +301,24 @@ export function CardNav({
   // opened once per page load, on every close path. The close timeline is local
   // to this call; it runs to completion and is collected.
   const closeMenu = useCallback(() => {
+    wantsOpen.current = false
     const navEl = navRef.current
     if (!navEl || !isExpanded) return
     setIsHamburgerOpen(false)
 
     const cards = () => cardsRef.current.filter(Boolean)
     const reduced = prefersReducedMotion()
-    const tl = gsap.timeline({ onComplete: () => setIsExpanded(false) })
+    const tl = gsap.timeline({
+      onComplete: () => {
+        closeTlRef.current = null
+        setIsExpanded(false)
+      },
+    })
+    // Held so an open can kill it. A tap during the close used to be swallowed:
+    // `isExpanded` only flips in onComplete, so the re-tap took the close branch
+    // and spawned a SECOND close while the first kept running — measured, a
+    // re-tap at 120/260/400ms never reopened the panel.
+    closeTlRef.current = tl
 
     // Reduced motion keeps the fade but drops the travel: the cards do not rise
     // 50px, the height does not travel, and both finish in a fifth of the time.
@@ -329,27 +337,46 @@ export function CardNav({
     }, 0)
   }, [isExpanded])
 
-  const toggleMenu = () => {
-    if (!isExpanded) {
-      // Rebuild rather than replay. A timeline that has already run to its end
-      // and been replaced by a close is exactly the fragile state that broke
-      // this; `createTimeline` re-applies the closed-state `gsap.set`, so an
-      // open always starts from a known frame.
-      const tl = createTimeline()
-      if (!tl) return
-      tlRef.current = tl
-      setIsHamburgerOpen(true)
-      setIsExpanded(true)
+  // WHAT THE USER LAST ASKED FOR, as distinct from what is on screen.
+  //
+  // `isExpanded` cannot answer this. It stays true for the whole close — the
+  // content must remain visible while the bar collapses, and both `.card-nav.open`
+  // and `visibility` depend on it — so branching the toggle on it makes a tap
+  // during the close read as "close again". That was a measured severe: re-tapping
+  // at 120/260/400ms into the close left the panel shut and the tap doing nothing.
+  const wantsOpen = useRef(false)
+  const closeTlRef = useRef(null)
 
-      if (prefersReducedMotion()) {
-        // Same end state, no travel.
-        gsap.set(navElRef.current, { height: measureOpenHeight() })
-        gsap.set(cardsRef.current.filter(Boolean), { y: 0, opacity: 1 })
-      } else {
-        tl.play(0)
-      }
+  const openMenu = () => {
+    wantsOpen.current = true
+    // An open always wins over a close in flight.
+    closeTlRef.current?.kill()
+    closeTlRef.current = null
+
+    // Rebuild rather than replay: a timeline that already ran to its end and was
+    // replaced by a close is the fragile state that broke this. `createTimeline`
+    // re-applies the closed-state `gsap.set`, and because GSAP records a tween's
+    // start value when it first renders, an open interrupted mid-close starts
+    // from the height currently on screen rather than snapping.
+    const tl = createTimeline()
+    if (!tl) return
+    tlRef.current = tl
+    setIsHamburgerOpen(true)
+    setIsExpanded(true)
+
+    if (prefersReducedMotion()) {
+      gsap.set(navElRef.current, { height: measureOpenHeight() })
+      gsap.set(cardsRef.current.filter(Boolean), { y: 0, opacity: 1 })
     } else {
+      tl.play(0)
+    }
+  }
+
+  const toggleMenu = () => {
+    if (wantsOpen.current) {
       closeMenu()
+    } else {
+      openMenu()
     }
   }
 

@@ -83,8 +83,21 @@ describe('CardNav — the animation library decision', () => {
   it('overlaps the cards with the height, which is the whole feel', () => {
     // The '-=0.1' overlap. Without it the panel deploys first and the cards
     // animate afterwards, which is what the CSS rewrite got wrong.
-    expect(cardNavSource).toContain("'-=0.1'")
-    expect(cardNavSource).toMatch(/stagger/)
+    //
+    // MATCHED ON THE TWEEN, NOT ON THE STRING. A reviewer mutation-tested this:
+    // `toContain("'-=0.1'")` also matches the two comments that NAME it, so
+    // deleting the overlap from the timeline left the test green. The assertion
+    // now requires the overlap to be a POSITION ARGUMENT of a `tl.to` call.
+    // The cards must start while the panel is still growing, not near its end.
+    // The old `'-=0.1'` placed them at 300ms while `circ.out` had the panel at
+    // 95% by 256ms: a measured 1152ms of fully deployed, empty panel. They now
+    // start at 60ms, and the panel takes longer to deploy so it cannot outrun
+    // its own content.
+    expect(cardNavSource).toMatch(/tl\.to\(cards\(\), \{[^}]*stagger: 0\.05[^}]*\}, 0\.06\)/)
+    expect(cardNavSource).toMatch(/const PANEL_DURATION = 0\.55/)
+    // And the panel must outlast the cards, not the other way round.
+    const cardEnd = 60 + 400 + 3 * 50
+    expect(cardEnd).toBeGreaterThan(550)
   })
 
   it('uses different curves for each direction', () => {
@@ -94,7 +107,13 @@ describe('CardNav — the animation library decision', () => {
   })
 
   it('honours reduced motion', () => {
-    expect(cardNavSource).toMatch(/prefers-reduced-motion/)
+    // Again, the DEFINITION is not the behaviour: a reviewer disabled the call
+    // sites and the test stayed green, because `prefers-reduced-motion` still
+    // appeared in the helper that was no longer invoked. Assert the guard is
+    // actually consulted where the durations are chosen.
+    expect(cardNavSource).toMatch(/const reduced = prefersReducedMotion\(\)/)
+    expect(cardNavSource).toMatch(/duration: reduced \? 0\.12/)
+    expect(cardNavSource).toMatch(/y: reduced \? 0 : 50/)
   })
 
   it('keeps the close timeline out of tlRef, which caused a severe bug', () => {
@@ -102,9 +121,15 @@ describe('CardNav — the animation library decision', () => {
     // hamburger opened once per page load. The close builds a local timeline.
     const closeBody = cardNavSource.slice(
       cardNavSource.indexOf('const closeMenu'),
-      cardNavSource.indexOf('const toggleMenu')
+      cardNavSource.indexOf('const openMenu')
     )
     expect(closeBody).not.toMatch(/tlRef\.current\s*=/)
+
+    // ...and a tap during the close must be able to reverse it. `isExpanded`
+    // stays true for the whole close, so branching the toggle on it swallowed
+    // the re-tap entirely — measured, a tap at 120/260/400ms never reopened.
+    expect(cardNavSource).toMatch(/closeTlRef\.current\?\.kill\(\)/)
+    expect(cardNavSource).toMatch(/if \(wantsOpen\.current\) \{\s*closeMenu\(\)/)
   })
 
   it('clamps the measured open height to the viewport', () => {
@@ -148,14 +173,20 @@ describe('CardNav — renders', () => {
     for (const item of ITEMS) expect(html).toContain(item.label)
   })
 
-  it('renders every route as a real link, not a full page load', () => {
+  it("uses the caller renderLink instead of the built-in anchor", () => {
+    // A reviewer showed this test was VACUOUS: the renderLink returned the same
+    // `<a href>` the fallback renders, so it passed whether or not renderLink
+    // was called at all. A marker attribute distinguishes the two paths, so
+    // ignoring renderLink now fails.
     const html = renderToStaticMarkup(
       createElement(CardNav, {
         logo: 'CEMURM',
         items: ITEMS,
-        renderLink: (lnk, key) => createElement('a', { key, href: lnk.href }, lnk.label),
+        renderLink: (lnk, key) =>
+          createElement('a', { key, href: lnk.href, 'data-router': 'true' }, lnk.label),
       })
     )
+    expect(html).toContain('data-router="true"')
     for (const item of ITEMS) {
       for (const link of item.links) expect(html).toContain(`href="${link.href}"`)
     }
