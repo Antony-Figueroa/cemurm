@@ -26,7 +26,6 @@ import { CardNav } from './cardNav.jsx'
 //   * the render output: the strip, the active link and the fallbacks.
 
 const cardNavSource = readFileSync(new URL('./cardNav.jsx', import.meta.url), 'utf8')
-const cardNavCss = readFileSync(new URL('./cardNav.css', import.meta.url), 'utf8')
 
 const ITEMS = [
   {
@@ -52,26 +51,66 @@ const ITEMS = [
   },
 ]
 
-describe('CardNav — no animation library in the authenticated bundle', () => {
-  // Hard Rule 5, enforced here because no gate enforces it.
-  it('does not import an animation library', () => {
-    expect(cardNavSource).not.toMatch(/from ['"]gsap['"]/)
-    expect(cardNavSource).not.toMatch(/from ['"]animejs['"]/)
-    expect(cardNavSource).not.toMatch(/from ['"]framer-motion['"]/)
+// THE ANIMATION-LIBRARY DECISION, asserted so it cannot drift silently.
+//
+// Hard Rule 5 of skills/cemurm-visual-system says no animation library in the
+// authenticated bundle. GSAP is a DOCUMENTED EXCEPTION to it — and this file is
+// where that decision is recorded, because no gate enforces the rule.
+//
+// It was removed once and put back. The CSS-transition version measured better
+// on everything easy to measure (0 bytes, no reflow, interruptible by
+// construction) and felt worse: independent transitions cannot overlap, so the
+// panel snapped open before the cards rose. A timeline expresses that overlap;
+// nothing else did. The cost is ~82 kB eager, which is the trade, stated.
+//
+// So the assertion is not "no library" — it is "gsap and ONLY gsap, and it is
+// imported deliberately rather than by accident".
+describe('CardNav — the animation library decision', () => {
+  it('imports GSAP deliberately, as the documented Hard Rule 5 exception', () => {
+    expect(cardNavSource).toMatch(/from ['"]gsap['"]/)
+    // The exception must be written down at the import, not remembered.
+    expect(cardNavSource).toMatch(/Hard Rule 5/)
   })
 
-  // The motion is CSS custom properties now. If someone reintroduces a tween
-  // library without removing these, the two would fight over the same
-  // properties and the symptom would be a panel that half-opens.
-  it('drives the animation from CSS custom properties', () => {
-    expect(cardNavCss).toContain('--nav-dur')
-    expect(cardNavCss).toContain('--nav-ease-out')
-    expect(cardNavCss).toContain('--nav-ease-in')
-    expect(cardNavSource).toContain("'--nav-h'")
+  it('brings in no OTHER animation library alongside it', () => {
+    expect(cardNavSource).not.toMatch(/from ['"]animejs['"]/)
+    expect(cardNavSource).not.toMatch(/from ['"]framer-motion['"]/)
+    // Motion IS a project dependency, but the nav does not use it — two
+    // libraries animating the same subtree would fight over the properties.
+    expect(cardNavSource).not.toMatch(/from ['"]motion['"]/)
+  })
+
+  it('overlaps the cards with the height, which is the whole feel', () => {
+    // The '-=0.1' overlap. Without it the panel deploys first and the cards
+    // animate afterwards, which is what the CSS rewrite got wrong.
+    expect(cardNavSource).toContain("'-=0.1'")
+    expect(cardNavSource).toMatch(/stagger/)
+  })
+
+  it('uses different curves for each direction', () => {
+    // Reversing circ.out yields circ.in, which stamps the bar shut.
+    expect(cardNavSource).toMatch(/EASE_OPEN\s*=\s*'circ\.out'/)
+    expect(cardNavSource).toMatch(/EASE_CLOSE\s*=\s*'power2\.inOut'/)
   })
 
   it('honours reduced motion', () => {
-    expect(cardNavCss).toMatch(/@media \(prefers-reduced-motion: reduce\)/)
+    expect(cardNavSource).toMatch(/prefers-reduced-motion/)
+  })
+
+  it('keeps the close timeline out of tlRef, which caused a severe bug', () => {
+    // The close used to install itself into the ref the next open plays, so the
+    // hamburger opened once per page load. The close builds a local timeline.
+    const closeBody = cardNavSource.slice(
+      cardNavSource.indexOf('const closeMenu'),
+      cardNavSource.indexOf('const toggleMenu')
+    )
+    expect(closeBody).not.toMatch(/tlRef\.current\s*=/)
+  })
+
+  it('clamps the measured open height to the viewport', () => {
+    // Unclamped, a 375x667 phone produced an 888px panel whose controls fell
+    // below the fold.
+    expect(cardNavSource).toMatch(/Math\.min\(natural, ceiling\)/)
   })
 })
 

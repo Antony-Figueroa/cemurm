@@ -64,6 +64,23 @@
 // full-bleed bar bolted underneath.
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+// GSAP is a DOCUMENTED, DELIBERATE exception to Hard Rule 5 of
+// skills/cemurm-visual-system ("no animation library in the authenticated
+// bundle"). It costs ~82 kB eager and buys a real timeline.
+//
+// This was removed for a week and put back, and the reason is worth keeping:
+// the CSS-transition version measured BETTER on every metric that is easy to
+// measure — 0 bytes, no reflow, interruptible by construction — and looked
+// worse. `height` and `opacity` are independent CSS transitions with no way
+// to overlap them, so the panel snapped open before the cards appeared, and
+// removing the `.open` class hid the content on frame 1 instead of after the
+// animation. A timeline is what expresses "start the cards 100ms before the
+// height finishes", and that overlap IS the feel.
+//
+// The library is also not free of charge elsewhere: the ease must be paired
+// per direction, because reversing `circ.out` gives `circ.in`, which stamps.
+// See closeMenu.
+import { gsap } from 'gsap'
 import { ArrowUpRight01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { useTokenColors } from './colors.js'
@@ -72,6 +89,24 @@ import { useTokenColors } from './colors.js'
 // importing the whole gallery sheet cost every app user ~29 kB. See the header
 // of cardNav.css.
 import './cardNav.css'
+
+// The motion constants, in one place so reduced-motion can zero them.
+const OPEN_DURATION = 0.4
+const CLOSE_DURATION = 0.4
+// Two curves, because reversing an `out` ease yields `circ.in`, which
+// accelerates and stamps the bar shut — measured, the last four frames of a
+// reversed close moved -29, -40, -61 and -74px. The close is therefore BUILT
+// with its own curve rather than produced by reversing the open's. These are
+// the exact values that were tuned and approved; do not retune them without
+// watching the frames, not just the endpoints.
+const EASE_OPEN = 'circ.out'
+const EASE_CLOSE = 'power2.inOut'
+
+// Does the reader want less motion? Read once per animation so a mid-open
+// change takes effect on the next interaction rather than being baked in.
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 export function CardNav({
   logo,
@@ -101,6 +136,7 @@ export function CardNav({
   const navRef = useRef(null)
   const cardsRef = useRef([])
   const navElRef = useRef(null)
+  const tlRef = useRef(null)
 
   // Token names in, resolved colours out — empty on the first pass, so the bar
   // renders before it paints (the ordering colors.js is written for). `|| []`
@@ -184,50 +220,127 @@ export function CardNav({
     navEl.style.setProperty('--nav-h', `${measureOpenHeight()}px`)
   }, [])
 
+  const createTimeline = () => {
+    const navEl = navRef.current
+    if (!navEl) return null
+
+    // WHY A FUNCTION, NOT THE ARRAY. `cardsRef.current` is filled by React
+    // across two renders — three cards, then the strip — so index 3 is still
+    // undefined while the first timeline is built. Handing GSAP that sparse
+    // array captured the hole permanently: only three cards animated and the
+    // strip never moved. A function target defers the read to when the tween
+    // starts, by which point every ref is populated.
+    const cards = () => cardsRef.current.filter(Boolean)
+
+    gsap.set(navEl, { height: 60, overflow: 'hidden' })
+    gsap.set(cards(), { y: 50, opacity: 0 })
+
+    const tl = gsap.timeline({ paused: true })
+
+    tl.to(navEl, {
+      height: measureOpenHeight,
+      duration: OPEN_DURATION,
+      ease: EASE_OPEN,
+    })
+
+    // '-=0.1' IS THE WHOLE FEEL. The cards begin their rise 100ms BEFORE the
+    // height finishes, so content is already arriving while the panel is still
+    // growing. Without the overlap the panel reads as deploying and the cards
+    // as animating afterwards, which is what a set of independent CSS
+    // transitions cannot express and what this rewrite got wrong the first
+    // time.
+    tl.to(cards(), { y: 0, opacity: 1, duration: OPEN_DURATION, ease: EASE_OPEN, stagger: 0.08 }, '-=0.1')
+
+    return tl
+  }
+
   useLayoutEffect(() => {
     syncHeight()
   }, [syncHeight, items])
 
+  // Owns the OPEN timeline for the lifetime of the component: built once, and
+  // rebuilt after a resize so the measured height follows the viewport.
   useLayoutEffect(() => {
-    const onResize = () => syncHeight()
+    tlRef.current = createTimeline()
+    return () => {
+      tlRef.current?.kill()
+      tlRef.current = null
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items])
+
+  useLayoutEffect(() => {
+    const onResize = () => {
+      if (!isExpanded) {
+        syncHeight()
+        return
+      }
+      tlRef.current?.kill()
+      const next = createTimeline()
+      tlRef.current = next
+      if (next) next.progress(1)
+    }
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
-  }, [syncHeight])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isExpanded])
 
-  // Opening and closing are now a CLASS, not a timeline.
+  // THE CLOSE IS BUILT, NOT REVERSED. See the `EASE_CLOSE` comment.
   //
-  // Three bugs lived in the GSAP version and all three are structural rather
-  // than tuning problems, which is the argument for deleting it rather than
-  // repairing it again:
-  //
-  //   * `tl.reverse()` replays an `out` ease as `in`, so the close accelerated
-  //     into the end — measured, the last four frames moved -29, -40, -61 and
-  //     -74px.
-  //   * Re-easing by assigning `child.vars.ease` does nothing: GSAP parses an
-  //     ease once and caches the function.
-  //   * `child.invalidate()` does re-parse but re-INITIALISES, wiping the
-  //     endpoints — the bar ran back up to open and the cards never faded.
-  //   * and the one both judges caught as severe: the close timeline was
-  //     installed into `tlRef`, which is what the next open played, so the
-  //     hamburger opened once per page load.
-  //
-  // A CSS transition has none of these failure modes: it always animates from
-  // the value currently on screen, it is interruptible mid-flight, it costs
-  // zero bytes, and re-running it is free. That is Apple-design §3 and §11
-  // arriving at the same place as Hard Rule 5 of this project's own visual
-  // system — three independent arguments for the same deletion.
-  //
-  // The height re-measures on open, because fonts and labels can change it.
-  const setOpen = useCallback(
-    open => {
-      setIsHamburgerOpen(open)
-      setIsExpanded(open)
-      if (open) syncHeight()
-    },
-    [syncHeight]
-  )
+  // And it does NOT install itself into `tlRef`. That was the severe bug two
+  // review rounds found: `tlRef` is the OPEN timeline, so leaving a close
+  // timeline there meant the next open replayed the collapse — the hamburger
+  // opened once per page load, on every close path. The close timeline is local
+  // to this call; it runs to completion and is collected.
+  const closeMenu = useCallback(() => {
+    const navEl = navRef.current
+    if (!navEl || !isExpanded) return
+    setIsHamburgerOpen(false)
 
-  const toggleMenu = () => setOpen(!isExpanded)
+    const cards = () => cardsRef.current.filter(Boolean)
+    const reduced = prefersReducedMotion()
+    const tl = gsap.timeline({ onComplete: () => setIsExpanded(false) })
+
+    // Reduced motion keeps the fade but drops the travel: the cards do not rise
+    // 50px, the height does not travel, and both finish in a fifth of the time.
+    // It is a cross-fade, not a hard cut — a cut is its own kind of jarring.
+    tl.to(cards(), {
+      y: reduced ? 0 : 50,
+      opacity: 0,
+      duration: reduced ? 0.12 : CLOSE_DURATION,
+      ease: EASE_CLOSE,
+      stagger: reduced ? 0 : 0.04,
+    }, 0)
+    tl.to(navEl, {
+      height: 60,
+      duration: reduced ? 0.12 : CLOSE_DURATION,
+      ease: EASE_CLOSE,
+    }, 0)
+  }, [isExpanded])
+
+  const toggleMenu = () => {
+    if (!isExpanded) {
+      // Rebuild rather than replay. A timeline that has already run to its end
+      // and been replaced by a close is exactly the fragile state that broke
+      // this; `createTimeline` re-applies the closed-state `gsap.set`, so an
+      // open always starts from a known frame.
+      const tl = createTimeline()
+      if (!tl) return
+      tlRef.current = tl
+      setIsHamburgerOpen(true)
+      setIsExpanded(true)
+
+      if (prefersReducedMotion()) {
+        // Same end state, no travel.
+        gsap.set(navElRef.current, { height: measureOpenHeight() })
+        gsap.set(cardsRef.current.filter(Boolean), { y: 0, opacity: 1 })
+      } else {
+        tl.play(0)
+      }
+    } else {
+      closeMenu()
+    }
+  }
 
   // CLOSE WHEN THE ROUTE CHANGES. An SPA navigation does not reload the page,
   // so nothing would otherwise dismiss the panel: open the menu, tap a card
@@ -240,9 +353,8 @@ export function CardNav({
   useEffect(() => {
     if (lastRouteKey.current === routeKey) return
     lastRouteKey.current = routeKey
-    setOpen(false)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [routeKey])
+    closeMenu()
+  }, [routeKey, closeMenu])
 
   // ...and the same for a non-navigation close (a modal opening). Kept as its
   // own effect so the two triggers cannot interfere: a route change while a
@@ -251,9 +363,8 @@ export function CardNav({
   useEffect(() => {
     if (lastCloseSignal.current === closeSignal) return
     lastCloseSignal.current = closeSignal
-    setOpen(false)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [closeSignal])
+    closeMenu()
+  }, [closeSignal, closeMenu])
 
   const setCardRef = i => el => {
     if (el) cardsRef.current[i] = el
@@ -281,7 +392,7 @@ export function CardNav({
     const onKeyDown = (event) => {
       if (event.key === 'Escape') {
         event.preventDefault()
-        setOpen(false)
+        closeMenu()
         return
       }
       if (event.key !== 'Tab' || !navEl) return
@@ -313,8 +424,7 @@ export function CardNav({
     if (first) first.focus()
 
     return () => document.removeEventListener('keydown', onKeyDown)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isExpanded])
+  }, [isExpanded, closeMenu])
 
   // ...and hand focus back to the hamburger on close.
   useEffect(() => {

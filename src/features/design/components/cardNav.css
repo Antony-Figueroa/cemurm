@@ -64,28 +64,15 @@
   overflow: hidden;
   will-change: height;
 
-  /* THE WHOLE ANIMATION, IN FOUR DECLARATIONS.
-
-     This replaces a GSAP timeline. The reasons are in cardNav.jsx's header, but
-     the short version: GSAP cost 82 kB of eager bundle against Hard Rule 5 of
-     this project's own visual system, it animated `height` (a layout property,
-     reflow every frame), and it accumulated four bugs across two review rounds
-     — one of them severe enough that the hamburger opened once per page load.
-
-     The easing is declared ONCE PER DIRECTION rather than shared, which is
-     Apple-design §7: a reversible transition mirrors its curve, so the way out
-     looks like the way back. Opening eases out (settles into place), closing
-     eases in (accelerates away). A single shared curve would give the close an
-     `in` feel at the wrong moment — the exact stutter this replaces. */
+  /* Height is owned by GSAP (cardNav.jsx), not by a CSS transition. An earlier
+     version moved it to `transition: height` and measured better on every
+     metric that is easy to measure — 0 bytes, no reflow — and felt worse:
+     `height` and `opacity` became independent transitions with no way to
+     overlap, so the panel snapped open before the cards rose, and removing the
+     `.open` class hid the content on the first frame instead of after the
+     animation. The overlap between the two is the whole feel, and only a
+     timeline can express it. See the import comment in cardNav.jsx. */
   height: 60px;
-  transition: height var(--nav-dur) var(--nav-ease-in);
-}
-
-.card-nav.open {
-  /* `--nav-h` is measured in JS (cardNav.jsx `measureOpenHeight`) and clamped to
-     the viewport, then written here as a custom property. */
-  height: var(--nav-h, 260px);
-  transition: height var(--nav-dur) var(--nav-ease-out);
 }
 
 .card-nav-top {
@@ -244,28 +231,8 @@
      without moving it; the fill alone could not. */
   border: 1px solid theme('colors.cem.elevated');
 
-  /* The rise. `transform` and `opacity` only — both compositor-friendly, which
-     is what Apple-design §11 asks for and what the GSAP version did not do. The
-     height animates on the container, so the subtree it contains does not
-     relayout per frame.
-
-     `--i` is the card's index, written inline by the component, and turns into
-     the stagger. The delay is the SAME in both directions, so the cards leave in
-     the order they arrived — the reverse of a stagger would read as a glitch. */
-  transform: translateY(50px);
-  opacity: 0;
-  transition:
-    transform var(--nav-dur) var(--nav-ease-in),
-    opacity var(--nav-dur) var(--nav-ease-in);
-  transition-delay: calc(var(--i, 0) * var(--nav-stagger));
-}
-
-.card-nav.open .nav-card {
-  transform: translateY(0);
-  opacity: 1;
-  transition:
-    transform var(--nav-dur) var(--nav-ease-out),
-    opacity var(--nav-dur) var(--nav-ease-out);
+  /* Transform and opacity are owned by GSAP too. The rise is staggered by the
+     timeline, not by a `transition-delay`. */
 }
 
 .nav-card-label {
@@ -449,47 +416,6 @@
    The 2em of breathing room moves from `top:` to `padding-top`, so the offset
    survives without depending on `top` at all.
 --------------------------------------------------------------------------- */
-/* ---------------------------------------------------------------------------
-   Motion tokens. One duration and one stagger, read by every rule above.
-
-   Apple-design §14's companion rule in this project's own toolchain notes
-   ("every motion rule uses shared duration/timing custom properties") is the
-   reason these live here rather than as literals on each rule: a single place
-   to change the feel, and a single place the reduced-motion block can zero.
---------------------------------------------------------------------------- */
-:root {
-  --nav-dur: 400ms;
-  --nav-stagger: 40ms;
-  /* Paired curves, §7: the outbound path mirrors the return path. */
-  --nav-ease-out: cubic-bezier(0, 0.55, 0.45, 1);
-  --nav-ease-in: cubic-bezier(0.55, 0, 1, 0.45);
-}
-
-/* REDUCED MOTION IS NOT "NO MOTION" — it is a cross-fade with no travel.
-
-   Apple-design §14: replace the slide/collapse with a short opacity change and
-   keep whatever still communicates state. So the cards fade in place instead of
-   rising 50px, and the panel appears at its measured height rather than
-   growing into it. The duration is not zeroed entirely — a hard cut is its own
-   kind of jarring — it is short enough that nothing travels far. */
-@media (prefers-reduced-motion: reduce) {
-  :root {
-    --nav-dur: 120ms;
-    --nav-stagger: 0ms;
-  }
-
-  .card-nav,
-  .card-nav.open {
-    transition: height var(--nav-dur) linear;
-  }
-
-  .nav-card,
-  .card-nav.open .nav-card {
-    transform: none;
-    transition: opacity var(--nav-dur) linear;
-  }
-}
-
 /* Click-outside layer. Invisible by design — it only needs to be a target that
    sits above the page and below the bar, so it is a full-viewport box with no
    background and no transitions of its own. */
