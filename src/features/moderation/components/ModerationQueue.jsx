@@ -51,6 +51,9 @@ export default function ModerationQueue({ queue, loading, error, onDecide, decid
         />
       )
     }
+    // Case was decided and removed from queue — clear selection
+    // Success toast is shown by parent Moderation page
+    setSelectedCase(null)
   }
 
   return (
