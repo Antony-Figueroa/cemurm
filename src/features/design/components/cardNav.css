@@ -1,0 +1,346 @@
+/* cardNav.css — the CardNav stylesheet, split out of reference.css.
+
+   WHY THE SPLIT. reference.css is the ported stylesheet for the whole /design
+   gallery, and 15 components import it. While CardNav was loaded only by the
+   lazy /design route that was free: the file landed in the DesignSystem chunk.
+   AppLayout now renders CardNav, and AppLayout is not lazy, so every user of
+   the app was paying for the whole gallery stylesheet (~29 kB) on first paint
+   to style one nav bar. Measured: index.css 55.85 kB -> 84.38 kB.
+
+   These rules are moved VERBATIM. Nothing below is rewritten, re-tokenised or
+   reordered — this is the content reference.css:1358-1681 carried, which was
+   the CardNav section and the last one in that file.
+
+   /design is unaffected: DesignSystem renders CardNav through cardNav.jsx, and
+   cardNav.jsx imports THIS file, so the gallery gets exactly the rules it got
+   before. Verified by class ownership rather than assumed: every selector here
+   is reachable only from cardNav.jsx. DesignSystem.jsx names CardNav once, in
+   demo copy, and never as a className.
+
+   The last block, .app-nav, is NOT from the reference. It takes the bar out of
+   the reference's floating `position: absolute` and puts it back into flow for
+   the app shell. */
+/* ============================================================ CardNav */
+/* The reference's colours are literals: a white bar, a near-black CTA that
+   darkens on hover, a translucent light hairline and a soft dark shadow. Rule
+   01a rejects every hex AND every colour function in src/, so each becomes an
+   @apply of the token that carries the same step of the ramp — bar →
+   cem.text, hairline → cem.elevated, shadow → the scale's shadow-md (the Dock
+   precedent), CTA → cem.base with cem.hover on hover. `.hamburger-line` keeps
+   `currentColor`, which the rule allows and this file already uses. The CTA
+   note: the component passes `buttonBgColor`/`buttonTextColor` inline, and an
+   inline style wins over this rule — exactly as upstream, kept for fidelity. */
+
+.card-nav-container {
+  position: absolute;
+  top: 2em;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 800px;
+  z-index: 99;
+  box-sizing: border-box;
+}
+
+.card-nav {
+  display: block;
+  height: 60px;
+  padding: 0;
+  @apply bg-cem-text;
+  border: 0.5px solid;
+  @apply border-cem-elevated;
+  border-radius: 0.75rem;
+  @apply shadow-md;
+  position: relative;
+  overflow: hidden;
+  will-change: height;
+}
+
+.card-nav-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.45rem 0.55rem 1.1rem;
+  z-index: 2;
+}
+
+.hamburger-menu {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  gap: 6px;
+}
+
+.hamburger-menu:hover .hamburger-line {
+  opacity: 0.75;
+}
+
+.hamburger-line {
+  width: 30px;
+  height: 2px;
+  background-color: currentColor;
+  transition:
+    transform 0.25s ease,
+    opacity 0.2s ease,
+    margin 0.3s ease;
+  transform-origin: 50% 50%;
+}
+
+.hamburger-menu.open .hamburger-line:first-child {
+  transform: translateY(4px) rotate(45deg);
+}
+
+.hamburger-menu.open .hamburger-line:last-child {
+  transform: translateY(-4px) rotate(-45deg);
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.logo {
+  height: 28px;
+}
+
+.card-nav-cta-button {
+  /* Reference default fill, tokenised; the component's inline colour props
+     override it, which is how upstream behaves too. */
+  @apply bg-cem-base text-cem-text;
+  border: none;
+  border-radius: calc(0.75rem - 0.35rem);
+  padding: 0 1rem;
+  height: 100%;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  align-items: center;
+}
+
+.card-nav-cta-button:hover {
+  @apply hover:bg-cem-hover;
+}
+
+.card-nav-content {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 60px;
+  bottom: 0;
+  padding: 0.5rem;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.card-nav.open .card-nav-content {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.nav-card {
+  height: 100%;
+  flex: 1 1 0;
+  min-width: 0;
+  border-radius: calc(0.75rem - 0.2rem);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 16px;
+  gap: 8px;
+  user-select: none;
+}
+
+.nav-card-label {
+  font-weight: 400;
+  font-size: 22px;
+  letter-spacing: -0.5px;
+}
+
+.nav-card-links {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-card-link {
+  font-size: 16px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-card-link:hover {
+  opacity: 0.75;
+}
+
+/* ---------------------------------------------------------------------------
+   nav-user-strip — the FOURTH card, added by the CEMURM app nav.
+
+   It is a card, not a full-bleed footer: same padding, same gap and the same
+   radius as the three above, but `flex: 1 1 100%` gives it a full row of the
+   same grid. Sharing `.nav-card` is what makes it read as part of the set
+   instead of a bar bolted underneath.
+
+   Colour is `inherit`, never a utility class. The strip paints itself with the
+   token pair the caller passes (see `footerBgColor` / `footerTextColor`), and a
+   literal `text-cem-secondary` here would put a foreground on a raised fill —
+   rule 06's exact pairing. `opacity` on hover keeps the fill unchanged, so the
+   rule has nothing to catch.
+--------------------------------------------------------------------------- */
+.nav-user-strip {
+  flex: 1 1 100%;
+  height: auto;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+}
+
+.nav-user-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  min-width: 0;
+}
+
+.nav-user-icon {
+  flex-shrink: 0;
+}
+
+.nav-user-push {
+  margin-left: auto;
+}
+
+.nav-user-button {
+  font: inherit;
+  font-size: 14px;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: opacity 0.3s ease;
+}
+
+.nav-user-button:hover {
+  opacity: 0.75;
+}
+
+/* The organisation name is the one label that can be arbitrarily long, and the
+   strip shares a row with two buttons. It truncates rather than pushing Log Out
+   off the edge; `title` carries the full string. */
+.nav-user-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .nav-user-strip {
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   app-nav — the CEMURM app shell.
+
+   The reference was designed to FLOAT over a landing page: `.card-nav-container`
+   is `position: absolute; top: 2em; left: 50%; transform: translateX(-50%);
+   z-index: 99`. In the app shell that is wrong twice over — it escapes the flex
+   column, and at `top: 2em` it lands on top of the routed page instead of
+   pushing it down.
+
+   `.app-nav` pins it back into normal flow. The shell's `<header>` carries the
+   matching spacer height (`calc(2em + 60px)`), so the reserved space and the
+   offset this class removes stay in step: change one, change the other.
+
+   The 800px max-width is the reference's, and it is kept — it is what makes
+   this read as a floating bar rather than a full-bleed header, and the three
+   cards fit comfortably inside it.
+--------------------------------------------------------------------------- */
+.card-nav-container.app-nav {
+  position: relative;
+  top: auto;
+  left: auto;
+  transform: none;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 2em 1rem 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .card-nav-container {
+    width: 90%;
+    top: 1.2em;
+  }
+
+  .card-nav-top {
+    padding: 0.5rem 1rem;
+    justify-content: space-between;
+  }
+
+  .hamburger-menu {
+    order: 2;
+  }
+
+  .logo-container {
+    position: static;
+    transform: none;
+    order: 1;
+  }
+
+  .card-nav-cta-button {
+    display: none;
+  }
+
+  .card-nav-content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 0.5rem;
+    bottom: 0;
+    justify-content: flex-start;
+  }
+
+  .nav-card {
+    height: auto;
+    min-height: 60px;
+    flex: 1 1 auto;
+    max-height: none;
+  }
+
+  .nav-card-label {
+    font-size: 18px;
+  }
+
+  .nav-card-link {
+    font-size: 15px;
+  }
+}
