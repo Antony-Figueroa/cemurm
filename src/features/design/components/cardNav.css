@@ -63,6 +63,29 @@
   z-index: 2;
   overflow: hidden;
   will-change: height;
+
+  /* THE WHOLE ANIMATION, IN FOUR DECLARATIONS.
+
+     This replaces a GSAP timeline. The reasons are in cardNav.jsx's header, but
+     the short version: GSAP cost 82 kB of eager bundle against Hard Rule 5 of
+     this project's own visual system, it animated `height` (a layout property,
+     reflow every frame), and it accumulated four bugs across two review rounds
+     — one of them severe enough that the hamburger opened once per page load.
+
+     The easing is declared ONCE PER DIRECTION rather than shared, which is
+     Apple-design §7: a reversible transition mirrors its curve, so the way out
+     looks like the way back. Opening eases out (settles into place), closing
+     eases in (accelerates away). A single shared curve would give the close an
+     `in` feel at the wrong moment — the exact stutter this replaces. */
+  height: 60px;
+  transition: height var(--nav-dur) var(--nav-ease-in);
+}
+
+.card-nav.open {
+  /* `--nav-h` is measured in JS (cardNav.jsx `measureOpenHeight`) and clamped to
+     the viewport, then written here as a custom property. */
+  height: var(--nav-h, 260px);
+  transition: height var(--nav-dur) var(--nav-ease-out);
 }
 
 .card-nav-top {
@@ -158,6 +181,21 @@
   visibility: hidden;
   pointer-events: none;
   z-index: 1;
+
+  /* SCROLL INSIDE THE PANEL, NEVER THE PAGE.
+
+     `measureOpenHeight` clamps the panel to the viewport, so on a short phone
+     the content is taller than the space it has. Scrolling here rather than on
+     the document is the whole fix: the document scroll is what previously
+     carried the hamburger off screen and took the only close control with it.
+
+     `overscroll-behavior: contain` stops the scroll chaining to the page
+     behind, so reaching the bottom of the panel does not start moving the
+     content underneath it. `scrollbar-width: thin` because a full-width
+     scrollbar in a 390px panel eats a tenth of it. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
 }
 
 /* The three area cards, in their own row.
@@ -205,6 +243,29 @@
      with text on it rather than as a card. The border states the container
      without moving it; the fill alone could not. */
   border: 1px solid theme('colors.cem.elevated');
+
+  /* The rise. `transform` and `opacity` only — both compositor-friendly, which
+     is what Apple-design §11 asks for and what the GSAP version did not do. The
+     height animates on the container, so the subtree it contains does not
+     relayout per frame.
+
+     `--i` is the card's index, written inline by the component, and turns into
+     the stagger. The delay is the SAME in both directions, so the cards leave in
+     the order they arrived — the reverse of a stagger would read as a glitch. */
+  transform: translateY(50px);
+  opacity: 0;
+  transition:
+    transform var(--nav-dur) var(--nav-ease-in),
+    opacity var(--nav-dur) var(--nav-ease-in);
+  transition-delay: calc(var(--i, 0) * var(--nav-stagger));
+}
+
+.card-nav.open .nav-card {
+  transform: translateY(0);
+  opacity: 1;
+  transition:
+    transform var(--nav-dur) var(--nav-ease-out),
+    opacity var(--nav-dur) var(--nav-ease-out);
 }
 
 .nav-card-label {
@@ -234,6 +295,9 @@
   align-items: center;
   gap: 8px;
   padding: 2px 0;
+  /* Anchors the active-route dot. Without this, `position: absolute` on the
+     ::before would resolve against the card, not the link. */
+  position: relative;
 }
 
 .nav-card-link:hover {
@@ -261,6 +325,30 @@
 .nav-card-link.is-active,
 .nav-card-link.is-active .nav-card-link-icon {
   color: theme('colors.cem.amber');
+}
+
+/* THE ACTIVE ROUTE, SIGNALLED WITHOUT COLOUR.
+
+   Colour alone fails WCAG 2.x SC 1.4.1 (Use of Colour) — a user with low colour
+   discrimination cannot tell which route they are on, and `aria-current` only
+   helps assistive tech, not the sighted keyboard user. This adds a SHAPE: a
+   filled dot to the left of the row.
+
+   It is a `::before` pinned with `position: absolute` rather than a real flex
+   child, so switching routes does not reflow the label. That matters: this
+   component's own comment already rejects a `font-weight` change for exactly
+   this reason, and a dot that pushed the text sideways would reintroduce the
+   same problem in a different costume. */
+.nav-card-link.is-active::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  border-radius: 50%;
+  background-color: currentColor;
 }
 
 /* ---------------------------------------------------------------------------
@@ -361,6 +449,47 @@
    The 2em of breathing room moves from `top:` to `padding-top`, so the offset
    survives without depending on `top` at all.
 --------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------
+   Motion tokens. One duration and one stagger, read by every rule above.
+
+   Apple-design §14's companion rule in this project's own toolchain notes
+   ("every motion rule uses shared duration/timing custom properties") is the
+   reason these live here rather than as literals on each rule: a single place
+   to change the feel, and a single place the reduced-motion block can zero.
+--------------------------------------------------------------------------- */
+:root {
+  --nav-dur: 400ms;
+  --nav-stagger: 40ms;
+  /* Paired curves, §7: the outbound path mirrors the return path. */
+  --nav-ease-out: cubic-bezier(0, 0.55, 0.45, 1);
+  --nav-ease-in: cubic-bezier(0.55, 0, 1, 0.45);
+}
+
+/* REDUCED MOTION IS NOT "NO MOTION" — it is a cross-fade with no travel.
+
+   Apple-design §14: replace the slide/collapse with a short opacity change and
+   keep whatever still communicates state. So the cards fade in place instead of
+   rising 50px, and the panel appears at its measured height rather than
+   growing into it. The duration is not zeroed entirely — a hard cut is its own
+   kind of jarring — it is short enough that nothing travels far. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --nav-dur: 120ms;
+    --nav-stagger: 0ms;
+  }
+
+  .card-nav,
+  .card-nav.open {
+    transition: height var(--nav-dur) linear;
+  }
+
+  .nav-card,
+  .card-nav.open .nav-card {
+    transform: none;
+    transition: opacity var(--nav-dur) linear;
+  }
+}
+
 /* Click-outside layer. Invisible by design — it only needs to be a target that
    sits above the page and below the bar, so it is a full-viewport box with no
    background and no transitions of its own. */

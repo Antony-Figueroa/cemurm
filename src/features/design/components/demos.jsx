@@ -493,7 +493,6 @@ export function CardNavDemo() {
       menuColor="base"
       buttonBgColor="base"
       buttonTextColor="text"
-      ease="power3.out"
     />
   )
 }

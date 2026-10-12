@@ -193,19 +193,23 @@ function AppLayout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-cem-base">
-      {/* The bar is `position: absolute` (`.app-nav` in cardNav.css), so it floats
-          over the page and expanding it never moves the content — that is the
-          whole point. This spacer reserves what the CLOSED bar occupies plus
-          the air beneath it.
+      {/* The bar is `position: absolute` (`.app-nav` in cardNav.css), so it
+          floats over the page and expanding it never moves the content — that
+          is the whole point. This reserves the space the CLOSED bar occupies,
+          plus the air beneath it.
 
-          The arithmetic, and it must track `.app-nav`'s padding-top:
-            2rem   the bar's own offset from the top
+          A plain div, not a <header>: it is a spacer with no content, and an
+          empty `banner` landmark removed from the a11y tree is worse than no
+          landmark at all — it announces a region and then gives it nothing.
+
+            2rem   the bar's own offset from the top (`.app-nav` padding-top)
           + 60px   the bar
           + 2rem   clear space before the page begins
-          Without the last term the bar sat flush on the content — measured gap
-          0px, which is what made it read as part of the page rather than
-          floating above it. */}
-      <header className="h-[calc(4rem+60px)] shrink-0" aria-hidden="true" />
+
+          Total clearance below the bar is therefore 4rem: this spacer's last
+          term, plus `<main>`'s own `pt-10`. Measured 72px. Both terms must track
+          `.app-nav`'s padding-top; change one, change the other. */}
+      <div className="h-[calc(4rem+60px)] shrink-0" aria-hidden="true" />
 
       <CardNav
         logo={
@@ -236,6 +240,11 @@ function AppLayout() {
         ctaLabel={null}
         renderLink={renderNavLink}
         footerSlot={userStrip}
+        // `surface`, matching the three cards rather than the component's `base`
+        // default. The strip is a peer of the cards here, not a recessive
+        // footer: it holds the controls, and a darker fill would sink the
+        // Log Out that is the one control a user may need urgently. Separation
+        // from the cards is the 12px gap, same as between the cards.
         footerBgColor="surface"
         footerTextColor="text"
         // An SPA navigation does not reload the page, so nothing else would
