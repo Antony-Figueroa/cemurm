@@ -62,7 +62,10 @@
      clickable while the layer underneath catches everything else. */
   z-index: 2;
   overflow: hidden;
-  will-change: height;
+  /* No `will-change: height`. `height` is a layout property, so it does not
+     promote a layer — the hint only keeps the element treated as animating for
+     the life of the page. GSAP needs no equivalent: it writes the height
+     directly. */
 
   /* Height is owned by GSAP (cardNav.jsx), not by a CSS transition. An earlier
      version moved it to `transition: height` and measured better on every
@@ -150,6 +153,44 @@
 
 .card-nav-cta-button:hover {
   @apply hover:bg-cem-hover;
+}
+
+/* The right-hand slot, when the caller fills it with a node (`ctaSlot`)
+   instead of the reference's text button.
+
+   Two behaviours, both required rather than decorative:
+
+   1. IT HIDES WHILE THE PANEL IS OPEN. The open panel already carries the
+      user strip with Log Out in it, and a second copy in the bar would be a
+      duplicate control in the same view. Faded rather than display:none so it
+      does not snap the layout as the bar opens.
+   2. IT IS ABSENT ON PHONE. The media query below already hides
+      `.card-nav-cta-button` under 768px; this selector shares the rule, so a
+      `ctaSlot` gets the same behaviour for free — which is what keeps the app's
+      Log Out off a 390px screen, where the hamburger alone is enough. */
+.card-nav-cta-slot {
+  display: flex;
+  align-items: center;
+  /* SYMMETRY WITH THE HAMBURGER. The reference's `.card-nav-top` pads
+     `0.5rem 0.45rem 0.55rem 1.1rem` — deliberately heavier on the left, where
+     the hamburger lives. Measured with the session control in the slot: the
+     hamburger sat 19px from the edge and this button 8px, which reads as an
+     accident rather than a layout. Matching the left inset puts both controls
+     the same distance in, so the bar is balanced with the panel closed — the
+     only state in which this slot is visible. */
+  margin-right: 0.65rem;
+  transition: opacity 0.2s ease;
+}
+
+.card-nav.open .card-nav-cta-slot {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .card-nav-cta-slot {
+    display: none;
+  }
 }
 
 .card-nav-content {

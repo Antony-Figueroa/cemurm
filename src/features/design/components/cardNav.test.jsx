@@ -110,7 +110,11 @@ describe('CardNav — the animation library decision', () => {
   it('clamps the measured open height to the viewport', () => {
     // Unclamped, a 375x667 phone produced an 888px panel whose controls fell
     // below the fold.
-    expect(cardNavSource).toMatch(/Math\.min\(natural, ceiling\)/)
+    //
+    // The floor is ONE VIEWPORT, not the collapsed bar height: with the old
+    // `Math.max(TOP_BAR, ...)` a bar pushed 850px down the page clamped to 60px
+    // and the panel silently never opened — `.open` transitioned 60 to 60.
+    expect(cardNavSource).toMatch(/Math\.min\(natural, Math\.max\(window\.innerHeight, ceiling\)\)/)
   })
 })
 

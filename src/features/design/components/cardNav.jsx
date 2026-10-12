@@ -124,6 +124,9 @@ export function CardNav({
   footerBgColor = 'base',
   footerTextColor = 'text',
   ctaLabel = 'Get Started',
+  // A node for the right-hand slot instead of the reference's text button.
+  // AppLayout passes Log Out here; /design passes nothing and is unchanged.
+  ctaSlot = null,
   // Changes to this value close the menu. The caller owns the router, so this
   // stays a plain prop instead of the component importing one.
   routeKey = null,
@@ -205,10 +208,18 @@ export function CardNav({
 
     // Whatever is left of the viewport below the bar, minus a small margin so
     // the panel never touches the screen edge.
+    //
+    // FLOORED AT ONE FULL SCREEN, not at the collapsed bar height. A reviewer
+    // measured the difference on the /design demo with the bar pushed down the
+    // page: at barTop 850px the old `Math.max(TOP_BAR, …)` collapsed to 60px,
+    // so `.card-nav.open` transitioned 60 → 60 and the panel simply never
+    // opened — no error, no cue. One viewport of height is the smallest a panel
+    // can be and still be a panel, and it guarantees the control is always
+    // reachable; the content scrolls inside past that point.
     const barTop = navEl.getBoundingClientRect().top
     const ceiling = window.innerHeight - barTop - PADDING
 
-    return Math.max(TOP_BAR, Math.min(natural, ceiling))
+    return Math.min(natural, Math.max(window.innerHeight, ceiling))
   }
 
   // Publish the measured height as a custom property. CSS transitions to it.
@@ -427,10 +438,32 @@ export function CardNav({
   }, [isExpanded, closeMenu])
 
   // ...and hand focus back to the hamburger on close.
+  //
+  // TWO BUGS IN THE OBVIOUS VERSION OF THIS, both measured by a reviewer:
+  //
+  //   * It only acted when `document.activeElement === document.body`. On
+  //     Escape, focus is still on a LINK at the moment the effect runs — the
+  //     browser only drops it afterwards, when `visibility: hidden` applies. So
+  //     the restore never happened on the one path Escape exists for. Measured:
+  //     4/4 trials ended on BODY and the next Tab landed on an unnamed div.
+  //   * `isExpanded` starts false, so the effect ALSO ran on mount and stole
+  //     focus on every page load, including the signed-out landing page. The
+  //     guard could not tell "focus was lost by a close" from "nothing
+  //     happened yet".
+  //
+  // A ref distinguishes them: it is set on open, so the effect only fires for a
+  // close that followed one.
+  const hasOpened = useRef(false)
   useEffect(() => {
-    if (isExpanded) return
+    if (isExpanded) {
+      hasOpened.current = true
+      return
+    }
+    if (!hasOpened.current) return
+    hasOpened.current = false
+
     const burger = navElRef.current?.querySelector('.hamburger-menu')
-    if (burger && document.activeElement === document.body) burger.focus()
+    if (burger) burger.focus()
   }, [isExpanded])
 
   return (
@@ -482,7 +515,22 @@ export function CardNav({
             )}
           </div>
 
-          {ctaLabel && (
+          {/* THE RIGHT-HAND SLOT.
+
+              Two ways to fill it, and they are mutually exclusive in practice:
+              `ctaLabel` renders the reference's own text button, `ctaSlot`
+              renders whatever the caller passes. The app uses the second one to
+              put Log Out where the old flat nav had it — opposite the hamburger,
+              in the space the collapsed bar leaves empty.
+
+              The reference gives this button no desktop/mobile split of its own;
+              `.card-nav-cta-button` is already `display: none` under 768px, and
+              `ctaSlot` inherits that, which is what keeps it off phones.
+
+              Nothing here is shown while the panel is expanded — `.card-nav.open`
+              fades the slot out — so the open state still reads as three cards
+              and nothing else. */}
+          {ctaSlot || (ctaLabel && (
             <button
               type="button"
               className="card-nav-cta-button"
@@ -490,7 +538,7 @@ export function CardNav({
             >
               {ctaLabel}
             </button>
-          )}
+          ))}
         </div>
 
         <div className="card-nav-content" aria-hidden={!isExpanded}>

@@ -64,6 +64,39 @@ const NAV_CARDS = [
   },
 ]
 
+/* eslint-disable react/prop-types */
+/**
+ * Sign out / sign in — ONE component, rendered in two places.
+ *
+ * It sits in the user strip AND, when the panel is collapsed, in the bar itself
+ * opposite the hamburger, in the space the closed bar leaves empty. Both copies
+ * are this component rather than two blocks of similar-looking JSX: a duplicate
+ * control that can drift is worse than no duplication at all, and the failure
+ * mode is silent — one copy keeps an `onClick`, the other loses it, and nothing
+ * in the build notices.
+ *
+ * Signed out, it offers Sign In, because a bar with an empty right-hand side is
+ * a bar with no way in.
+ */
+function SessionControl({ onSignOut }) {
+  const { user } = useAuth()
+
+  if (user) {
+    return (
+      <button type="button" className="nav-user-button" onClick={onSignOut}>
+        <HugeiconsIcon icon={Logout01Icon} size={16} className="nav-user-icon" aria-hidden="true" />
+        Log Out
+      </button>
+    )
+  }
+
+  return (
+    <NavLink to="/auth" end className="nav-user-button">
+      Sign In
+    </NavLink>
+  )
+}
+
 /**
  * Unread badge on the Notifications link (Feed7, task 2.5). Rendered only when
  * authed; hidden at 0; capped at "99+". Its useNotifications instance converges
@@ -178,16 +211,7 @@ function AppLayout() {
         Feedback
       </button>
 
-      {user ? (
-        <button type="button" className="nav-user-button" onClick={handleSignOut}>
-          <HugeiconsIcon icon={Logout01Icon} size={16} className="nav-user-icon" aria-hidden="true" />
-          Log Out
-        </button>
-      ) : (
-        <NavLink to="/auth" end className="nav-user-button">
-          Sign In
-        </NavLink>
-      )}
+      <SessionControl onSignOut={handleSignOut} />
     </>
   )
 
@@ -223,10 +247,13 @@ function AppLayout() {
         }
         logoAlt="CEMURM"
         items={NAV_CARDS}
-        ease="circ.out"
         className="app-nav"
-        // `circ.out` is the requested curve. The reference default is
-        // `power3.out`, kept as the prop default so /design is untouched.
+        // No `ease` prop here. It used to be passed and the component stopped
+        // destructuring it when the animation moved to CSS, so React was
+        // dropping a dead prop — and `demos.jsx` had the same one removed while
+        // this call site was missed. Lint cannot catch it: cardNav.jsx carries a
+        // file-wide `react/prop-types` disable. The open curve is `circ.out`
+        // inside cardNav.jsx as `EASE_OPEN`, where it is actually used.
         //
         // The bar is `base` (the darkest step) so the three cards read as
         // surfaces ON it. An earlier pass put the bar on `surface` and Play on
@@ -235,9 +262,18 @@ function AppLayout() {
         // hover, so each is distinct from its neighbour and from the bar.
         baseColor="base"
         menuColor="text"
-        // The CTA slot carries no call to action in this app — every user is
-        // already signed in and the identity block moved to the strip.
-        ctaLabel={null}
+        // The CTA slot carries the session control instead of a call to
+        // action: every user of this app is already signed in, and the old
+        // flat nav had Log Out on the right of the bar. Symmetric with the
+        // hamburger on the left. `.card-nav.open` fades it away while the
+        // panel is open — the strip already has a copy — and the media query
+        // in cardNav.css hides it under 768px, so phones keep just the
+        // hamburger.
+        ctaSlot={
+          <div className="card-nav-cta-slot">
+            <SessionControl onSignOut={handleSignOut} />
+          </div>
+        }
         renderLink={renderNavLink}
         footerSlot={userStrip}
         // `surface`, matching the three cards rather than the component's `base`
