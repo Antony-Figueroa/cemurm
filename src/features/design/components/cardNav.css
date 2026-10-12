@@ -52,6 +52,9 @@
   border-radius: 0.75rem;
   @apply shadow-md;
   position: relative;
+  /* Above `.card-nav-dismiss` (z-index 1), so the bar and its panel stay
+     clickable while the layer underneath catches everything else. */
+  z-index: 2;
   overflow: hidden;
   will-change: height;
 }
@@ -185,9 +188,17 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: 12px 16px;
-  gap: 8px;
+  /* 20px 24px, up from the reference's 12px 16px. At 12/16 the label and its
+     links sat close enough to the edge to read as edge-clipped rather than
+     inset. */
+  padding: 20px 24px;
+  gap: 10px;
   user-select: none;
+  /* A 1px edge in `elevated`. The cards sit on a `base` bar and the first one
+     was only one step lighter, which at a glance left Play reading as bare bar
+     with text on it rather than as a card. The border states the container
+     without moving it; the fill alone could not. */
+  border: 1px solid theme('colors.cem.elevated');
 }
 
 .nav-card-label {
@@ -200,17 +211,23 @@
   margin-top: auto;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  /* 4px, up from the reference's 2px: at 2px a thirteen-route nav reads as one
+     block of text, and the rows stop being individually clickable-looking. */
+  gap: 4px;
 }
 
 .nav-card-link {
-  font-size: 16px;
+  /* 18px, up from the reference's 16px. These are navigation targets, not body
+     copy, and 16px is small for the primary way around the app. */
+  font-size: 18px;
+  line-height: 1.4;
   cursor: pointer;
   text-decoration: none;
   transition: opacity 0.3s ease;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  padding: 2px 0;
 }
 
 .nav-card-link:hover {
@@ -315,10 +332,57 @@
    The 2em of breathing room moves from `top:` to `padding-top`, so the offset
    survives without depending on `top` at all.
 --------------------------------------------------------------------------- */
+/* Click-outside layer. Invisible by design — it only needs to be a target that
+   sits above the page and below the bar, so it is a full-viewport box with no
+   background and no transitions of its own. */
+.card-nav-dismiss {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background: transparent;
+  cursor: default;
+}
+
 .card-nav-container.app-nav {
-  width: 100%;
-  max-width: 100%;
-  padding-top: 1rem;
+  /* THE REFERENCE'S CENTRING MUST BE UNDONE EXPLICITLY.
+
+     `.card-nav-container` ships `position: absolute; top: 2em; left: 50%;
+     transform: translateX(-50%)`. Two of those break the app shell:
+
+       * `top: 2em` plus the `padding-top` below would offset the bar twice.
+       * `transform` is the worse one: a transformed ancestor becomes the
+         containing block for `position: fixed` descendants, so
+         `.card-nav-dismiss` — which must cover the viewport to catch an
+         outside click — was instead confined to this container's box. Clicking
+         anywhere below the bar did nothing at all.
+
+     Both are reset here rather than left to cascade. */
+  top: 0;
+  transform: none;
+
+  /* CENTRING AN ABSOLUTE BOX. The container stays `position: absolute` — that
+     is what keeps the panel floating over the page — and an absolute box does
+     NOT honour `margin: 0 auto` the way a static one does: auto resolves to 0
+     for the inset side. Setting only `left: 0` therefore pinned the bar to the
+     viewport's left edge. Both insets must be 0 for the auto margins to
+     resolve, which is the standard absolute centring idiom. */
+  left: 0;
+  right: 0;
+
+  /* THE BAR LINES UP WITH THE CONTENT. The reference spans the full viewport
+     edge to edge, so at 1440px the bar started at x=0 while `<main>` — which is
+     `max-w-7xl ... px-4` — started at x=80. Same content, two different
+     columns, which is what made the bar read as unanchored.
+
+     `max-width: 80rem` + `padding: ... 1rem` is `max-w-7xl px-4` spelled out:
+     80rem is Tailwind's `max-w-7xl`, and the horizontal 1rem is the same
+     `px-4` the content carries, so bar and page share one measure exactly. */
+  width: auto;
+  max-width: 80rem;
+  margin: 0 auto;
+  /* 2rem of air above the bar. `<main>` carries `pt-10` for the gap below it,
+     so the closed bar has clear space on BOTH sides of it. */
+  padding: 2rem 1rem 0;
   box-sizing: border-box;
 }
 

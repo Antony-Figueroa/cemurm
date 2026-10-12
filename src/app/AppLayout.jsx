@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   ArrowUpRight01Icon,
   Building03Icon,
@@ -20,6 +20,13 @@ import { CardNav } from '../features/design/components/cardNav.jsx'
 //
 // Coverage is 13/13 against the old `navLinks` — verified with a diff, not by
 // eye. Nothing was dropped and nothing was invented.
+//
+// ALL THREE SHARE `surface`. A three-step ramp (surface / elevated / hover)
+// gave each card its own weight, but the step from the bar's `base` up to
+// `surface` is small enough that the first card read as bare bar with text on
+// it. One fill for all three, plus the 1px `elevated` edge the card CSS now
+// carries, makes each of them unambiguously a card. Separation between them
+// comes from the 12px gap, which is what the gap is for.
 const NAV_CARDS = [
   {
     label: 'Play',
@@ -35,7 +42,7 @@ const NAV_CARDS = [
   },
   {
     label: 'Band',
-    bgColor: 'elevated',
+    bgColor: 'surface',
     textColor: 'text',
     links: [
       { label: 'Rehearsals', href: '/rehearsals', ariaLabel: 'Go to Rehearsals' },
@@ -46,7 +53,7 @@ const NAV_CARDS = [
   },
   {
     label: 'System',
-    bgColor: 'hover',
+    bgColor: 'surface',
     textColor: 'text',
     links: [
       { label: 'Moderation', href: '/moderation', ariaLabel: 'Go to Moderation' },
@@ -75,6 +82,7 @@ function UnreadBadge() {
 function AppLayout() {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
+  const { pathname } = useLocation()
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const orgName = useActiveOrgName()
 
@@ -155,10 +163,17 @@ function AppLayout() {
     <div className="min-h-screen flex flex-col bg-cem-base">
       {/* The bar is `position: absolute` (`.app-nav` in cardNav.css), so it floats
           over the page and expanding it never moves the content — that is the
-          whole point. The space the CLOSED bar occupies is reserved here as a
-          spacer, and `<main>` keeps its own top padding, so nothing sits under
-          the bar at rest either. */}
-      <header className="h-[calc(1rem+60px)] shrink-0" aria-hidden="true" />
+          whole point. This spacer reserves what the CLOSED bar occupies plus
+          the air beneath it.
+
+          The arithmetic, and it must track `.app-nav`'s padding-top:
+            2rem   the bar's own offset from the top
+          + 60px   the bar
+          + 2rem   clear space before the page begins
+          Without the last term the bar sat flush on the content — measured gap
+          0px, which is what made it read as part of the page rather than
+          floating above it. */}
+      <header className="h-[calc(4rem+60px)] shrink-0" aria-hidden="true" />
 
       <CardNav
         logo={
@@ -191,9 +206,15 @@ function AppLayout() {
         footerSlot={userStrip}
         footerBgColor="surface"
         footerTextColor="text"
+        // An SPA navigation does not reload the page, so nothing else would
+        // dismiss the panel — the next page would render with the nav still
+        // open over it. `pathname` (not the full location) is deliberate:
+        // query-string and hash changes are not navigations and should leave
+        // the menu alone.
+        routeKey={pathname}
       />
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-8">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 pt-10 pb-8">
         <Outlet />
       </main>
 

@@ -63,7 +63,7 @@
 // `flex: 1 1 100%`, so it reads as a fourth card in the same grid rather than a
 // full-bleed bar bolted underneath.
 
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { ArrowUpRight01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
@@ -91,6 +91,12 @@ export function CardNav({
   footerBgColor = 'base',
   footerTextColor = 'text',
   ctaLabel = 'Get Started',
+  // Separate curve for closing. Reversing an `out` ease turns it into an `in`
+  // ease, which lands hard; this settles in both directions. See closeMenu.
+  closeEase = 'power2.inOut',
+  // Changes to this value close the menu. The caller owns the router, so this
+  // stays a plain prop instead of the component importing one.
+  routeKey = null,
 }) {
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
@@ -168,8 +174,17 @@ export function CardNav({
     const navEl = navRef.current
     if (!navEl) return null
 
+    // WHY THIS IS A FUNCTION, NOT THE ARRAY ITSELF. `cardsRef.current` is
+    // assigned by React across the render that mounts the three cards and the
+    // one that mounts the footer strip, so it is SPARSE while the first timeline
+    // is built — index 3 may still be undefined. Passing the array captured
+    // that hole permanently: GSAP tweened only the three cards, and the strip
+    // never moved on open or close. A function target defers the read to when
+    // the tween actually starts, by which point every ref is populated.
+    const cards = () => cardsRef.current.filter(Boolean)
+
     gsap.set(navEl, { height: 60, overflow: 'hidden' })
-    gsap.set(cardsRef.current, { y: 50, opacity: 0 })
+    gsap.set(cards(), { y: 50, opacity: 0 })
 
     const tl = gsap.timeline({ paused: true })
 
@@ -179,7 +194,7 @@ export function CardNav({
       ease
     })
 
-    tl.to(cardsRef.current, { y: 0, opacity: 1, duration: 0.4, ease, stagger: 0.08 }, '-=0.1')
+    tl.to(cards(), { y: 0, opacity: 1, duration: 0.4, ease, stagger: 0.08 }, '-=0.1')
 
     return tl
   }
@@ -223,6 +238,19 @@ export function CardNav({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isExpanded])
 
+  // The close half of the toggle, on its own so that closing on a route change
+// and closing on an outside click run the SAME animation rather than a second,
+// subtly different one. `power2.inOut` is deliberate: `circ.out` reversed is
+// `circ.in`, which accelerates and stamps the bar shut.
+const closeMenu = () => {
+    const tl = tlRef.current
+    if (!tl || !isExpanded) return
+    setIsHamburgerOpen(false)
+    tl.getChildren().forEach(child => child.vars && (child.vars.ease = closeEase))
+    tl.eventCallback('onReverseComplete', () => setIsExpanded(false))
+    tl.reverse()
+  }
+
   const toggleMenu = () => {
     const tl = tlRef.current
     if (!tl) return
@@ -231,11 +259,24 @@ export function CardNav({
       setIsExpanded(true)
       tl.play(0)
     } else {
-      setIsHamburgerOpen(false)
-      tl.eventCallback('onReverseComplete', () => setIsExpanded(false))
-      tl.reverse()
+      closeMenu()
     }
   }
+
+  // CLOSE WHEN THE ROUTE CHANGES. An SPA navigation does not reload the page,
+  // so nothing would otherwise dismiss the panel: open the menu, tap a card
+  // link, and the new page renders with the nav still covering it. `routeKey`
+  // is supplied by the caller (AppLayout passes the pathname) rather than read
+  // from a router context here, because this component is deliberately
+  // router-agnostic — it lives under features/design and /design must keep
+  // working without one.
+  const lastRouteKey = useRef(routeKey)
+  useEffect(() => {
+    if (lastRouteKey.current === routeKey) return
+    lastRouteKey.current = routeKey
+    closeMenu()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [routeKey])
 
   const setCardRef = i => el => {
     if (el) cardsRef.current[i] = el
@@ -243,6 +284,18 @@ export function CardNav({
 
   return (
     <div className={`card-nav-container ${className}`}>
+      {/* CLICK OUTSIDE TO CLOSE. A transparent full-viewport layer, only while
+          expanded, sitting UNDER the bar (z-index 0 against the bar's own 2) so
+          it catches every click that is not the panel itself without covering
+          it. It is not a scrim — it paints nothing — so the page stays readable
+          underneath; it exists purely to give "click away" a target. */}
+      {isExpanded && (
+        <div
+          className="card-nav-dismiss"
+          onClick={toggleMenu}
+          aria-hidden="true"
+        />
+      )}
       <nav ref={navRef} className={`card-nav ${isExpanded ? 'open' : ''}`} style={{ backgroundColor: colors.base }}>
         <div className="card-nav-top">
           <div
@@ -332,6 +385,13 @@ export function CardNav({
           {footerSlot && (
             <div
               className="nav-card nav-user-strip"
+              /* THE STRIP ANIMATES WITH THE CARDS. Without this ref the strip
+                 was never in `cardsRef`, so GSAP neither tweened it in on open
+                 nor out on close — it simply stayed put while the three cards
+                 above it rose and fell, which is why it looked glued to the
+                 bottom. Index 3 puts it last in the array, so the existing
+                 stagger of 0.08 carries it in after the three cards. */
+              ref={setCardRef(3)}
               style={{ backgroundColor: colors.footerBg, color: colors.footerText }}
             >
               {footerSlot}
