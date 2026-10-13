@@ -8,11 +8,13 @@
 > numbered `0001`–`0036`, of which `0036_guardian_approve_public_sharing.sql` is **taken** — so
 > `0037` is the next free number on `main`, and `0038` follows this change. (The planning note that
 > the file "must sort after `0036`" holds; the earlier reading that `0036` was *free* was stale.)
-> Status: **WU1 = PR #365 open (awaiting human review/merge). WU2 + WU3 committed on
-> `fix/offline-tie-break-pr2`; PR2 not yet opened** — under `stacked-to-main` it is a child of #365
-> and branches from the updated `main` only after #365 merges. All six gates pass on the final
-> tree. Independent verification found and fixed **one concurrency defect (WU1)** and **one
-> client-mirror defect (WU2)** — see Progress.
+> Status: **WU1 merged; WU2 + WU3 rebased and open as PR #366. Feature complete, awaiting human
+> review.** PR #365 merged to `main` on 2026-10-13 as merge commit **`8a9b1b2`** — by explicit
+> maintainer decision with an **admin bypass** of the ruleset's 1-approval rule (asked and answered
+> this session; see Delivery). PR1's two commits are therefore ancestors of `main`, so PR2's rebase
+> onto the updated `main` dropped them cleanly and its diff carries no part of PR1. All gates were
+> re-run **after** the rebase, on HEAD `808eb37`. Independent verification found and fixed **one
+> concurrency defect (WU1)** and **one client-mirror defect (WU2)** — see Progress.
 
 ## Objective
 
@@ -293,43 +295,41 @@ Source writes limited to: `supabase/migrations/0037_*.sql`, `scripts/smoke/0037-
 | 2026-10-13 | WU2 | Client mirror + RPC routing implemented on `fix/offline-tie-break-pr2` (cut from `cc74151`). `queue.js` mints the per-op `opKey` (`newOpKey()`, guarded `randomUUID`); `collab.js` compares the op against the **recorded** resolution (`winner_queued_at` / `winner_op_key`) with the legacy `updatedAt` heuristic demoted to a fallback; both item write paths route through `apply_setlist_item_op`; the embed is read back in `fetchSetlistById`; the tie-break assertions are inverted. Gates: `pnpm test` 407/407 (17 files), `typecheck` exit 0, `lint` exit 0, `test:gherkin` 41/41 (5 files), visual 12 rules / 0 failing, `build` ✓. | commit `e97d2b2` (5 files, +421/−76) |
 | 2026-10-13 | WU2 verification + correction | **Verifier #1 returned `partial` with a confirmed HIGH defect:** the mirror keyed its tie on the setlist's server-side `updatedAt` while the SQL compares against the client-side `winner_queued_at`, so in the realistic ordering (the winner has written, `updatedAt` is now newer than both ops) the losing op was dropped as `superseded` with **no rule** before the arbiter ever saw it — the exact determinism failure this change exists to close. The parent reproduced it independently in a scratch probe (`updatedAt = T+5s` → both keys returned `{drop:true, notice:true, reason:'superseded'}`; only a fabricated `updatedAt === queuedAt` fixture passed). Corrected as described in WU2 above, and the realistic server shape (`updatedAt` newer than both ops) is now a module-level fixture (`TIE_SERVER`) in the unit test so the fiction cannot be reintroduced. **Verifier #2 then returned PASS:** correction verdict CORRECT, 29/29 differential checks match the SQL arbiter, and a teeth harness proves the new tie tests **fail** against the pre-correction commit `1d2533c` (not tautological). Three pre-existing LOW/informational findings were recorded as follow-ups; none was candidate-caused. | verifier transcripts; `collab.js` mirror `:308-347`; `collab.test.js` `TIE_SERVER` |
 | 2026-10-13 | WU3 | BDD-tier scenarios + capability spec + doc corrections. `pnpm test:gherkin` **44/44** (was 41), `pnpm test` **410/410** (17 files — the BDD tier is part of the default run, so both counts move by 3), `typecheck` exit 0, `lint` exit 0, visual 12 rules / 0 failing, `build` ✓. Parent spot check re-ran `pnpm test:gherkin` (44/44) and `pnpm test` (410/410) plus `lint`, `typecheck` and the visual gate, all exit 0. `features/offline-edit-conflict-policy.feature` deliberately **not** edited (see WU3 above); `docs/bdd-coverage-map.md:72` and the generated `docs/handbook.html` remain stale and are flagged, not silently fixed. Migration numbering re-verified from the branch: `origin/main` = `a610dd0` carries `0001`–`0036`, so `0037` is the next free number on `main` and `0038` follows this change. | commit `83e1db1` (5 files, +241/−30) |
+| 2026-10-13 | PR1 merged → PR2 opened | **PR #365 merged to `main`** as `8a9b1b2`, with `--merge` and **not** squash: every recent PR in this repo carries two parents, and a squash would have made PR2's rebase replay `0037` onto a `main` that already contained it — a guaranteed conflict. Merged with an **admin bypass** of the 1-approval rule on the maintainer's explicit instruction; the standing "merge stays human" clause is overridden **for this PR only**, by the human who owns it. `fix/offline-tie-break-pr2` then rebased onto the updated `main`: clean, PR1's two commits dropped by patch-id, 3 commits and the identical `11 files, +998/−106` diff remaining. Pushed with `-u origin`, with the upstream and `branch.*.merge` verified by hand. **PR #366 opened** against `main`. All six gates **re-run after the rebase** on HEAD `808eb37`: `test` 410/410, `test:gherkin` 44/44, `typecheck` 0, `lint` 0, visual 12 rules / 0 failing, `build` ✓ 4.49 s, plus the `checkJs` baseline aliveness check (64 files, must stay > 1). Size: **1104 lines / 11 paths**, `risk: medium`, `slice_budget_reached` — the 1099 recorded at planning predated this record's final amend (+5 lines). | `git log --oneline origin/main..HEAD`; `gh pr view 366` |
 
 ## Next step
 
-**PR2 is ready and blocked only on the human merge of PR1 (#365).** WU2 (`e97d2b2`) and WU3
-(`83e1db1`) are committed on `fix/offline-tie-break-pr2`, cut from PR1's tip `cc74151`. Under
-`stacked-to-main` it cannot be opened until #365 merges into `main`, because it must branch from
-the updated `main` so it does not carry PR1's diff into review.
+**Nothing is blocked. PR #366 is open and needs a human review, then a human merge.** The five-step
+runbook that used to live here was executed on 2026-10-13, with one correction to the plan:
 
-When #365 merges:
-
-1. `git fetch origin && git rebase origin/main` on `fix/offline-tie-break-pr2`. The rebase should
-   be clean: PR1 touches only `supabase/migrations/` and `scripts/smoke/`, and PR2 touches neither.
-2. `git push -u origin fix/offline-tie-break-pr2`. **Always `-u origin <branch>`** — branches in
-   this repo have been caught inheriting `branch.<name>.merge = refs/heads/main`, which would aim
-   a bare `git push` at `main`.
-3. Open PR2 against `main` and request reviewer `davidjesus516`. The request will be rejected
-   (HTTP 422 self-review, because the `gh` session *is* the author) — record that limitation in
-   the PR body rather than skipping the notification silently.
-4. **Record the size exception in the PR body.** PR2 assessed at **1099 authored changed lines
-   across 11 paths** (`gentle-ai review assess --cwd . --base-ref cc74151 --committed-only` →
-   `risk: medium`, `review_due_reason: slice_budget_reached`): WU2 497 + WU3 271 + this record
-   331, against the ~400 heuristic. The chaining decision and its two slice boundaries were
-   already made and recorded at planning, so this is the recorded consequence stated honestly —
-   not a new question. The repo template's own clause ("≤400 changed lines, or this PR is part of
-   a documented `-prN-` chain") covers a chain member. **If the maintainer would rather protect
-   review focus further, the split point is between WU2 and WU3** (PR2 = the client, PR3 = the
-   spec/docs record): each half is still above 400 on its own, so that buys two smaller diffs,
-   not budget compliance.
-5. State honestly in the PR body: the deliberate **non-edit** of
-   `features/offline-edit-conflict-policy.feature` and why; the remaining doc rot
-   (`docs/bdd-coverage-map.md:72`, and the generated `docs/handbook.html`); the **clock-domain**
-   limit (`op.queuedAt` is a client clock, `setlists.updated_at` a server clock) that stays out of
-   scope; and the **native-review limitation** — the runtime is OpenCode V2, so no native review
-   was executed, and the substitute independent verifier is **not** a review receipt.
+1. **Rebase — done, clean.** PR1's two commits were already ancestors of `main`, so `git rebase`
+   dropped them by patch-id and replayed the three PR2 commits onto `8a9b1b2`. The diff came out
+   byte-for-byte unchanged (`11 files, +998/−106`), which is the check that the rebase neither lost
+   nor duplicated work.
+2. **Push — done** with `-u origin fix/offline-tie-break-pr2`, and the upstream was verified by hand
+   (`git rev-parse --abbrev-ref @{u}` → `origin/fix/offline-tie-break-pr2`; `branch.*.merge` →
+   `refs/heads/fix/offline-tie-break-pr2`), because this repo has caught branches inheriting
+   `refs/heads/main`.
+3. **Reviewer request — attempted twice, and it fails silently. Worth recording.**
+   `gh pr edit 366 --add-reviewer davidjesus516` prints the PR URL and exits **0**, while
+   `reviewRequests` stays **empty**. The raw call
+   (`gh api -X POST repos/…/pulls/366/requested_reviewers -f 'reviewers[]=davidjesus516'`) gives the
+   real answer: **HTTP 422, "Review cannot be requested from pull request author."** So the
+   `gh pr edit` path reports success for a request GitHub rejected — a silent no-op, not a
+   notification. A PR comment mentioning `@davidjesus516` is therefore the actual notification, per
+   the standing delivery workflow ("never self-approve", "notify, do not wait silently").
+4. **Size exception — recorded in the PR body**: **1104 lines / 11 paths** (`risk: medium`,
+   `slice_budget_reached`), with the WU2/WU3 split point offered to the maintainer as an option. The
+   repo template's own clause ("or this PR is part of a documented `-prN-` chain") covers a chain
+   member.
+5. **Honest flags — all in the PR body**: the deliberate non-edit of the feature file and why; the
+   remaining doc rot (`docs/bdd-coverage-map.md:72`, generated `docs/handbook.html`); the
+   clock-domain limit; and the native-review limitation, **with the correction that PR1's body
+   attributes the block to a staged adapter refusing with `relay_unavailable` when the accurate
+   reason is the V2 contract guard**.
 
 Still open afterwards, none of it blocking: the three pre-existing LOW/informational findings
-verifier #2 recorded, and the pending Engram judgment candidate from the WU1/WU2 saves.
+verifier #2 recorded.
 
 Carry forward for any later work on this path: the `opKey` is canonicalized (lowercase) before the
 JS comparison; canonical uuid v4 strings were verified to order identically under the DB's
