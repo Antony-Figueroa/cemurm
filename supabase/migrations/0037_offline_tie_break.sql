@@ -20,11 +20,13 @@
 -- on two devices at the same millisecond still ties, and seq cannot break it (seq is
 -- per-queue, so two devices collide at 0). The uuid also carries no authorship meaning:
 -- no user is ranked above another by "lexicographically greater id". The client mirror
--- in src/domain/setlist/collab.js compares op.opKey the same way; the rule is stated in
--- both languages against the same fixtures (see the smoke file).
+-- ADDED IN WU2 (src/domain/setlist/collab.js) WILL compare op.opKey the same way; the rule
+-- is stated in both languages against the same fixtures (see the smoke file). It does not
+-- exist yet — the client half is WU2, deliberately not in this migration.
 --
 -- WHY THE COMPARISON IS ON TEXT FOR THE KEY AND ON THE VALUE FOR THE TIMESTAMP. The
--- client mirror compares the canonical uuid STRING, so the server compares ::text too —
+-- client mirror added in WU2 will compare the canonical uuid STRING, so the server
+-- compares ::text too —
 -- the shared contract is the string order, not an implicit binary uuid order. The
 -- timestamp, by contrast, is compared on the resolved timestamptz VALUE (a strict `>`
 -- and an `=`), never on a rendered form.
@@ -106,10 +108,11 @@ grant select on table public.setlist_conflict_resolutions to authenticated;
 -- The arbiter. Order of operations matters:
 --   1. identity + edit permission (mirrors move_setlist_items, 0009:65-71);
 --   2. reject an op with no identity (null queuedAt/opKey) — see the guard comment;
---   3. read the latest resolution for (setlist, song);
---   4. decide: later timestamp wins ('later-timestamp'); on an EXACT tie the greater
+--   3. take the per-pair advisory lock — serializes read-decide-write (see the lock note);
+--   4. read the latest resolution for (setlist, song);
+--   5. decide: later timestamp wins ('later-timestamp'); on an EXACT tie the greater
 --      op key wins ('op-key'); anything older is superseded and writes NOTHING;
---   5. on a win only: perform the item change AND insert the resolution row. Both happen
+--   6. on a win only: perform the item change AND insert the resolution row. Both happen
 --      in this one function call, so they cannot be separated by a client crash between
 --      two statements — the reason this is an RPC and not a trigger-then-insert pair.
 -- The item change mirrors the shipped client write path (setlists.js addSongToSetlist /
@@ -160,7 +163,21 @@ begin
     raise exception 'Unknown setlist operation.';
   end if;
 
-  -- 3. Latest existing resolution for this (setlist, song): greatest (queued_at, op_key).
+  -- 3. Serialize on the (setlist, song) pair BEFORE reading it. Under READ COMMITTED (the
+  --    Postgres default) two concurrent drains of the SAME pair would both read "no prior
+  --    row" and both apply — and because setlist_items carries UNIQUE (setlist_id, position)
+  --    (0001:188), two concurrent adds of the same song raise 23505 instead of one returning
+  --    "superseded". The winner would then be ARRIVAL-ORDER-dependent, which is the exact
+  --    non-determinism this function exists to remove. The TRANSACTION-scoped advisory lock
+  --    makes the read-decide-write atomic per pair and releases automatically on commit or
+  --    abort. The key hashes the two ids: a collision between DISTINCT pairs only
+  --    over-serializes them, it never changes a decision. Taken AFTER the guards, so an
+  --    unauthorized call never takes a lock. (pg_advisory_xact_lock and hashtextextended
+  --    live in pg_catalog, which `set search_path = ''` still searches implicitly.)
+  perform pg_advisory_xact_lock(
+    hashtextextended(p_setlist_id::text || ':' || p_song_id::text, 0));
+
+  -- 4. Latest existing resolution for this (setlist, song): greatest (queued_at, op_key).
   select r.winner_queued_at, r.winner_op_key
     into v_last_queued_at, v_last_op_key
   from public.setlist_conflict_resolutions r
@@ -168,14 +185,15 @@ begin
   order by r.winner_queued_at desc, r.winner_op_key desc
   limit 1;
 
-  -- 4. Decide. `not found` ⇒ no prior row ⇒ the first write wins on the primary order.
+  -- 5. Decide. `not found` ⇒ no prior row ⇒ the first write wins on the primary order.
   if not found then
     v_rule := 'later-timestamp';
   elsif p_queued_at > v_last_queued_at then
     v_rule := 'later-timestamp';
   elsif p_queued_at = v_last_queued_at then
     -- Exact tie: the canonical string order of the two uuids is the shared contract
-    -- (the client mirror compares strings). Greater key wins; equal-or-lesser loses.
+    -- (the WU2 client mirror will compare strings). Greater key wins; equal-or-lesser
+    -- loses.
     if p_op_key::text > v_last_op_key::text then
       v_rule := 'op-key';
     else
@@ -185,7 +203,7 @@ begin
     return jsonb_build_object('applied', false, 'rule', null, 'superseded', true);
   end if;
 
-  -- 5. Apply the item change and record the resolution TOGETHER.
+  -- 6. Apply the item change and record the resolution TOGETHER.
   if p_op_name = 'addSongToSetlist' then
     -- Idempotent, like the client online path: insert only when absent. position =
     -- max + 1 (empty setlist ⇒ max is null ⇒ position 0), matching setlists.js:572-584.

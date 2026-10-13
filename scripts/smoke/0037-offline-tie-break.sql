@@ -4,7 +4,7 @@
 -- isolation …0002 ACCEPTED view-only collaborator (can_edit false), outsider …0003
 -- PENDING collaborator (accepted_at NULL); all password `password1234`. The
 -- tie-break fixtures are FIXED literals (gen_random_uuid would not cross role
--- switches): setlist 30000…7e0 owned by demo, songs 20000000-…-7b1..7b6, and the
+-- switches): setlist 30000…7e0 owned by demo, songs 20000000-…-7b1..7b9, and the
 -- op keys 30000…7f0/7f1/7f2. The 30000…7xx family avoids the seed's
 -- 30000000-…-…001 setlist; no collision with 0026's 6xx or 0028's 8xx fixtures.
 --
@@ -16,8 +16,12 @@
 --     and records rule 'op-key';
 --   · an exact tie with the lesser key is superseded, applies NOTHING and writes NO
 --     resolution row — the assertion the whole change exists for;
+--   · a superseded op writes NOTHING on the ITEM side too, for BOTH op names;
+--   · both reconciled op names are exercised: removeSongFromSetlist applies and can be
+--     superseded exactly like addSongToSetlist;
 --   · the same pair called in EITHER order reaches the SAME winner (determinism);
 --   · the applied rule is READ BACK from the table, not only from the RPC return;
+--   · the RPC serializes on the per-pair advisory lock (single-session contention);
 --   · the record is append-only: read by setlist members, no client write grant;
 --   · a non-editing member / non-member cannot arbitrate, and an op with no identity
 --     (null queuedAt/opKey) is refused, never silently applied.
@@ -27,7 +31,7 @@
 -- Role switches use `select set_config(...)` (bare calls are not valid top-level
 -- statements); the RPC's jsonb return is captured with `\gset` so each call runs
 -- exactly once (the RPC writes on success).
--- expects 33 PASS / 0 FAIL
+-- expects 40 PASS / 0 FAIL
 set client_min_messages to notice;
 
 create or replace function tmp_assert(p_name text, p_ok boolean) returns void language plpgsql as $$
@@ -144,7 +148,13 @@ insert into public.songs (id, org_id, branch_id, title, created_by) values
   ('20000000-0000-0000-0000-0000000007b5', '10000000-0000-0000-0000-0000000000a1',
    '10000000-0000-0000-0000-0000000000b1', 'Tie-break Song 5', '10000000-0000-0000-0000-000000000001'),
   ('20000000-0000-0000-0000-0000000007b6', '10000000-0000-0000-0000-0000000000a1',
-   '10000000-0000-0000-0000-0000000000b1', 'Tie-break Song 6', '10000000-0000-0000-0000-000000000001');
+   '10000000-0000-0000-0000-0000000000b1', 'Tie-break Song 6', '10000000-0000-0000-0000-000000000001'),
+  ('20000000-0000-0000-0000-0000000007b7', '10000000-0000-0000-0000-0000000000a1',
+   '10000000-0000-0000-0000-0000000000b1', 'Tie-break Song 7', '10000000-0000-0000-0000-000000000001'),
+  ('20000000-0000-0000-0000-0000000007b8', '10000000-0000-0000-0000-0000000000a1',
+   '10000000-0000-0000-0000-0000000000b1', 'Tie-break Song 8', '10000000-0000-0000-0000-000000000001'),
+  ('20000000-0000-0000-0000-0000000007b9', '10000000-0000-0000-0000-0000000000a1',
+   '10000000-0000-0000-0000-0000000000b1', 'Tie-break Song 9', '10000000-0000-0000-0000-000000000001');
 
 -- ── T1: no prior resolution → apply on the primary order ──
 select public.apply_setlist_item_op(
@@ -321,6 +331,74 @@ select tmp_assert(
       and i.song_id = '20000000-0000-0000-0000-0000000007b5') = 1
 );
 
+-- ── T6: removeSongFromSetlist APPLIES on a later timestamp ──
+select set_config('role', 'authenticated', false);
+select set_config('request.jwt.claims',
+  '{"sub":"10000000-0000-0000-0000-000000000001","role":"authenticated"}', false);
+-- Establish song 7b7 present, then remove it with a strictly later queuedAt.
+select public.apply_setlist_item_op(
+  '30000000-0000-0000-0000-0000000007e0', '20000000-0000-0000-0000-0000000007b7',
+  'addSongToSetlist', '2026-10-13T10:00:00Z', '30000000-0000-0000-0000-0000000007f1');
+select public.apply_setlist_item_op(
+  '30000000-0000-0000-0000-0000000007e0', '20000000-0000-0000-0000-0000000007b7',
+  'removeSongFromSetlist', '2026-10-13T10:05:00Z', '30000000-0000-0000-0000-0000000007f1') as res \gset t6_
+
+select tmp_assert(
+  '0037 T6 a later remove APPLIES with rule later-timestamp',
+  (:'t6_res')::jsonb ->> 'applied' = 'true'
+  and (:'t6_res')::jsonb ->> 'rule' = 'later-timestamp'
+  and (:'t6_res')::jsonb ->> 'superseded' = 'false'
+);
+
+select set_config('role', 'postgres', false);
+select tmp_assert(
+  '0037 T6 the applied remove deletes the item row',
+  (select count(*) from public.setlist_items i
+    where i.setlist_id = '30000000-0000-0000-0000-0000000007e0'
+      and i.song_id = '20000000-0000-0000-0000-0000000007b7') = 0
+);
+select tmp_assert(
+  '0037 T6 the latest resolution is recorded with op_name removeSongFromSetlist',
+  (select r.op_name from public.setlist_conflict_resolutions r
+    where r.setlist_id = '30000000-0000-0000-0000-0000000007e0'
+      and r.song_id = '20000000-0000-0000-0000-0000000007b7'
+    order by r.winner_queued_at desc, r.winner_op_key desc limit 1) = 'removeSongFromSetlist'
+);
+
+-- ── T7: a SUPERSEDED remove writes NOTHING on the item side either ──
+select set_config('role', 'authenticated', false);
+select set_config('request.jwt.claims',
+  '{"sub":"10000000-0000-0000-0000-000000000001","role":"authenticated"}', false);
+-- 7b8 present; the prior resolution won by the GREATER key 7f2 at 10:00.
+select public.apply_setlist_item_op(
+  '30000000-0000-0000-0000-0000000007e0', '20000000-0000-0000-0000-0000000007b8',
+  'addSongToSetlist', '2026-10-13T10:00:00Z', '30000000-0000-0000-0000-0000000007f2');
+-- Same queuedAt, LESSER key 7f0: the remove loses and must write nothing.
+select public.apply_setlist_item_op(
+  '30000000-0000-0000-0000-0000000007e0', '20000000-0000-0000-0000-0000000007b8',
+  'removeSongFromSetlist', '2026-10-13T10:00:00Z', '30000000-0000-0000-0000-0000000007f0') as res \gset t7_
+
+select tmp_assert(
+  '0037 T7 a superseded remove is NOT applied (rule null)',
+  (:'t7_res')::jsonb ->> 'applied' = 'false'
+  and (:'t7_res')::jsonb ->> 'superseded' = 'true'
+  and (:'t7_res')::jsonb ->> 'rule' is null
+);
+
+select set_config('role', 'postgres', false);
+select tmp_assert(
+  '0037 T7 the superseded remove leaves the item row in place',
+  (select count(*) from public.setlist_items i
+    where i.setlist_id = '30000000-0000-0000-0000-0000000007e0'
+      and i.song_id = '20000000-0000-0000-0000-0000000007b8') = 1
+);
+select tmp_assert(
+  '0037 T7 the superseded remove writes NO new resolution row',
+  (select count(*) from public.setlist_conflict_resolutions r
+    where r.setlist_id = '30000000-0000-0000-0000-0000000007e0'
+      and r.song_id = '20000000-0000-0000-0000-0000000007b8') = 1
+);
+
 -- ══════════════ 3. PERMISSION + IDENTITY GUARDS (authenticated) ══════════════
 \echo '--- 3. permission + identity guards ---'
 -- Accepted VIEW-ONLY collaborator …0002 on the seed setlist: no edit right.
@@ -372,8 +450,42 @@ select tmp_expect_error(
   '%Unknown setlist operation.%'
 );
 
--- ══════════════ 4. READ SCOPE + APPEND-ONLY (authenticated) ══════════════
-\echo '--- 4. read scope + append-only ---'
+-- ══════════════ 4. LOCK ACQUISITION (single session) ══════════════
+\echo '--- 4. lock acquisition (single session) ---'
+-- Proves the RPC ACQUIRES the per-pair advisory lock — the property the pre-fix
+-- arbitration lacked, and the reason it is now order-independent. NOTE the intended
+-- "hold the same key with the session-scoped pg_advisory_lock, then call the RPC under a
+-- statement_timeout" test CANNOT work: advisory locks are REENTRANT within a session, so
+-- the same session never contends with itself and the timeout never fires. Instead we call
+-- the RPC inside an explicit transaction (its transaction-scoped lock is held until that
+-- transaction ends) and read the lock back from pg_locks, decoding (classid, objid) into
+-- the bigint key and matching it to the exact hashtextextended(pair) the RPC computes.
+-- Then ROLLBACK so nothing is applied and the lock is released.
+-- What this PROVES: the RPC takes an advisory lock on THIS (setlist, song) key, so two
+-- concurrent drains of the same pair serialize.
+-- What it does NOT prove: true multi-session concurrency is not exercised here — T5's
+-- both-orders case covers the decision logic; this covers the lock point.
+select set_config('role', 'authenticated', false);
+select set_config('request.jwt.claims',
+  '{"sub":"10000000-0000-0000-0000-000000000001","role":"authenticated"}', false);
+begin;
+select public.apply_setlist_item_op(
+  '30000000-0000-0000-0000-0000000007e0', '20000000-0000-0000-0000-0000000007b9',
+  'addSongToSetlist', '2026-10-13T10:00:00Z', '30000000-0000-0000-0000-0000000007f1');
+select tmp_assert(
+  '0037 the RPC holds the per-pair advisory lock (read back from pg_locks)',
+  exists (
+    select 1 from pg_locks
+    where locktype = 'advisory'
+      and pid = pg_backend_pid()
+      and ((classid::bigint << 32) | objid::bigint) = hashtextextended(
+            '30000000-0000-0000-0000-0000000007e0' || ':' ||
+            '20000000-0000-0000-0000-0000000007b9', 0))
+);
+rollback;
+
+-- ══════════════ 5. READ SCOPE + APPEND-ONLY (authenticated) ══════════════
+\echo '--- 5. read scope + append-only ---'
 -- The owner (a setlist member) reads the resolutions of their own setlist.
 select tmp_assert(
   '0037 a setlist member reads their setlist resolutions',
@@ -414,8 +526,8 @@ select tmp_expect_error(
   '%permission denied%'
 );
 
--- ══════════════ 5. CLEANUP ══════════════
-\echo '--- 5. cleanup ---'
+-- ══════════════ 6. CLEANUP ══════════════
+\echo '--- 6. cleanup ---'
 select set_config('role', 'postgres', false);
 delete from public.setlist_conflict_resolutions
   where setlist_id = '30000000-0000-0000-0000-0000000007e0';
@@ -426,7 +538,9 @@ delete from public.setlists
 delete from public.songs
   where id in ('20000000-0000-0000-0000-0000000007b1', '20000000-0000-0000-0000-0000000007b2',
                '20000000-0000-0000-0000-0000000007b3', '20000000-0000-0000-0000-0000000007b4',
-               '20000000-0000-0000-0000-0000000007b5', '20000000-0000-0000-0000-0000000007b6');
+               '20000000-0000-0000-0000-0000000007b5', '20000000-0000-0000-0000-0000000007b6',
+               '20000000-0000-0000-0000-0000000007b7', '20000000-0000-0000-0000-0000000007b8',
+               '20000000-0000-0000-0000-0000000007b9');
 
 select tmp_assert(
   '0037 fixture tidy: no 7e0 resolutions and no tie-break songs remain',
@@ -435,10 +549,12 @@ select tmp_assert(
   and (select count(*) from public.songs
         where id in ('20000000-0000-0000-0000-0000000007b1', '20000000-0000-0000-0000-0000000007b2',
                      '20000000-0000-0000-0000-0000000007b3', '20000000-0000-0000-0000-0000000007b4',
-                     '20000000-0000-0000-0000-0000000007b5', '20000000-0000-0000-0000-0000000007b6')) = 0
+                     '20000000-0000-0000-0000-0000000007b5', '20000000-0000-0000-0000-0000000007b6',
+                     '20000000-0000-0000-0000-0000000007b7', '20000000-0000-0000-0000-0000000007b8',
+                     '20000000-0000-0000-0000-0000000007b9')) = 0
 );
 
 \echo
-\echo 'If the expected count is 33 and you see 33 [PASS] lines with 0 [FAIL], the migration is sound.'
+\echo 'If the expected count is 40 and you see 40 [PASS] lines with 0 [FAIL], the migration is sound.'
 \echo 'This script is NOT idempotent: it commits its writes. Reset before a second run.'
 reset role;
