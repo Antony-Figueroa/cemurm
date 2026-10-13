@@ -40,6 +40,27 @@ export default {
       fontFamily: {
         sans: ['Inter', ...defaultTheme.fontFamily.sans],
       },
+      // The radius scale from
+      // skills/cemurm-visual-system/references/apple-macos-visual-language.md
+      // section 5.2. Every value is a `var()` so the custom properties declared
+      // in src/app/index.css are the single source of truth.
+      //
+      // `cem-*` names, NOT Tailwind's default steps: `rounded-md` is 6px while
+      // section 5.2's `radius-md` is 12px, so reusing the default names would
+      // ship a third of the intended radius under a class that reads correct.
+      // Full rationale, the per-token component classes and the 4px/28px stage
+      // scale that is deliberately NOT encoded here live beside the properties.
+      //
+      // `cem-full` is absent on purpose — `rounded-full` already exists at
+      // exactly 9999px and is already the sanctioned capsule, so a second name
+      // would be a synonym with no owner.
+      borderRadius: {
+        'cem-xs': 'var(--cem-radius-xs)',
+        'cem-sm': 'var(--cem-radius-sm)',
+        'cem-md': 'var(--cem-radius-md)',
+        'cem-lg': 'var(--cem-radius-lg)',
+        'cem-xl': 'var(--cem-radius-xl)',
+      },
     },
   },
   plugins: [],
