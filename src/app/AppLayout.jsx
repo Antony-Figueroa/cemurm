@@ -13,6 +13,7 @@ import { useNotifications } from '../hooks/shared/useNotifications.js'
 import { useActiveOrgName } from '../hooks/shared/useActiveOrgName.js'
 import FeedbackForm from '../features/feedback/components/FeedbackForm.jsx'
 import { CardNav } from '../features/design/components/cardNav.jsx'
+import { useModeration } from '../hooks/shared/useModeration.js'
 
 // The same thirteen destinations the flat nav carried, grouped into the three
 // cards the component draws. `href` stays the route: CardNav's own anchor is
@@ -123,11 +124,6 @@ function AppLayout() {
   // than a boolean so two opens in a row are two distinct changes.
   const [closeSignal, setCloseSignal] = useState(0)
   const orgName = useActiveOrgName()
-
-  // Show Moderation nav link only to moderators and system admins
-  const navLinks = user && (isMod || isSystemAdmin)
-    ? [...baseNavLinks, moderationNavLink]
-    : baseNavLinks
 
   async function handleSignOut() {
     await signOut()
@@ -314,4 +310,4 @@ function AppLayout() {
   )
 }
 
-export default AppLayout
+export default AppLayoutimport { useModeration } from '../hooks/shared/useModeration.js'
