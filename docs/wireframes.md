@@ -69,24 +69,70 @@ Shared chrome for every screen (`src/components/layout/AppLayout.jsx`): a horizo
 
 ### 3.1 Home — `/` (stub)
 
-**Purpose:** Landing/dashboard. Today it is a welcome stub — no dashboard widgets, no navigation cards.
+**Purpose:** Landing/dashboard. Entry point for the musician — overview of repertoire, practice, and upcoming events. Replaces the welcome stub with a dashboard surface that respects user privacy (no personal data exposed without consent).
 
 ```
 ┌──────────────────────────────────────────────┐
-│  Welcome to CEMURM            (h1, 2xl bold) │
-│  Community-Centered Musical Repertories      │
-│  Manager — your tool for organizing          │
-│  repertoires, building setlists, and         │
-│  performing live.          (body, secondary) │
+│  CEMURM                                                      │
+│  (h1, 2xl bold, text-cem-text, text-cem-amber accent)      │
+│                                                              │
+│  — — — — — — — — — — — — — — — — — — — — — — — — — — — │
+│  My Repertoire        (h2, text-cem-secondary)               │
+│  12 songs · 0 retired                                      │
+│                                                              │
+│  Most used songs ▸  Practice hours this month ▸              │
+│  (widget cards, see below)                                   │
+│                                                              │
+│  Upcoming events  ·  Setlists    (quick nav links)           │
+│                                                              │
+│  — — — — — — — — — — — — — — — — — — — — — — — — — — — │
+│  Recent practice sessions (list, 5 items)                    │
+│  No practice data yet — start your first session             │
 │                                              │
-│  (no further regions — dashboard planned in  │
-│   later hitos)                               │
 └──────────────────────────────────────────────┘
 ```
 
-**Layout rules:** Single stacked block left-aligned in the content column. No zones, no actions, no responsive behavior beyond the 7xl container cap. **Stub — the design-system.md/ux-spec.md dashboard surface does not exist yet; do not wireframe regions for it.**
+**Dashboard widgets (grid, responsive):**
 
-**Empty/loading states:** None (static content; no data dependency).
+| Widget | Content | Mobile (≤640px) | Tablet (641–1024px) | Desktop (≥1025px) |
+|--------|---------|-----------------|---------------------|-------------------|
+| **Most used songs** | List of top 5 songs by play count, each with title, play count, and quick‑play button | Full‑width list, `py-4`, `text-sm` | 2‑column grid, `gap-4`, `px-4` | 3‑column grid, `gap-6`, `px-6` |
+| **Practice hours this month** | Total hours + trend icon, plus "Start first session" CTA | Single card, `py-4`, centered button | Card with summary + CTA | Two‑card layout: summary + detail |
+| **Upcoming events** | List of next 3 events (date, venue, short title), or "No events scheduled" | Single stacked list | 2‑column grid | 3‑column grid |
+
+**Widget card anatomy (per design-system §7 — Kutu + heading + body + CTA):**
+
+```
+┌──────────────────────────────────────┐
+│  <h3 class="text-sm font-medium">   │
+│    Most used songs                    │
+│    <p class="text-xs text-cem-secondary">12 songs · 0 retired</p> │
+│  </h3>                               │
+│  <ul class="divide-y divide-cem-elevated border border-cem-elevated rounded-lg mt-3"> │
+│    <li class="px-3 py-2 text-capitalize cursor-pointer hover:text-cem-amber">Song Title <span class="font-medium">42×</span></li> │
+│    …                                 │
+│  </ul>                               │
+│  <a href="/songs" class="mt-3 block text-sm font-medium text-cem-amber">View all</a> │
+└──────────────────────────────────────┘
+```
+
+**Layout rules:**
+
+- Dashboard surface lives in the **same AppLayout** as every screen (`src/components/layout/AppLayout.jsx`): header, main content column (`max-w-7xl mx-auto`, `px-4`), footer.
+- Main content column uses the **spacing scale** (§2): `py-8` vertical padding, `px-4` gutters, `gap-4` between widget cards.
+- Widget cards use `rounded-lg border border-cem-elevated bg-cem-surface shadow-sm`, `py-4 px-3`, `mb-4`.
+- **Responsive behavior**: widget grid wraps from 3 → 2 → 1 column per the Tailwind `gap-6` / `gap-4` / full‑width rules. No hamburger menu — the header nav stays visible at all widths.
+- **Privacy gate**: If the user has not accepted consent for data collection (D1 pendiente), the widgets that read practice/analytics data show a placeholder "Consent required — enable in Settings" until consent is granted. RLS on `org_memberships` and `profiles` gates read access per the DDL in `docs/database-schema-ampliacion.md`.
+- **Empty/loading states**:
+  - **Loading:** skeleton placeholders in each widget region (per ux-spec §3: ≤2s then "Taking longer than expected — check your connection").
+  - **No data**: Each widget shows a friendly empty state with copy and a CTA (e.g., "No practice data yet — start your first session", CTA → `/songs/:id/practice`).
+  - **Consent not granted**: Placeholder banner (`text-cem-secondary`, `py-3`) above the dashboard: "Enable data collection in Settings to see practice and analytics."
+
+**Empty/loading states** (complete):
+
+- **Loading:** skeleton placeholders per widget (per ux-spec §3).
+- **No data per widget**: See copy and CTA above per widget type.
+- **Consent not granted**: banner above dashboard with CTA to Settings.
 
 ---
 
