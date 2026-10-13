@@ -13,7 +13,6 @@ import { useNotifications } from '../hooks/shared/useNotifications.js'
 import { useActiveOrgName } from '../hooks/shared/useActiveOrgName.js'
 import FeedbackForm from '../features/feedback/components/FeedbackForm.jsx'
 import { CardNav } from '../features/design/components/cardNav.jsx'
-import { useModeration } from '../hooks/shared/useModeration.js'
 
 // The same thirteen destinations the flat nav carried, grouped into the three
 // cards the component draws. `href` stays the route: CardNav's own anchor is
@@ -115,7 +114,6 @@ function UnreadBadge() {
 
 function AppLayout() {
   const { user, signOut } = useAuth()
-  const { isMod, isSystemAdmin } = useModeration()
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const [feedbackOpen, setFeedbackOpen] = useState(false)
