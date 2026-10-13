@@ -310,4 +310,4 @@ function AppLayout() {
   )
 }
 
-export default AppLayoutimport { useModeration } from '../hooks/shared/useModeration.js'
+export default AppLayout
