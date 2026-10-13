@@ -215,6 +215,13 @@ export default function Organizations() {
     try {
       await orgRepertoire.leaveOrganization(orgId)
       await loadMemberships()
+      // Also refresh repertoire: leaving an org changes the set of elevated
+      // memberships, so the visible songs must be re-fetched (issue #154).
+      if (elevatedActive.length > 1) {
+        await loadSongs()
+      } else {
+        setVisibleSongs([])
+      }
     } catch (e) {
       setActionError(e.message)
     } finally {

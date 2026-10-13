@@ -51,11 +51,14 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 // The Resend HTTP API. Pinned, not "latest": an email body is a contract with a
 // provider, and a silent shape change would turn into a 400 nobody can read.
 const RESEND_ENDPOINT = 'https://api.resend.com/emails'
-// From-address domain is verified per environment in Resend, so the address
-// is read from RESEND_FROM; the default is the production from (verified
-// domain), and local test mode overrides it with Resend's test sender.
+// From-address domain is verified per environment in Resend, so the address is
+// read from RESEND_FROM. The default is a placeholder, NOT a working sender:
+// no environment has a verified sending domain yet (#312), so a send that falls
+// back to it is rejected by Resend with a domain-not-verified 403. Local test
+// mode overrides RESEND_FROM with Resend's test sender.
 const FROM_NAME = 'CEMURM'
-const FROM_ADDRESS = Deno.env.get('RESEND_FROM') || 'guardian@cemurm.app'
+const FROM_ADDRESS_RAW = Deno.env.get('RESEND_FROM')
+const FROM_ADDRESS = normalizeFromAddress(FROM_ADDRESS_RAW) ?? 'guardian@cemurm.app'
 
 type CorsHeaders = Record<string, string>
 
@@ -110,6 +113,20 @@ function escapeHtml(value: string): string {
 /** Trim a caller-supplied base URL and strip any trailing slash. */
 function normalizeSiteUrl(raw: string): string {
   return raw.trim().replace(/\/+$/, '')
+}
+
+/**
+ * Validate and normalize the Resend FROM address.
+ * Rejects empty/whitespace-only values (which would interpolate as `CEMURM <   >`).
+ * Returns the trimmed address on success, or null if missing/invalid.
+ */
+function normalizeFromAddress(raw: string | undefined): string | null {
+  const trimmed = (raw ?? '').trim()
+  if (!trimmed) return null
+  // Basic email format sanity check — not RFC-perfect, but catches
+  // whitespace-only and obviously malformed values before Resend 403s.
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(trimmed)) return null
+  return trimmed
 }
 
 Deno.serve(async (req: Request): Promise<Response> => {
@@ -196,6 +213,15 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return fail('app_url_not_configured', 503, 'SITE_URL is not set for this environment; the Resend key has not been read yet')
   }
 
+  // Validate FROM_ADDRESS if explicitly set — whitespace-only or malformed
+  // would interpolate as `CEMURM <   >` and hit Resend 403 domain-not-verified.
+  // We fail loudly here (like SITE_URL) instead of silently falling back to
+  // the unverified default.
+  const fromAddressEnv = Deno.env.get('RESEND_FROM')
+  if (fromAddressEnv !== undefined && normalizeFromAddress(fromAddressEnv) === null) {
+    return fail('invalid_from_address', 503, 'RESEND_FROM is set but invalid (empty, whitespace-only, or malformed email)')
+  }
+
   // D5: the key comes from Vault, never from this file, never from a VITE_
   // variable. public.read_resend_api_key is granted to service_role only
   // (0031 section 5), so an anon client cannot reach it even though PostgREST
@@ -212,13 +238,15 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
 
   // ── 4. THE LINKS ─────────────────────────────────────────────────────────
-  // One capability, two verbs. The guardian's single link offers confirm, and
-  // the same token drives revoke later; both pages read it from the URL and
-  // immediately strip it with history.replaceState so the token does not
+  // One capability, three verbs. The guardian's single token offers confirm,
+  // approve public sharing, and revoke. All three pages read it from the URL
+  // and immediately strip it with history.replaceState so the token does not
   // survive in the address bar, a bookmark, or a Referer header.
   const capability = encodeURIComponent(consent.revocation_token)
+  const guardianEmailParam = encodeURIComponent(consent.guardian_email)
   const confirmUrl = `${siteUrl}/guardian/confirm?user=${encodeURIComponent(userId)}&token=${capability}`
-  const revokeUrl = `${siteUrl}/guardian/revoke?user=${encodeURIComponent(userId)}&token=${capability}`
+  const approveSharingUrl = `${siteUrl}/guardian/approve?user=${encodeURIComponent(userId)}&token=${capability}&email=${guardianEmailParam}`
+  const revokeUrl = `${siteUrl}/guardian/revoke?user=${encodeURIComponent(userId)}&token=${capability}&email=${guardianEmailParam}`
 
   // ── 5. THE MESSAGE ───────────────────────────────────────────────────────
   // Rendered from the LEDGER, not from the request: the text the guardian reads
@@ -230,6 +258,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     consentText: escapeHtml(consent.consent_text),
     consentVersion: escapeHtml(consent.consent_version),
     confirmUrl,
+    approveSharingUrl,
     revokeUrl,
   })
 
@@ -274,9 +303,10 @@ function renderEmail(input: {
   consentText: string
   consentVersion: string
   confirmUrl: string
+  approveSharingUrl: string
   revokeUrl: string
 }): string {
-  const { guardianName, consentText, consentVersion, confirmUrl, revokeUrl } = input
+  const { guardianName, consentText, consentVersion, confirmUrl, approveSharingUrl, revokeUrl } = input
   const button = 'display:inline-block;padding:12px 20px;border-radius:6px;background:#f59e0b;color:#1a1a1a;font-weight:600;text-decoration:none'
   const link = 'color:#b45309'
 
@@ -297,6 +327,9 @@ function renderEmail(input: {
       </blockquote>
       <p style="margin:0 0 20px">
         <a href="${confirmUrl}" style="${button}">I approve this consent</a>
+      </p>
+      <p style="margin:0 0 20px">
+        <a href="${approveSharingUrl}" style="${button}">I approve public sharing of their contributions</a>
       </p>
       <p style="margin:0 0 24px;font-size:13px;color:#78716c;line-height:1.5">
         If you did not expect this, or you want to stop the participation later,
