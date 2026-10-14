@@ -69,8 +69,8 @@ as part of this unit.
   **two-phase leave** (the handoff gates the status flip) — more than the "the data model already has
   it" first read suggested.
 - `:14`, `:24`, `:28`, `:33`, `:63`, `:67` (nothing deleted, personal annotations, personal fork,
-  gig records, public attribution, withdrawal) — these already hold by construction or RLS; they
-  need assertions, not code. WU3.
+  gig records, public attribution, withdrawal) — the retention halves hold by construction or RLS, but
+  not every second half does. See finding 4: `:37` needs code, so WU3 is not assertions-only there.
 - Removing a former member from **frozen** `candidates` arrays on requests created before the leave.
   The Gherkin says "excluded from new substitution candidate lists", and new lists already exclude
   them (`0023:92` filters `m.status = 'active'`). Frozen arrays are deliberately untouched; the
@@ -127,7 +127,7 @@ as part of this unit.
 
 ## Slice boundaries
 
-The unit is 2.90× the repo's 400-changed-line budget in one piece (1159 changed lines: 1157 insertions
+The unit is 2.94× the repo's 400-changed-line budget in one piece (1177 changed lines: 1175 insertions
 and 2 deletions across 6 files, `git diff --shortstat 8a9b1b2 HEAD`; slices 1-3 alone were 943
 changed lines = 2.36×, and before the 2026-10-14 corrections the same measure was 831 = 2.08×), so it
 ships as a `stacked-to-main` chain (the same strategy the tie-break chain used). No single slice
@@ -139,7 +139,7 @@ exceeds the budget; the unit does. The seams are **behaviour** vs **executable p
 | **1** | [#368](https://github.com/davidjesus516/cemurm/pull/368) | `feat/offboarding-cascade-pr1-cascade` | `0038_offboarding_cascade.sql` (202) + smoke assertions 1-11 (191) | **393** — under budget |
 | **2** | [#369](https://github.com/davidjesus516/cemurm/pull/369) | `feat/offboarding-cascade-pr2-blast-radius` | smoke assertions 12-33 (+270/-10) | **280** — under budget |
 | **3** | [#370](https://github.com/davidjesus516/cemurm/pull/370) | `feat/offboarding-cascade-pr3-record-docs` | `docs/master-plan.md` (+15/-1) and this record (274) | **290** — under budget |
-| **4** | [#371](https://github.com/davidjesus516/cemurm/pull/371) | `feat/offboarding-cascade-pr4-rejection-surface` | `services.js` error mapping (+14/-1), `services.test.js` (97) and this record's slice-4 section | **242** — under budget |
+| **4** | [#371](https://github.com/davidjesus516/cemurm/pull/371) | `feat/offboarding-cascade-pr4-rejection-surface` | `services.js` error mapping (+13/-1), `services.test.js` (97), the `master-plan` row correction and this record's slice-4 section | **268** — under budget |
 
 The first cut put the smoke extension, the doc correction and this record in one 573-line slice, 173
 over. The fix was a re-cut, not a `size:exception`: the seam is **executable proof** (slices 1-2)
@@ -353,6 +353,19 @@ move the number.
    partly swallowed (`getPublishedPlan` in `ServiceDetail.jsx`), and no path was traced. Recorded as a
    verified literal mismatch, not as a verified user-visible bug.
 
+4. **The record's own claim that `:33` "already holds by construction or RLS" is wrong for its second
+   half.** Every gig, performance and performance-item policy is owner-scoped (`0004:64`, `:87`,
+   `:147`), and `shared_to_branch` (`0001:300`) is written by the client (`gigs.js:439`, `:540`) but
+   read by **no** policy and no RPC anywhere under `supabase/` — so "shared it to the branch" (`:34`)
+   grants the branch nothing, and `:37` ("org members keep read-only access to the completed gig")
+   cannot hold. `:36` does hold, for the same owner-only reason. `:37` therefore needs the
+   branch-visibility read, not an assertion: WU3's estimate for that scenario is larger than this
+   record first said. The identical claim in `docs/master-plan.md:446` and `:459-460` is corrected in
+   this same slice. Found by the WU2 reconnaissance on 2026-10-14 and verified here by reading both
+   sides. Separately, `:31`'s "right to rebase" depends on
+   `personal-preferences-and-adaptations.feature:62-84`, which is itself unimplemented — a different
+   feature's unit, but the `:28` assertion must not be written as if rebase already existed.
+
 ## Verification of the docs correction
 
 `docs/master-plan.md:446` carried `| offboarding-cascade | 10 | none |` and the table's own
@@ -363,6 +376,10 @@ later correction pass fixed the row's own citation of *where* those artefacts li
 any of its six features", which the row contradicted. No other row in that table was touched: the
 erasure row (`account-data-export-and-erasure`) is Track B and is not authorized here, even though
 its `none` looks equally wrong.
+
+Slice 4 corrects that same row once more: the WU2 reconnaissance falsified "the missing piece was the
+CASCADE" and "the scenarios that already hold by construction" for `:37`, which has no code at all —
+finding 4.
 
 ## Next step
 
