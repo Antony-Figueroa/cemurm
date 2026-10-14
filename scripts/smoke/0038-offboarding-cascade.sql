@@ -6,10 +6,11 @@
 --   :48-52 A former member cannot be re-assigned
 --   :14, :24, :28, :33 nothing deleted, the plan survives the leaver
 --
--- Slice 1 proved the new behaviour (assertions 1-11). Slice 2 inserts the members
--- its regression assertions need and APPENDS assertions 12-33: what did NOT change
--- and what must still work. Nothing above reassigns assertion numbers; the inserted
--- block is fixtures and RPC setup, not assertions.
+-- Slice 1 added the cascade and the guard (its load-bearing assertions are 8-11,
+-- alongside regression guards 1-7 that also hold on a pre-0038 database). Slice 2
+-- inserts the members its regression assertions need and APPENDS assertions 12-33:
+-- what did NOT change and what must still work. Nothing above reassigns assertion
+-- numbers; the inserted block is fixtures and RPC setup, not assertions.
 --
 -- Reuses the seed tenancy: org 10000000-…-a1 (Demo Academy) + branch …-b1. Fixtures
 -- use the 80000000-… family (unused by the seed and by the 0023/0026/0028/0037
@@ -193,6 +194,57 @@ select set_config('request.jwt.claims',
   '{"sub":"80000000-0000-0000-0000-0000000000a2","role":"authenticated"}', false);
 select public.mark_unavailable(:'ana_asg_id') as id \gset req_ana_
 
+-- ── other-org fixture for assertion 32 ──
+-- The seed gives Sofia no other-org data, so "the isolation org was never touched"
+-- was vacuous: no mutation of the cascade's org scope could fail it. This fixture
+-- makes her an ACTIVE member of the seed's isolation org (…-a2) with an open request
+-- of her own there. Olga leads the isolation service; both use the 80000000-… family.
+-- Opened AFTER Ana's request so Ana's frozen candidates still capture Sofia.
+select set_config('role', 'postgres', false);
+
+insert into auth.users (id, instance_id, aud, role, email, encrypted_password,
+                        email_confirmed_at, confirmation_token, recovery_token,
+                        email_change_token_new, email_change_token_current, email_change,
+                        phone, phone_change, phone_change_token, reauthentication_token,
+                        raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+values
+  ('80000000-0000-0000-0000-0000000000b2', '00000000-0000-0000-0000-000000000000',
+   'authenticated', 'authenticated', 'olga.offboard@cemurm.app',
+   crypt('password1234', gen_salt('bf')), now(),
+   '', '', '', '', '', '+34910000045', '', '', '',
+   '{"provider":"email","providers":["email"]}',
+   '{"firstName":"Olga","lastName":"Leader","displayName":"Olga Leader"}', now(), now())
+  on conflict do nothing;
+
+update profiles set username = 'olgaoff', display_name = 'Olga Leader', instrument = 'keys'
+  where id = '80000000-0000-0000-0000-0000000000b2';
+
+-- Sofia's second membership is ACTIVE and must stay so: the cascade is scoped to the
+-- org she leaves, so her isolation-org membership and request are out of its reach.
+insert into org_memberships (user_id, org_id, branch_id, role, status) values
+  ('80000000-0000-0000-0000-0000000000b2', '10000000-0000-0000-0000-0000000000a2',
+   null, 'org_member', 'active'),
+  ('80000000-0000-0000-0000-0000000000a1', '10000000-0000-0000-0000-0000000000a2',
+   null, 'org_member', 'active');
+
+insert into public.services (org_id, branch_id, name, status, leader_id, starts_at)
+values ('10000000-0000-0000-0000-0000000000a2', null, 'Isolation Sunday', 'published',
+        '80000000-0000-0000-0000-0000000000b2', now() + interval '3 days')
+returning id \gset isvc_
+
+insert into public.service_blocks (service_id, name, position, time_budget, setlist_id, start_offset_minutes)
+values (:'isvc_id', 'Isolation Set', 1, 20, null, 0)
+returning id \gset iblk_
+
+insert into public.service_assignments (service_id, block_id, user_id, part)
+values (:'isvc_id', :'iblk_id', '80000000-0000-0000-0000-0000000000a1', 'bass')
+returning id \gset sofia_other_asg_
+
+select set_config('role', 'authenticated', false);
+select set_config('request.jwt.claims',
+  '{"sub":"80000000-0000-0000-0000-0000000000a1","role":"authenticated"}', false);
+select public.mark_unavailable(:'sofia_other_asg_id') as id \gset req_other_
+
 -- ══════════════ 3. Sofia marks herself unavailable ══════════════
 \echo '--- 3. sofia marks herself unavailable ---'
 select set_config('role', 'authenticated', false);
@@ -328,8 +380,8 @@ select set_config('request.jwt.claims',
 select tmp_assert('24 a former member is absent from NEW candidate lists',
   not (public.substitution_candidates(:'ana_asg_id')
        @> array['80000000-0000-0000-0000-0000000000a1'::uuid]));
-select tmp_assert('25 candidate lists are still readable by the leader',
-  public.substitution_candidates(:'ana_asg_id') is not null);
+select tmp_assert('25 the recomputed list for that assignment is empty (every eligible bass member is non-active or the assigned member)',
+  public.substitution_candidates(:'ana_asg_id') = '{}'::uuid[]);
 
 -- ══════════════ 10. leave guards, self-notification, and the last blast radius ══════════════
 \echo '--- 10. leave guards and the rest of the blast radius ---'
@@ -353,11 +405,17 @@ select set_config('role', 'postgres', false);
 select tmp_assert('28 the leaving leader''s own request is closed by the cascade',
   (select status = 'closed' and resolved_at is not null
      from public.substitution_requests where id = :'req_nadia_id'));
-select tmp_assert('29 a leaving leader is NOT notified about her own departure',
-  (select count(*) = 0 from public.notifications
-    where user_id = '80000000-0000-0000-0000-000000000001'
-      and payload ->> 'request_id' = :'req_nadia_id'
-      and title like '% left — %'));
+-- The cascade DOES process the leaving leader's own request (the log row below).
+-- Whether she is "notified" is NOT observable here: notify_user suppresses
+-- self-notifications globally (0008:55), so deleting the 0038:89 leader guard
+-- cannot change what this file can observe. Assert the observable half only.
+select tmp_assert('29 the leaving leader''s own request is processed by the cascade (logged as member_left); her self-notification is suppressed globally by notify_user, not by the leader guard',
+  (select count(*) = 1 from public.service_change_log
+    where action = 'substitution'
+      and detail ->> 'kind' = 'member_left'
+      and detail ->> 'request_id' = :'req_nadia_id'
+      and service_id = :'svc_id'
+      and actor_id = '80000000-0000-0000-0000-000000000001'));
 select tmp_assert('30 the leader''s membership flipped to former, row intact',
   (select status = 'former' and left_at is not null
      from public.org_memberships
@@ -374,15 +432,20 @@ select set_config('role', 'postgres', false);
 select tmp_assert('31 ana''s own leave closes the request she had raised',
   (select status = 'closed' and resolved_at is not null
      from public.substitution_requests where id = :'req_ana_id'));
-select tmp_assert('32 the isolation org was never touched by any of this',
-  (select count(*) = 0 from public.org_memberships
-    where org_id = '10000000-0000-0000-0000-0000000000a2'
-      and status <> 'active'));
+select tmp_assert('32 the other org was never touched: sofia''s request there is still open and her membership there still active',
+  (select status = 'open' and resolved_at is null
+     from public.substitution_requests where id = :'req_other_id')
+  and (select count(*) = 1 from public.org_memberships
+        where user_id = '80000000-0000-0000-0000-0000000000a1'
+          and org_id = '10000000-0000-0000-0000-0000000000a2'
+          and status = 'active'));
 select tmp_assert('33 all three Demo Academy memberships are former, all rows surviving',
   (select count(*) = 3 from public.org_memberships
     where org_id = '10000000-0000-0000-0000-0000000000a1' and status = 'former'));
 
 \echo
-\echo 'If the expected count is 33 and you see 33 [PASS] lines with 0 [FAIL], the migration is sound.'
+\echo 'If the expected count is 33 and you see 33 [PASS] lines with 0 [FAIL], every contract here holds.'
+\echo 'Not all 33 are load-bearing against 0038: assertions 1-7 also pass on a pre-0038 database (they guard'
+\echo 'the 0016/0018 contracts). 8-11 are the cascade and the guard; 12-33 are the blast radius around them.'
 \echo 'This script is NOT idempotent: it commits its writes. Reset before a second run.'
 reset role;
