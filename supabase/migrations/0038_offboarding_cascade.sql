@@ -2,18 +2,21 @@
 -- 0038 — Offboarding cascade: leaving an org must stop leaving work behind.
 --
 -- Requirement source: features/offboarding-cascade.feature
---   :43-46  "Pending substitution requests are auto-cancelled"
+--   :43-47  "Pending substitution requests are auto-cancelled"
 --             Then the request closes as cancelled
 --             And the leader is notified: "Sofia left — bass part uncovered"
---   :48-51  "A former member cannot be re-assigned"
+--   :48-52  "A former member cannot be re-assigned"
 --             Then the assignment is rejected with "Sofia is no longer a member"
 --             And she is excluded from new substitution candidate lists
 --
 -- Before this migration private.org_leave (0016:437-453) only flipped the
 -- membership row to 'former' and stopped there, so an unavailable member could
--- leave while the plan still advertised their part as covered and the leader was
--- never told; and private.assign_musician (0018:462-524) accepted ANY user id as
--- an assignee, former members included. Both halves are closed here.
+-- leave with her open substitution request left dangling — never closed, and the
+-- leader never told. (Her service_assignments row is deliberately kept, before and
+-- after this migration: the plan still lists her on the part; only the request
+-- state and the notification change.) And private.assign_musician (0018:462-524)
+-- accepted ANY user id as an assignee, former members included. Both halves are
+-- closed here.
 --
 -- Deliberately NOT changed (see odd/tasks/offboarding-cascade.md):
 --   · frozen `candidates` arrays on requests created BEFORE the leave. The
@@ -74,9 +77,10 @@ begin
 
     -- service_change_log is extensible through detail.kind, not through new
     -- `action` values (0023 writes action='substitution' with kinds
-    -- unavailable/send/confirm/cancel/reclaim/overrule at 0023:476, and
-    -- services.js:532 filters on action === 'song_swap'). 'member_left' is
-    -- additive and cannot blank a UI that switches on `action`.
+    -- unavailable/send/decline/confirm/cancel/reclaim/overrule, written at
+    -- 0023:152, 211, 255, 300, 380, 439 and 508; services.js:532 filters on
+    -- action === 'song_swap'). 'member_left' is additive and cannot blank a UI
+    -- that switches on `action`.
     insert into public.service_change_log (service_id, actor_id, action, detail)
     values (r.service_id, v_leaver, 'substitution',
             jsonb_build_object('kind', 'member_left',
@@ -110,7 +114,7 @@ end $$;
 -- Why the membership is read from org_memberships directly instead of calling
 -- private.is_org_member: that helper is session-bound (0002:16-18 filters
 -- `user_id = (select auth.uid())`), so it can only ever report the CALLER's own
--- membership and cannot validate a third party. 0023:475-483 already hit this
+-- membership and cannot validate a third party. 0023:467-476 already hit this
 -- for a leader-chosen substitute and solved it the same way, with the same
 -- comment; this mirrors that precedent rather than inventing a new shape.
 --
