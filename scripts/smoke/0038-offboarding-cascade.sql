@@ -1,9 +1,9 @@
--- 0038 offboarding cascade smoke — slice 1 of 2: THE NEW BEHAVIOUR
+-- 0038 offboarding cascade smoke — slice 1 of 3: THE NEW BEHAVIOUR
 -- (local dev only; fresh reset DB, single run).
 --
 -- Requirement source: features/offboarding-cascade.feature
---   :43-46 Pending substitution requests are auto-cancelled
---   :48-51 A former member cannot be re-assigned
+--   :43-47 Pending substitution requests are auto-cancelled
+--   :48-52 A former member cannot be re-assigned
 --
 -- Slice 1 proves the cascade runs and the assignment guard holds. Slice 2 appends
 -- the blast-radius half to this same file — what did NOT change (nothing deleted,
