@@ -1,4 +1,4 @@
-;
+
 
 import { BriefcaseBusiness, ArrowDownUp, Ellipsis } from "lucide-react";
 import { CardHeader, CardContent, CardTitle } from "@/components/ui/card";

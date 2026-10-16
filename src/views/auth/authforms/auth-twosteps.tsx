@@ -1,3 +1,7 @@
+/* eslint-disable react/no-unescaped-entities */
+// U5 mechanical lint header (odd/tasks/gerencial-template-import.md L2): the repo lint config
+// targets the musician side; this file is template code kept verbatim (S1), so the rule fires
+// it raises are disabled here rather than rewritten or weakened repo-wide in the lint config.
 
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldGroup } from "@/components/ui/field";

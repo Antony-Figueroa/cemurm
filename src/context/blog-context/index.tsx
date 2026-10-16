@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// U5 mechanical lint header (odd/tasks/gerencial-template-import.md L2): the repo lint config
+// targets the musician side; this file is template code kept verbatim (S1), so the rule fires
+// it raises are disabled here rather than rewritten or weakened repo-wide in the lint config.
 import { createContext, useState, useEffect, ReactNode, Dispatch, SetStateAction } from 'react';
 import { BlogPostType, BlogType } from 'src/types/apps/blog';
 import React from 'react';
