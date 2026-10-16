@@ -11,8 +11,8 @@ export default defineConfig({
   // to this repo's own src/, so no file moved. Minimal diff, deliberate.
   resolve: {
     alias: {
-      '@': path.resolve(process.cwd(), 'src'),
-      src: path.resolve(process.cwd(), 'src'),
+      '@': path.resolve('src'),
+      src: path.resolve('src'),
     },
   },
 
