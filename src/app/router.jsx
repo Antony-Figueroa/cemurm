@@ -68,8 +68,25 @@ const Storage = lazy(() => import('../features/settings/pages/Storage.jsx'))
 const Settings = lazy(() => import('../features/settings/pages/Settings.jsx'))
 const NotFound = lazy(() => import('../features/shell/pages/NotFound.jsx'))
 const Landing = lazy(() => import('../features/landing/pages/Landing.jsx'))
+// Admin template subtree (U3/S3, odd/tasks/gerencial-template-import.md).
+// Mounted at "admin" as a sibling of the app's own route subtrees: it carries
+// its own layout chrome (FullLayout), so it must NOT nest inside AppLayout.
+// It sits outside RequireAuth/RequireGuardianConsent — this is the imported
+// template, not a CEMURM feature; gating it is a deliberate later change.
+// LAZY: every admin page element inside the table is already deferred by the
+// template's own Loadable(lazy()) factory (src/routes/Router.tsx), so the
+// route table below imports only the table and the chunk factories, never
+// the admin views themselves.
+import { Router as AdminRoutes } from '../routes/Router'
 
 const router = createBrowserRouter([
+  // Admin template (shadcn-dashboard). Deliberately FIRST so its subtree is
+  // unambiguous, and OUTSIDE AppLayout so the template's own sidebar/header
+  // are the only chrome on an admin route.
+  {
+    path: 'admin',
+    children: AdminRoutes,
+  },
   {
     element: <AppLayout />,
     children: [

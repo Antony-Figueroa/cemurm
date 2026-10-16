@@ -1,9 +1,22 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { lazy } from 'react';
-import { Navigate, createBrowserRouter } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import Loadable from '../layouts/full/shared/loadable/Loadable';
-
+//
+// U3/S3 (odd/tasks/gerencial-template-import.md): the original template file
+// created its own `createBrowserRouter(Router)` and exported the router. In
+// CEMURM the array is mounted under the existing app router (src/app/router
+// .jsx) as a subtree at path "admin", so the createBrowserRouter call is
+// dropped here and the array is exported instead.
+//
+// MECHANICAL RELATIVE-IZATION, verbatim otherwise: the table was authored
+// for a browser router whose root paths were absolute ("/", "/apps/blog
+// /post", ...). Absolute paths in nested children escape their parent prefix
+// in react-router v7, so every leading "/" is stripped and each absolute
+// Navigate target ("/auth/404") becomes its relative twin ("auth/404"). Both
+// resolved to the same pages: the demo screens now live under /admin/...
+// (e.g. /admin → dashboard, /admin/auth/404 → error screen).
 /* ***Layouts**** */
 const FullLayout = Loadable(lazy(() => import('../layouts/full/FullLayout')));
 const BlankLayout = Loadable(lazy(() => import('../layouts/blank/BlankLayout')));
@@ -49,53 +62,51 @@ const Maintainance = Loadable(lazy(() => import('../views/auth/maintenance')));
 
 const Router = [
   {
-    path: '/',
+    path: '',
     element: <FullLayout />,
     children: [
-      { path: '/', element: <ModernDashboard /> },
+      { path: '', element: <ModernDashboard /> },
 
-      { path: '/dashboards/modern', element: <ModernDashboard /> },
+      { path: 'dashboards/modern', element: <ModernDashboard /> },
 
-      { path: '/apps/blog/post', element: <Blog /> },
-      { path: '/apps/blog/detail/:id', element: <BlogDetail /> },
-      { path: '/apps/blog/create', element: <BlogAdd /> },
-      { path: '/apps/blog/edit', element: <BlogEdit /> },
-      { path: '/apps/blog/manage-blog', element: <BlogTable /> },
+      { path: 'apps/blog/post', element: <Blog /> },
+      { path: 'apps/blog/detail/:id', element: <BlogDetail /> },
+      { path: 'apps/blog/create', element: <BlogAdd /> },
+      { path: 'apps/blog/edit', element: <BlogEdit /> },
+      { path: 'apps/blog/manage-blog', element: <BlogTable /> },
 
-      { path: '/apps/notes', element: <Notes /> },
+      { path: 'apps/notes', element: <Notes /> },
 
-      { path: '/apps/tickets', element: <Tickets /> },
-      { path: '/apps/tickets/create', element: <TicketCreate /> },
+      { path: 'apps/tickets', element: <Tickets /> },
+      { path: 'apps/tickets/create', element: <TicketCreate /> },
 
-      { path: '/pages/tables', element: <TablesPage /> },
-      { path: '/pages/form', element: <FormPage /> },
-      { path: '/pages/user-profile', element: <UserProfilePage /> },
+      { path: 'pages/tables', element: <TablesPage /> },
+      { path: 'pages/form', element: <FormPage /> },
+      { path: 'pages/user-profile', element: <UserProfilePage /> },
 
-      { path: '/icons/iconify', element: <SolarIcon /> },
+      { path: 'icons/iconify', element: <SolarIcon /> },
 
     
-      { path: '*', element: <Navigate to="/auth/404" /> },
+      { path: '*', element: <Navigate to="auth/404" /> },
     ],
   },
   {
-    path: '/',
+    path: '',
     element: <BlankLayout />,
     children: [
-      { path: '/auth/auth2/login', element: <Login2 /> },
+      { path: 'auth/auth2/login', element: <Login2 /> },
 
-      { path: '/auth/auth2/register', element: <Register2 /> },
+      { path: 'auth/auth2/register', element: <Register2 /> },
 
-      { path: '/auth/auth2/forgot-password', element: <ForgotPassword2 /> },
+      { path: 'auth/auth2/forgot-password', element: <ForgotPassword2 /> },
 
-      { path: '/auth/auth2/two-steps', element: <TwoSteps2 /> },
-      { path: '/auth/maintenance', element: <Maintainance /> },
+      { path: 'auth/auth2/two-steps', element: <TwoSteps2 /> },
+      { path: 'auth/maintenance', element: <Maintainance /> },
       { path: '404', element: <Error /> },
-      { path: '/auth/404', element: <Error /> },
-      { path: '*', element: <Navigate to="/auth/404" /> },
+      { path: 'auth/404', element: <Error /> },
+      { path: '*', element: <Navigate to="auth/404" /> },
     ],
   },
 ];
 
-const router = createBrowserRouter(Router);
-
-export default router;
+export { Router };
