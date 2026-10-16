@@ -40,16 +40,34 @@ import {
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
+// V1/S1: the template hashed a value into a light chip on the default
+// palette (bg-blue-100 / text-blue-700, ...). Those chips are substituted by
+// translucent cem.tint + cem-coloured text at the same pairing strength
+// (S4, documented in gerencial-template-adaptacion.md L3): blue/indigo ->
+// cem.sky, green/teal -> cem.emerald, yellow -> cem.amber, purple/orange ->
+// cem.coral, pink/red -> cem.rose. Eight slots are kept so
+// getColorForValue's hash space does not change.
 const badgeColors = [
-  'bg-blue-100 text-blue-700',
-  'bg-green-100 text-green-700',
-  'bg-yellow-100 text-yellow-700',
-  'bg-purple-100 text-purple-700',
-  'bg-pink-100 text-pink-700',
-  'bg-indigo-100 text-indigo-700',
-  'bg-teal-100 text-teal-700',
-  'bg-orange-100 text-orange-700',
+  'bg-cem-sky/15 text-cem-sky',
+  'bg-cem-emerald/15 text-cem-emerald',
+  'bg-cem-amber/15 text-cem-amber',
+  'bg-cem-coral/15 text-cem-coral',
+  'bg-cem-rose/15 text-cem-rose',
+  'bg-cem-sky/15 text-cem-sky',
+  'bg-cem-emerald/15 text-cem-emerald',
+  'bg-cem-coral/15 text-cem-coral',
 ]
+
+// V1/S1: the mocked status colours are remapped onto cem tokens — chart-1..4
+// keep their role (amber/sky/emerald/rose) and destructive joins cem.rose. The
+// fallback class keeps the hash route intact when the key is unknown.
+const ROW_STATUS_CLASS: Record<string, string> = {
+  'chart-1': 'bg-cem-amber/15 text-cem-amber',
+  'chart-2': 'bg-cem-sky/15 text-cem-sky',
+  'chart-3': 'bg-cem-emerald/15 text-cem-emerald',
+  'chart-4': 'bg-cem-rose/15 text-cem-rose',
+  destructive: 'bg-cem-rose/15 text-cem-rose',
+}
 
 export function getColorForValue(value: string) {
   const index =
@@ -114,13 +132,15 @@ const DataTable = <T extends Record<string, unknown>>({
         ) {
           const rowStatusColor = (info.row.original as Record<string, unknown>).statuscolor as string | undefined
           if (rowStatusColor) {
+            // V1/S1: the template resolved the status colour by mixing 15% of
+            // a keyed colour with transparency inside a banned functional
+            // colour, and referenced the @theme aliases this same change
+            // removes. The same look is now a complete-class lookup (rule 07
+            // requires complete class strings anyway): translucent tinted
+            // fill + keyed text, alpha kept at 15%.
             return (
               <Badge
-                className='px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap'
-                style={{
-                  backgroundColor: `color-mix(in oklch, var(--color-${rowStatusColor}) 15%, transparent)`,
-                  color: `var(--color-${rowStatusColor})`,
-                }}>
+                className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${ROW_STATUS_CLASS[rowStatusColor] ?? getColorForValue(String(value))}`}>
                 {renderValue(value)}
               </Badge>
             )
@@ -147,20 +167,22 @@ const DataTable = <T extends Record<string, unknown>>({
                 <Icon
                   key={`full-${i}`}
                   icon='mdi:star'
-                  className='text-[#f3d55b] w-6 h-6 shrink-0'
+                  /* V1/S1: the template's literal yellow star maps to the
+                     palette's rating colour cem.amber (S4, documented). */
+                  className='text-cem-amber w-6 h-6 shrink-0'
                 />
               ))}
               {halfStar && (
                 <Icon
                   icon='mdi:star-half-full'
-                  className='text-[#f3d55b] w-6 h-6 shrink-0'
+                  className='text-cem-amber w-6 h-6 shrink-0'
                 />
               )}
               {[...Array(emptyStars)].map((_, i) => (
                 <Icon
                   key={`empty-${i}`}
                   icon='mdi:star-outline'
-                  className='text-[#f3d55b] w-6 h-6 shrink-0'
+                  className='text-cem-amber w-6 h-6 shrink-0'
                 />
               ))}
             </div>
@@ -168,12 +190,15 @@ const DataTable = <T extends Record<string, unknown>>({
         }
 
         if (typeof value === 'boolean') {
+          // V1/S1: the light status chips (bg-red/green-100 + text-*-700) are
+          // remapped to the same tinted-chip pair in cem tokens (S4,
+          // documented): red -> cem.rose, green -> cem.emerald.
           return value ? (
-            <Badge className='px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700'>
+            <Badge className='px-2 py-1 rounded-full text-xs font-semibold bg-cem-rose/15 text-cem-rose'>
               Inactive
             </Badge>
           ) : (
-            <Badge className='px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700'>
+            <Badge className='px-2 py-1 rounded-full text-xs font-semibold bg-cem-emerald/15 text-cem-emerald'>
               Active
             </Badge>
           )

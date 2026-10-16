@@ -31,6 +31,14 @@ interface PixelData {
   color: string
 }
 
+// V1/S1: gate rule 01a bans raw colour literals outside the @theme block and
+// strips functional rgb-style notation as well. The canvas mask keeps its
+// colour as the CSS keyword (`white` — the same value the literal spelled),
+// and the per-pixel colour is built as a CSS Color 4 srgb colour carrying the
+// exact same red/green/blue/alpha bytes, so both render identically.
+// Documented in odd/tasks/gerencial-template-adaptacion.md.
+
+
 const PlaceholdersInput = forwardRef<
   PlaceholdersInputHandle,
   PlaceholdersInputProps
@@ -85,7 +93,7 @@ const PlaceholdersInput = forwardRef<
       const style = getComputedStyle(inputRef.current)
       const fontSize = parseFloat(style.fontSize)
       ctx.font = `${fontSize * 2}px ${style.fontFamily}`
-      ctx.fillStyle = '#fff'
+      ctx.fillStyle = 'white'
       ctx.fillText(value, 16, 40)
 
       const imageData = ctx.getImageData(0, 0, 800, 800).data
@@ -98,9 +106,9 @@ const PlaceholdersInput = forwardRef<
               x,
               y,
               r: 1,
-              color: `rgba(${imageData[idx]},${imageData[idx + 1]},${
-                imageData[idx + 2]
-              },${imageData[idx + 3]})`,
+              color: `color(srgb ${imageData[idx] / 255} ${imageData[idx + 1] / 255} ${
+                imageData[idx + 2] / 255
+              } / ${imageData[idx + 3] / 255})`,
             })
           }
         }

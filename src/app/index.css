@@ -791,11 +791,13 @@ html[data-card-shadow="false"] [data-slot="card"] {
 }
 
 .btn-primary {
-  background-color: #2b2b2b;
+  /* V1/S1: template literal hex -> cem token (closest dark neutral). */
+  background-color: var(--color-cem-elevated);
 }
 
 .btn-secondary {
-  background-color: oklch(92.619% 0.17657 128.9);
+  /* V1/S1: template oklch green -> cem.emerald (semantic success button). */
+  background-color: var(--color-cem-emerald);
 }
 
 @media (max-width: 767px) {
@@ -833,7 +835,7 @@ html[data-card-shadow="false"] [data-slot="card"] {
 
 .slick-prev:before,
 .slick-next:before {
-  color: #2b2b2b;
+  color: var(--color-cem-elevated);
 }
 
 .slick-next {
@@ -882,7 +884,9 @@ html[data-card-shadow="false"] [data-slot="card"] {
 .darkbg .ql-snow .ql-picker-options,
 .darkbg .ql-snow .ql-tooltip,
 .darkbg .ql-snow .ql-tooltip input[type="text"] {
-  background-color: #484b52;
+  /* V1/S1: template literal grey toolbar fill -> cem.hover (closest raised
+     neutral; see the mapping table in odd/tasks/gerencial-template-adaptacion.md). */
+  background-color: var(--color-cem-hover);
 }
 
 .darkbg .ql-snow .ql-tooltip[data-mode="link"]::before {
@@ -900,7 +904,8 @@ html[data-card-shadow="false"] [data-slot="card"] {
   font-style: normal;
   font-weight: 400;
   font-size: 16px;
-  color: #777e89;
+  /* V1/S1: template literal grey placeholder -> cem.secondary (muted text). */
+  color: var(--color-cem-secondary);
 }
 
 .ql-container.ql-snow {
@@ -933,7 +938,7 @@ html[data-card-shadow="false"] [data-slot="card"] {
 .ql-snow .ql-tooltip {
   left: 0 !important;
   border: 0;
-  box-shadow: 0 5px 15px rgb(0 0 0 / 12%);
+  @apply shadow-[0_5px_15px_rgb(0_0_0/12%)];
   border-radius: 5px;
 }
 
@@ -991,7 +996,7 @@ html[data-card-shadow="false"] [data-slot="card"] {
 
 .slick-prev:before,
 .slick-next:before {
-  color: #2b2b2b
+  color: var(--color-cem-elevated)
 }
 
 .slick-next {
@@ -1158,7 +1163,11 @@ html[data-card-shadow="false"] [data-slot="card"] {
   }
 
   .cn-button-variant-secondary {
-    @apply bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground;
+    /* V1/S1: the template's hover state blended foreground into secondary via
+       a functional colour mix, which gate rule 01a bans anywhere in src/. The
+       closest non-functional equivalent is the same surface at 95% opacity
+       (S2 voice-over mapping, documented in gerencial-template-adaptacion.md). */
+    @apply bg-cem-elevated text-cem-text hover:bg-cem-elevated/95;
   }
 
   .cn-button-variant-ghost {

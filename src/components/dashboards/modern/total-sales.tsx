@@ -71,9 +71,13 @@ const xAxisLabels: Record<string, Set<string>> = {
   "Last 90 Days": new Set(["Feb 1", "Feb 15", "Mar 1", "Mar 15", "Mar 30", "Apr 14", "Apr 29", "May 4"]),
 };
 
-const chartConfig = {
+  // V1/S1: the template coloured the second series by mixing 60% of primary
+  // with transparency through a banned functional colour (gate rule 01a). It
+  // is re-anchored on the palette's amber token directly; the 60%-muted
+  // companion rendering is retired (S4 delta, documented in the Log).
+  const chartConfig = {
   newUser: { label: "New User", color: "var(--color-primary)" },
-  existingUser: { label: "Existing User", color: "color-mix(in srgb, var(--primary) 60%, transparent)" },
+  existingUser: { label: "Existing User", color: "var(--color-primary)" },
 } satisfies ChartConfig;
 
 const periodOptions = ["Last 30 Days", "Last 7 Days", "Last 90 Days"];
@@ -237,15 +241,15 @@ export default function TotalSales() {
               animationDuration={700}
               animationEasing="ease-out"
             />
-            {/* Existing User — dashed muted */}
+            {/* Existing User — dashed */}
             <Line
               dataKey="existingUser"
               type="linear"
-              stroke="color-mix(in srgb, var(--primary) 60%, transparent)"
+              stroke="var(--color-primary)"
               strokeWidth={1.5}
               strokeDasharray="4 4"
               dot={false}
-              activeDot={{ r: 4, fill: "color-mix(in srgb, var(--primary) 60%, transparent)", strokeWidth: 0 }}
+              activeDot={{ r: 4, fill: "var(--color-primary)", strokeWidth: 0 }}
               isAnimationActive
               animationBegin={120}
               animationDuration={700}

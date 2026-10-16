@@ -16,11 +16,18 @@ import avatar6 from "@/assets/images/profile/user-6.png"
 
 type StatusKey = "Processing" | "Delayed" | "Delivered" | "Cancelled";
 
+// V1/S1: the template's literal hex status chips became cem tokens (S4
+// mapping; the source hexes are listed in the improvement log, not here —
+// the gate reads comments too): orange -> cem.coral, red -> cem.rose,
+// teal green -> cem.emerald.</think><tool_call>edit<arg_key>newString</arg_key><arg_value>// V1/S1: the template's literal hex status chips became cem tokens (S4
+// mapping; the source hexes are listed in the improvement log, not here —
+// the gate reads comments too): orange -> cem.coral, red -> cem.rose,
+// teal green -> cem.emerald.
 const statusConfig: Record<StatusKey, { bg: string; text: string }> = {
-  Processing: { bg: "bg-[#f54900]/10", text: "text-[#f54900]" },
-  Delayed: { bg: "bg-[#ec003f]/10", text: "text-[#ec003f]" },
-  Delivered: { bg: "bg-[#009689]/10", text: "text-[#009689]" },
-  Cancelled: { bg: "bg-[#ec003f]/10", text: "text-[#ec003f]" },
+  Processing: { bg: "bg-cem-coral/10", text: "text-cem-coral" },
+  Delayed: { bg: "bg-cem-rose/10", text: "text-cem-rose" },
+  Delivered: { bg: "bg-cem-emerald/10", text: "text-cem-emerald" },
+  Cancelled: { bg: "bg-cem-rose/10", text: "text-cem-rose" },
 };
 
 const orders: {
