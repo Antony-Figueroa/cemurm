@@ -73,6 +73,10 @@
 }
 
 @import "tailwindcss";
+/* Admin template U2/S2: shadcn animation utilities (fade-in-0, fade-out-0,
+   zoom-*, slide-*) come from tw-animate-css; without it those @apply
+   candidates fail the build. */
+@import "tw-animate-css";
 
 /* ===========================================================================
  * The only token source. Ported from tailwind.config.js (TW3 -> TW4).
@@ -549,6 +553,30 @@
   @keyframes scroll {
     to {
       transform: translate(calc(-50% - 0.5rem));
+    }
+  }
+
+  /* Missing from the template's own globals.css even though ui/accordion.tsx
+     and style-lyra.css apply these classes; re-created here to the shadcn
+     definitions so the candidates compile. Mechanical U2 wiring. */
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--accordion-content-height);
+    }
+  }
+
+  @keyframes accordion-up {
+    from {
+      height: var(--accordion-content-height);
+    }
+    to {
+      height: 0;
     }
   }
 }
