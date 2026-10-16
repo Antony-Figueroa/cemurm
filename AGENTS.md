@@ -91,7 +91,7 @@ wrong `include` leaves `tsc` checking one untyped file and still exiting 0.
 npx tsc --noEmit --listFiles | grep -c 'cemurm/src/'   # must be > 1; was 1, now 48
 ```
 
-TypeScript is **7.0.2** (not 5.x). Two quirks already cost time:
+TypeScript is **6.0.3** (downgraded from 7.0.2 for typescript-eslint compatibility, odd/tasks/tw4-stack-foundation.md L3). Both quirks re-verified on 6.0.3:
 - `catch` variables infer `unknown`, so `e.message` needs a `/** @type {Error} */ (e)` cast.
 - In JSDoc, an em-dash after an optional param (`@param {boolean} [name] —`) is a parse error (TS1127).
 
