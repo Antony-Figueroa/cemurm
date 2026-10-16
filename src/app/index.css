@@ -72,9 +72,58 @@
   --cem-radius-xl: 22px;
 }
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+/* ===========================================================================
+ * The only token source. Ported from tailwind.config.js (TW3 -> TW4).
+ * Same 17 colour leaves, same values; the stage namespace becomes flat
+ * --color-cem-stage-* because @theme declares flat custom properties only,
+ * and the class names the UI already uses (bg-cem-stage-bg...) match that
+ * form. The radius tokens stay var() references on purpose (see the banner
+ * above), which is why they live in a separate `@theme inline` block: `inline`
+ * makes the rounded-cem-* utilities read --cem-radius-* directly instead of
+ * routing through the theme variable, exactly like the manual declarations
+ * that follow them.
+ * =========================================================================== */
+@theme {
+  --color-cem-base: #0f172a;
+  --color-cem-surface: #1e293b;
+  --color-cem-elevated: #334155;
+  --color-cem-hover: #475569;
+  --color-cem-text: #f8fafc;
+  --color-cem-secondary: #94a3b8;
+  /* Exists because cem.secondary fails the 4.5:1 AA text floor on cem.elevated
+     (4.04:1) and cem.hover (2.96:1). cem.secondary itself is unchanged: 318
+     usages sit on base/surface where it clears the floor. Kept, not renamed. */
+  --color-cem-secondary-elevated: #b0bccb;
+  --color-cem-amber: #f59e0b;
+  --color-cem-coral: #f97316;
+  --color-cem-emerald: #10b981;
+  --color-cem-rose: #f43f5e;
+  --color-cem-sky: #0ea5e9;
+  --color-cem-stage-bg: #000000;
+  --color-cem-stage-chord: #f59e0b;
+  --color-cem-stage-lyric: #f8fafc;
+  --color-cem-stage-section: #94a3b8;
+  --color-cem-stage-dim: #1e293b;
+
+  /* TW3 pulled the rest of the sans stack from tailwindcss/defaultTheme;
+     v4 has no JS config, so the stack is spelled out here with Inter in front,
+     same composition as the TW3 config produced. */
+  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+/* The radius scale itself. `inline` so the utilities read the --cem-radius-*
+ * custom properties declared below at runtime, matching the hand-written
+ * .rounded-cem-* declarations further down this file. */
+@theme inline {
+  --radius-cem-xs: var(--cem-radius-xs);
+  --radius-cem-sm: var(--cem-radius-sm);
+  --radius-cem-md: var(--cem-radius-md);
+  --radius-cem-lg: var(--cem-radius-lg);
+  --radius-cem-xl: var(--cem-radius-xl);
+}
 
 @layer base {
   html {
@@ -122,8 +171,8 @@
  *
  * THE GRADIENT IS TAILWIND UTILITIES, not custom properties. `from-cem-base/70`
  * and `to-cem-base/0` are built from the SAME declared token the header is painted
- * from, which keeps the ramp in tailwind.config.js as its single source and puts
- * no colour syntax in this file. Writing the stops as custom properties here was
+ * from, which keeps the ramp in the @theme block of this file as its
+ * single source and puts no literal colour syntax outside it. Writing the stops as custom properties here was
  * tried first and failed gate rule 01a, for the seventh time on this branch: any
  * functional-colour notation in src/ is a hit whether or not it is a design token.
  *
@@ -245,7 +294,8 @@
  * WHY A GLOBAL RULE AND NOT A CLASS LIST. The `prefers-reduced-transparency`
  * block above reaches only `.cem-material`, and that is exactly why eight of
  * the nine measured elements were missed: the pills and the inputs carry
- * `backdrop-blur-sm` from markup, at four call sites, with no shared class to
+ * a backdrop-blur utility from markup (`backdrop-blur-xs` after the TW4
+ * refactor; `backdrop-blur-sm` was the TW3 name), with no shared class to
  * target. MDN's forced-colors guidance is to avoid `backdrop-filter` in this
  * mode altogether, and a `*` selector inside the media query is the only rule
  * that holds when markup keeps adding blur utilities.

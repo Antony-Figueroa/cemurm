@@ -6,11 +6,12 @@
    colour declarations changed: the reference writes hex into custom properties,
    and rule 01a of scripts/check-visual-contract.sh rejects colour literals in
    src/. Those declarations are now `@apply` of a cem-* token, so the palette
-   still has exactly one source of truth (tailwind.config.js).
-
+   still has exactly one source of truth (@theme in src/app/index.css).
    Colours that the component passes IN as custom properties (--gs-accent,
    --sr-row, --st-bg, …) are not declared here at all — the component sets
    them from resolved tokens. Only the fallback stack lives in this file. */
+
+@reference "../../../app/index.css";
 
 /* ============================================================ GlideSelect */
 
