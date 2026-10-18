@@ -52,6 +52,18 @@ jobs:
 
       - run: pnpm build
 
+      # Migration version uniqueness. Filenames only -- no database, no network,
+      # no install. Two files sharing a version prefix abort `supabase db reset`
+      # (and `supabase start`) with a duplicate-key error, which takes down E2E
+      # and the whole scripts/smoke/ suite; nothing else in the repository could
+      # see it, because it appears only in a database on a machine that was
+      # actually reset. Placed here rather than before test and build for the
+      # same reason as the visual gate below: a gate that precedes them exits 1
+      # under `set -euo pipefail`, which marks test and build SKIPPED, and a
+      # reviewer cannot tell a real downstream failure from a check that never
+      # ran.
+      - run: bash scripts/check-migrations-unique.sh
+
       # Visual contract gate. Bash + grep only, so it needs no install step, and
       # it deliberately runs LAST rather than before test and build: a gate that
       # precedes them exits 1 under set -euo pipefail, which marks test and
