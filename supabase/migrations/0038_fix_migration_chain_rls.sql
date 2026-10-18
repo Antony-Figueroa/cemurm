@@ -1,4 +1,11 @@
--- CEMURM 0035 — Fix migration chain break + RLS tenant leaks (0014–0019)
+-- CEMURM 0038 — Fix migration chain break + RLS tenant leaks (0014–0019)
+--
+-- Renumbered 0035 -> 0038. As 0035 it collided with 0035_projection.sql, so
+-- Postgres accepted the first insert into supabase_migrations.schema_migrations
+-- and rejected the second ("duplicate key value violates unique constraint
+-- schema_migrations_pkey"), aborting `supabase db reset` and `supabase start`.
+-- Moving it is safe: it is idempotent by design (see below), and 0036/0037 do
+-- not depend on it running first.
 --
 -- Slice: fix/migration-chain-rls-leaks — idempotent corrections for criticals
 -- and highs from the 0014–0019 batch. Record: odd/tasks/hito5-substitutions-and-coverage.md.
