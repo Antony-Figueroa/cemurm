@@ -38,15 +38,16 @@ Prose in this repo has drifted. These are the facts, checked against git and cod
 
 | Fact | Value |
 |---|---|
-| `main` | `c14e977`, in sync with `origin/main` |
-| **Test files on `main`** | **17** — 12 characterization + 5 BDD-tier in `src/test/gherkin/` (was 9 at `e849738`) |
-| **`test` script on `main`** | **present** — `package.json` has `build`, `check:visual`, `dev`, `lint`, `preview`, `test`, `test:gherkin`, `test:watch`, `typecheck` |
+| `main` | `d3f1269`, in sync with `origin/main` (was `a610dd0` at the 2026-10-13 re-verification, and `c14e977` at the one before it) |
+| **Test files on `main`** | **23** — 18 unit/characterization + 5 BDD-tier in `src/test/gherkin/` (was 17 at `c14e977`, and 9 at `e849738`) |
+| **`test` script on `main`** | **present** — `package.json` has `build`, `check:visual`, `dev`, `lint`, `preview`, `test`, `test:gherkin`, `test:watch`, `typecheck`, plus the `test:e2e*` family (`test:e2e`, `:ci`, `:chromium`, `:firefox`, `:webkit`, `:debug`, `:headed`) |
 | **CI on `main`** | `install --frozen-lockfile → lint → deno check 'supabase/functions/**/*.ts' → typecheck → check-test-integrity.sh → test → test:gherkin → build → check-migrations-unique.sh → check-visual-contract.sh` (both gates run last on purpose: a gate that precedes `test`/`build` exits 1 under `set -euo pipefail` and marks them SKIPPED) |
+| **E2E on `main`** | **present** — `.github/workflows/e2e.yml`, 3 chained jobs (`e2e-chromium` → `e2e-firefox` → `e2e-webkit`, each gating the next through `needs`) |
 | `src/` layout on `main` | post-relocation: `app/`, `data/`, `domain/`, `features/`, `hooks/`, `integrations/`, `lib/` (incl. `lib/storage.js`), `offline/`, `test/`, `ui/`. No `store/` and no `components/` — there is no Zustand |
 | Feature files | **46**, 734 scenarios — was 42 / 656 at `8b66394` |
 | Migrations on `main` | **38 files, numbered `0001`–`0040`, with `0021`/`0022` a deliberate free gap** — was 27 with a gap at `0021` |
 | Next free migration number | **`0041`** — `0021`/`0022` remain deliberately free, and everything from `0036` to `0040` is taken (`0036_guardian_approve_public_sharing.sql`, `0037_offline_tie_break.sql`, `0038_offboarding_cascade.sql`, `0039_leave_handoff_guard.sql`, `0040_fix_migration_chain_rls.sql`) |
-| Hito 5 | **complete and merged.** Migrations up to `0035` all on `main`; plan-freeze and projection landed as `0034_plan_freeze.sql` / `0035_projection.sql` (renumbered in `07522a0`) |
+| Hito 5 | **complete and merged.** Migrations up to `0035` all on `main`; plan-freeze and projection landed as `0034_plan_freeze.sql` / `0035_projection.sql` (renumbered in `07522a0`); #360 added `0036_guardian_approve_public_sharing.sql` |
 | Hito 6 | **not started** — no implementation for any of its six features |
 | `// @ts-check` opt-ins | **47** files; `tsc --listFiles` reaches **62** `src/` files |
 | `docs/design-system.md` | superseded in part by `skills/cemurm-visual-system/` (PR #235, commit `5547150`); banner added in #238 |
