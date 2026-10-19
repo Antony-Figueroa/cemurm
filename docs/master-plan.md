@@ -17,6 +17,11 @@ findings, or the audits. So it was re-scoped to the real remaining work rather t
 historical record. But it is no longer trustworthy as a whole, because **its central premise —
 four unmerged Hito 5 branches — is gone.** Every section is now labelled:
 
+- **Strategic pivot (2026-10-19) — current, decision-level.** Recorded *above* §0 because it
+  reframes every section rather than sitting beside them: the project pivots to a native
+  live-monitoring / live-sync app while the PWA continues against the same backend. It carries no
+  git state, and it opens one spec conflict that blocks native work — `pwa-updates-and-storage.feature`
+  still denies a native app (see that section's SC-1).
 - **§0, §5, §6 — current.** Re-derived from `main` = `762a040` on 2026-09-30; re-verified
   2026-10-02 against `main` = `e849738` — no drift found in any row; re-verified 2026-10-12 against
   `main` = `c14e977` — drift found and corrected (2026-10-12 notes in §0, §2, §3, §6).
@@ -29,6 +34,71 @@ four unmerged Hito 5 branches — is gone.** Every section is now labelled:
 The three defects this file was *written* to prevent are the reason for the labelling: it asserted
 Hito 5 was unmerged long after it merged, and a planner sequencing from it would have re-planned
 shipped work. Each later section below now carries the date and evidence that closed it.
+
+## Strategic pivot (2026-10-19) — two surfaces, one backend
+
+**Decision-level, not sequencing.** This section records a product decision that reframes everything
+below it. It carries no verified git state, and no row in §0–§6 depends on it.
+
+**What was decided (2026-10-19, by the maintainer):**
+
+CEMURM pivots to a **native app specialized in live monitoring and live synchronization**. The PWA is
+**not retired** — the two surfaces coexist against a single backend:
+
+| Surface | Covers | Status |
+|---|---|---|
+| **PWA** — the current `src/` | repertoires, setlists, collaboration, offline queue: everything Hitos 1–6 and the institutional scope of #363 cover | **unchanged and continuing** |
+| **Native app** — new | live monitoring and live synchronization between devices on stage | **decided, not started** |
+
+One backend for both. Supabase stays the source of truth: the native surface reads and writes the same
+schema and the same RLS policies the PWA does.
+
+**Why this is recorded here.** PR #335 (`spike/suite-modular`, milestone #7) assumes this pivot and is
+unintelligible without it — its three tracks only make sense for a live-performance instrument:
+
+- **S1 Audio Core** (`oboe`/`cpal`, p99 ≤ 5 ms, call and screen-lock interruption recovery): a browser
+  cannot reach that latency. Real-time monitoring needs a native audio path.
+- **S2 P2P Sync** (mDNS, UDP heartbeat, failover < 1 s, AP roaming, no underruns under 10% loss): stage
+  sync must survive the venue's network, so it cannot depend on the cloud alone.
+- **S3 MusicXML Layout** (Verovio WASM, transpose < 200 ms, 50-page stress): score on screen during
+  performance.
+
+Before this decision existed, all three were correctly rejected: no hito and no BDD feature asked for
+native audio or P2P, so AGENTS.md's entry rule ("implemented only when its hito or BDD feature
+requires it") turned them away. **The pivot is that missing requirement** — recorded here first, so
+the entry rule has something to point at.
+
+**⚠️ Naming collision: "Fase 1" means two unrelated things.**
+
+`docs/technical-spec.md` §10.7 (*Recommended Path*) defines a scaling ladder for the PWA:
+
+`Phase 0 (MVP)` → `Phase 1 (Scale, >5k MAU, same stack, Upstash Redis)` → `Phase 2 (Performance, Rust
+WASM)` → `Phase 3 (Independence, self-hosted PostgreSQL)` → `Phase 4 (Millions)`.
+
+Milestone #7 and PR #335 use **"Fase 1"** to mean *this pivot*. They are unrelated. That ladder still
+governs the PWA and is **not** superseded; the pivot is a parallel track, not the next rung. Until
+#335's text is corrected, read "Fase 1" inside the spike as "the native pivot", never as
+`Phase 1 (Scale)`.
+
+**Spec conflicts this decision opens — declared, not resolved here.**
+
+| # | Conflict | Consequence |
+|---|---|---|
+| **SC-1** | `features/pwa-updates-and-storage.feature` asserts verbatim in its NON-GOALS: "no native app-store or manual download update channel exists — updates flow only through the service worker" | The BDD files are the product source of truth and currently **deny a native app**. That feature must be reopened before any native work ships. |
+| **SC-2** | The "Fase 1" / `Phase 1 (Scale)` name collision above | Disambiguate in #335 and milestone #7 before either is read as sequencing. |
+| **SC-3** | The closest existing audio requirement is `features/practice-mode.feature` (metronome), which a PWA serves through the Web Audio API | Practice mode does not require native audio, so it is not evidence for S1. |
+
+**Open decisions.** This section settles direction, not implementation:
+
+| # | Decision | What it blocks |
+|---|---|---|
+| **OD-1** | Native implementation: from scratch (Swift/Kotlin, matching the spike's `oboe` + CMake) or wrapping the existing React app (Capacitor) | Whether any shipped `src/` runs in the native surface — and therefore whether S1 is a plugin or a rewrite |
+| **OD-2** | Where native code lives: this repository or a separate one | CI already needs self-hosted device runners; monorepo vs. split decides how they are wired |
+| **OD-3** | What exactly "live monitoring" monitors: audio (what S1 measures) or setlist/state across devices | S1 and S2 are measured against very different PASS thresholds |
+
+**Effect on §6.** The order there sequences the **PWA** track (N0–N5) and is unchanged by this decision:
+both surfaces share one backend, so the PWA work already on `main` keeps its value either way. The
+native track has no entry in that order yet; it gets one once OD-1–OD-3 are settled.
 
 ## 0. State of play — verified, not read from prose
 
@@ -579,6 +649,14 @@ N5  remaining doc rot, alongside whatever slice is open
 **N0 was first because it was the only item blocking something other than itself** — CI on `main`
 was red, every PR went red with it, and a red suite is a suite people learn to ignore. It is
 done as of 2026-10-12: the gate passes, and N1 has shrunk from the ten findings to the one — D.
+
+**The native track is deliberately absent from N0–N5.** The 2026-10-19 pivot (see *Strategic pivot*
+above) adds a second surface — a native app for live monitoring and sync — running against the same
+backend. It is not sequenced here for two concrete reasons: OD-1–OD-3 in that section (implementation
+model, code location, what "monitoring" monitors) are still open, and SC-1 means
+`features/pwa-updates-and-storage.feature` still denies a native app. Sequencing it before both are
+settled would order work whose defining decision has not finished being made. The PWA track above is
+unaffected either way — the two surfaces share one backend, so this work keeps its value regardless.
 
 Two things deliberately do **not** go in this plan:
 
