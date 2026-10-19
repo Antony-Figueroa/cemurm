@@ -1,6 +1,6 @@
 # fix-363-review-defects — reseñar y corregir los 5 defectos del PR #363
 
-- **Estado:** en curso
+- **Estado:** completado — 6/6 tareas; pendiente de decisión de merge
 - **Rama:** `feat/11-modulos-institucionales` (PR #363)
 - **Base:** `origin/main` = `d3f1269` (#366)
 - **Modo TDD:** no aplicable — PR puramente documental, 0 ficheros bajo `src/`
@@ -64,7 +64,9 @@ a su autor), **no** se añaden migraciones, **no** se toca `supabase/`, `src/` n
       sino en `odd/tasks/session-termination-note.md:3` — el único de los tres sitios que no
       declaraba el bloqueo. `judgment-day-terminal-verdict.md:67` ya lo declaraba
       (*"C2/C3/C4 blockades D1-D4 … unchanged and documented"*).
-- [ ] **T6** Actualizar el cuerpo del PR #363 con `gh pr edit`.
+- [x] **T6** Actualizar el cuerpo del PR #363 con `gh pr edit`. El cuerpo anterior decía
+      *«9 archivos, 2789 inserciones»* cuando el diff real era **+4358/−124**, y no mencionaba
+      ninguna de las correcciones.
 
 ## Hallazgos adicionales corregidos fuera del listado
 
@@ -87,6 +89,48 @@ a su autor), **no** se añaden migraciones, **no** se toca `supabase/`, `src/` n
   `odd/tasks/decisions-pending-team-discussion.md`.
 - `docs/master-plan.md` no regresa ningún hecho ya corregido en `origin/main`.
 - `pnpm lint && pnpm build` siguen en verde (no deberían verse afectados: 0 ficheros bajo `src/`).
+
+## Evidencia de verificación
+
+**Commits en la rama:**
+
+| Commit | Contenido |
+|---|---|
+| `04b81db` | Fusión de `origin/main`; conflicto de `docs/master-plan.md` resuelto a favor de `main` |
+| `a1786eb` | Las 6 tareas de corrección; 9 ficheros, +156/−52 |
+
+**Checks en el head `a1786eb` — 9/9 en verde, 0 fallos:**
+
+```
+Analyze (actions)                success
+Analyze (javascript-typescript)  success
+CodeQL                           success
+E2E Chromium                     success
+E2E Firefox                      success
+E2E WebKit                       success
+GitGuardian Security Checks      success
+lint-and-build                   success
+Setup — emit deterministic anon key  success
+```
+
+`lint`, `typecheck`, `test`, `test:gherkin` y `build` corren dentro de `lint-and-build`. **No se
+tocó ningún fichero bajo `src/`, `supabase/`, `features/` ni `package.json`**: 0 de 9 ficheros
+cambiados están en esas rutas, así que este trabajo no puede haber afectado a esos gates.
+
+**Verificaciones de contenido tras los cambios:**
+
+- `grep "siguiente libre|next free"` → ningún documento de plan vivo declara un número distinto
+  de `0041`.
+- `grep "amp-01|amp-02|uc-04...html|cards.json"` → **ningún enlace superviviente**; todos los
+  supervivientes declaran expresamente la no existencia.
+- `proposal.md` → 3 marcadores `(bloqueante)` (D1, D2, D4) y el párrafo final condiciona a
+  «D1, D2 y D4».
+- Sin marcas de conflicto en el árbol.
+
+**Decisión de merge:** pendiente del mantenedor. El diff acumulado de `+4358/−124` supera con
+creces el presupuesto habitual de 400 líneas por PR, y la revisión del mantenedor sigue en
+`CHANGES_REQUESTED` — el trabajo de esta rama aborda esos comentarios pero no los cierra por sí
+solo.
 
 ## Nota de honestidad
 
