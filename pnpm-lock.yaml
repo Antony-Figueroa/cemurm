@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  postcss-selector-parser@6.1.4: 54ffcd9d39e011f33ca13ec664f3d8d49446d07bb79b123f4b4b919792bba2fa
+
 importers:
 
   .:
@@ -3803,9 +3806,9 @@ snapshots:
   postcss-nested@6.2.0(postcss@8.5.28):
     dependencies:
       postcss: 8.5.28
-      postcss-selector-parser: 6.1.4
+      postcss-selector-parser: 6.1.4(patch_hash=54ffcd9d39e011f33ca13ec664f3d8d49446d07bb79b123f4b4b919792bba2fa)
 
-  postcss-selector-parser@6.1.4:
+  postcss-selector-parser@6.1.4(patch_hash=54ffcd9d39e011f33ca13ec664f3d8d49446d07bb79b123f4b4b919792bba2fa):
     dependencies:
       cssesc: 3.0.0
       util-deprecate: 1.0.2
@@ -4175,7 +4178,7 @@ snapshots:
       postcss-js: 4.1.0(postcss@8.5.28)
       postcss-load-config: 6.0.1(jiti@1.21.7)(postcss@8.5.28)
       postcss-nested: 6.2.0(postcss@8.5.28)
-      postcss-selector-parser: 6.1.4
+      postcss-selector-parser: 6.1.4(patch_hash=54ffcd9d39e011f33ca13ec664f3d8d49446d07bb79b123f4b4b919792bba2fa)
       resolve: 1.22.12
       sucrase: 3.35.1
     transitivePeerDependencies:
