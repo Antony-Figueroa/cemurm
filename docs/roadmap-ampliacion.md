@@ -3,7 +3,7 @@
 > **Estado:** propuesta. No autorizada. Ningún PR abierto, ninguna migración escrita.
 > **Change:** `openspec/changes/ampliar-alcance-institucional`
 > **Modelo de datos:** `docs/database-schema-ampliacion.md` · **Pantallas:** `docs/wireframes.md` §6
-> **Diagramas:** `docs/uml/amp-01-estado-requerimientos.html` · `docs/uml/amp-02-arquitectura-contextos.html`
+> **Diagramas:** los dos diagramas previstos — `docs/uml/amp-01-estado-requerimientos.html` y `docs/uml/amp-02-arquitectura-contextos.html` — **nunca se generaron y no existen en el árbol**. El único artefacto real de `docs/uml/` para este change es `uc-04-alcance-institucional.puml` / `.svg`.
 
 Esta es la pieza que convierte la ampliación en algo ejecutable. La propuesta dice **qué**; esto dice **en qué orden, con qué unidad de trabajo y qué decisión desbloquea cada tranche**.
 
@@ -15,7 +15,7 @@ Esta es la pieza que convierte la ampliación en algo ejecutable. La propuesta d
 
 `org_memberships` tiene `grant select` únicamente (`0016:552`) y sus tres políticas son las tres `SELECT`. De las **164 políticas vivas** del repositorio —el historial tiene 174 sentencias `create policy`, diez de ellas re-creaciones con el mismo nombre— ninguna escribe en esa tabla.
 
-**Con una excepción, y hay que nombrarla:** `private.org_leave` (`0016:437-453`) → `public.leave_organization` (`0016:455-459`), con `grant execute … to authenticated` (`0016:534,544`), hace `update org_memberships set status='former'` **sobre las filas del propio actor**. Es el único `INSERT`/`UPDATE` sobre esa tabla en las 34 migraciones, está cableado a `src/data/repositories/orgRepertoire.js:180` y tiene un botón vivo en `Organizations.jsx:318-340`. Es decir: **un miembro sí puede irse a sí mismo; no puede unirse, cambiar su rol ni sacar a nadie más.**
+**Con una excepción, y hay que nombrarla:** `private.org_leave` (`0016:437-453`) → `public.leave_organization` (`0016:455-459`), con `grant execute … to authenticated` (`0016:534,544`), hace `update org_memberships set status='former'` **sobre las filas del propio actor**. Es el único `INSERT`/`UPDATE` sobre esa tabla en las 38 migraciones, está cableado a `src/data/repositories/orgRepertoire.js:180` y tiene un botón vivo en `Organizations.jsx:318-340`. Es decir: **un miembro sí puede irse a sí mismo; no puede unirse, cambiar su rol ni sacar a nadie más.**
 
 Eso significa que una pantalla de formación sin C1 **no es una tarea más chica — es una tarea bloqueada**: el roster de alumnos que `/education/work` necesita mostrar se produce hoy únicamente por SQL.
 
@@ -73,11 +73,11 @@ Ninguna es de ingeniería. Ninguna la puedo cerrar yo.
 
 **Estimación:** ~25 escenarios. Es el PR más grande de la serie y el único que no divide: las políticas de `org_memberships` son un contrato indivisible.
 
-### PR 7-2 — `0037_identity_account_lifecycle.sql`
+### PR 7-2 — `0041_identity_account_lifecycle.sql`
 
 El DDL está en `docs/database-schema-ampliacion.md` §1–§2. Incluye los cuatro RPC, `admin_audit_log`, los CHECK de `role` y `org_type`, y **`FORCE ROW LEVEL SECURITY`** en las tablas tocadas.
 
-**Más el smoke `scripts/smoke/0037-*.sql`**, con:
+**Más el smoke `scripts/smoke/0041-*.sql`**, con:
 - los cuatro guards de cada RPC, invocados **como el actor que debe fallar**
 - SOD: auto-agregarse, auto-cambiarse el rol, auto-desactivarse → excepción
 - `WITH CHECK`: un `system_admin` que intente escribir un `account_status` inválido → rechazo
@@ -91,7 +91,7 @@ Layout en `wireframes.md` §6.1 y §6.2. Dos repositorios nuevos o uno con dos s
 
 > **Lo que este PR no hace, y por qué:** no crea cuentas. Eso necesita `auth.admin.createUser`, que es la **primera Edge Function de escritura** del repositorio (hoy hay una sola: `send-guardian-consent`) y CI corre `deno check` sobre ellas. Va en su propio PR.
 
-### PR 7-4 — `0038_bands_as_organizations.sql` + bandas
+### PR 7-4 — `0042_bands_as_organizations.sql` + bandas
 
 **Solo si D4 = A.** Si D4 = B, son tres tablas nuevas y un contexto entero: se re-planifica.
 
@@ -107,7 +107,7 @@ Layout en `wireframes.md` §6.1 y §6.2. Dos repositorios nuevos o uno con dos s
 |---|---|---|
 | **8-1** | Decisión D1 cerrada + `guardian_consents` versionado por finalidad | **bloqueante** — sin esto, `education-student-progress` no puede tener escenarios de menores |
 | **8-2** | `src/domain/education/` — la máquina de estados de progreso y las derivaciones de racha/XP, **funciones puras** | va PRIMERO, y por una razón dura: Vitest corre en `node` sin jsdom, así que el JSX **no se renderiza en tests**. La lógica en un hook llega sin ninguna red de regresión |
-| **8-3** | `0039_education.sql` — las 5 tablas + familia RLS | una migración por familia, convención `0018`/`0019`/`0023` |
+| **8-3** | `0043_education.sql` — las 5 tablas + familia RLS | una migración por familia, convención `0018`/`0019`/`0023` |
 | **8-4** | `src/data/repositories/education.js` + `features/education/` | |
 | **8-5** | Las cuatro pantallas de `wireframes.md` §6.3–§6.5 | |
 | **8-6** | `docs/mvp-scope.md` — los `education-*` dejan de decir *"await a scope decision"* | una línea, y cierra una inconsistencia que dura desde agosto |
@@ -137,7 +137,7 @@ Es el contexto más barato de los cuatro: **solo cliente y BDD**.
 |---|---|
 | **9-b-0** | **Revisión del diseño contra el catálogo existente.** ¿`services`/`service_assignments` ya modelan "algo prestado a alguien por un evento"? Si sí, C4 se reduce a `assets` y dos columnas |
 | **9-b-1** | `features/inventory-assets.feature` · `features/asset-loans.feature` |
-| **9-b-2** | `0040_inventory.sql` + `0041_asset_loans.sql`, con el índice parcial y el trigger de `assets.status` |
+| **9-b-2** | `0044_inventory.sql` + `0045_asset_loans.sql`, con el índice parcial y el trigger de `assets.status` |
 | **9-b-3** | Repositorio + `features/inventory/` + las tres pantallas de §6.7 |
 
 ### 9-c — C5 Analítica

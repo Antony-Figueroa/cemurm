@@ -17,8 +17,8 @@ CEMURM (Community-Centered Musical Repertories Manager) es una aplicación web p
 
 | Elemento | Estado |
 |---|---|
-| Especificación de comportamiento | **45 archivos, 713 escenarios** en Gherkin — es la fuente de verdad del producto |
-| Base de datos | **34 migraciones** sobre PostgreSQL con seguridad a nivel de fila (RLS) en todas las tablas |
+| Especificación de comportamiento | **46 archivos, 734 escenarios** en Gherkin — es la fuente de verdad del producto |
+| Base de datos | **38 migraciones** sobre PostgreSQL con seguridad a nivel de fila (RLS) en todas las tablas |
 | Aplicación | **En producción local**, cinco hitos entregados: núcleo y autenticación, modo escenario, colaboración, biblioteca pública, integraciones |
 | Habilidades en vivo | Transposición en tiempo real, navegación por pantalla táctil, teclado o **pedal USB**, vista de alto contraste, **funciona sin conexión** |
 | Recuento de pruebas | Suite automatizada en integración continua. La capa de navegador (Playwright, Chromium/Firefox/WebKit) **arranca la base de datos local real con RLS activa**, pero hoy contiene **un solo archivo de pruebas, con 18 casos**, y los 18 comprueban la estructura de los fixtures y sus constantes: ninguno abre una página ni consulta la base a través de RLS. **Cero escenarios de navegador real contra la base de datos por ahora.** |
@@ -179,4 +179,4 @@ La buena noticia es que **la materia prima ya se registra**: el sistema anota **
 
 ---
 
-*Documento actualizado a partir de la especificación del proyecto al 13 de octubre de 2026: 45 archivos de comportamiento (713 escenarios), 34 migraciones de base de datos, cinco hitos entregados. El detalle técnico completo de cada módulo —incluidos riesgos y decisiones pendientes— está en `docs/propuestas/cemurm-ampliacion-alcance-11-modulos.md`, disponible para consulta si lo desean.*
+*Documento actualizado a partir de la especificación del proyecto al 13 de octubre de 2026: 46 archivos de comportamiento (734 escenarios), 38 migraciones de base de datos, cinco hitos entregados. El detalle técnico completo de cada módulo —incluidos riesgos y decisiones pendientes— está en `docs/propuestas/cemurm-ampliacion-alcance-11-modulos.md`, disponible para consulta si lo desean.*

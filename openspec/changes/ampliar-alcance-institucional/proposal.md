@@ -3,9 +3,9 @@
 > Change: `ampliar-alcance-institucional`
 > Origen: lista de 11 requerimientos de gestión remitida por la academia, por recomendación de su docente.
 > Estado: **propuesta en revisión.** No autorizada para implementación.
-> Base: `main` = `a610dd0`, 34 migraciones, 45 features / 713 escenarios, 26 rutas.
+> Base: `main` = `d3f1269`, 38 migraciones, 46 features / 734 escenarios, 30 rutas.
 > Documento largo acompañante: `docs/propuestas/cemurm-ampliacion-alcance-11-modulos.md`.
-> Diagrama: `docs/uml/uc-04-alcance-institucional.puml` / `.svg` / `.html`.
+> Diagrama: `docs/uml/uc-04-alcance-institucional.puml` / `.svg`.
 
 ---
 
@@ -59,7 +59,7 @@ grant select on table public.organizations, public.branches, public.org_membersh
 | Permisos | `grant execute … to authenticated` en `0016:534` y `0016:544` |
 | Cliente | `src/data/repositories/orgRepertoire.js:180` y un botón vivo en `Organizations.jsx:318-340` |
 
-Y es el **único** `INSERT`/`UPDATE` sobre `org_memberships` en las 34 migraciones (fuera del seed, `seed.sql:79`). Lo que sigue sin existir: **alta** —nadie puede unirse a una organización desde la aplicación—, **cambio de rol** y **baja de terceros**. Un miembro solo puede irse a sí mismo. Por lo tanto:
+Y es el **único** `INSERT`/`UPDATE` sobre `org_memberships` en las 38 migraciones (fuera del seed, `seed.sql:79`). Lo que sigue sin existir: **alta** —nadie puede unirse a una organización desde la aplicación—, **cambio de rol** y **baja de terceros**. Un miembro solo puede irse a sí mismo. Por lo tanto:
 
 - **#1** asignar un rol es escribir en una tabla que el cliente no puede escribir
 - **#7** bandas necesita pertenencia a un grupo
@@ -93,7 +93,7 @@ Once módulos, agrupados en cinco contextos con dependencia de construcción exp
 | **C4 Inventario y préstamos** | #10, #11 | 3 tablas nuevas desde cero |
 | **C5 Analítica institucional** | #2 | Vistas y RPC de agregación. Cero tablas. Reescritura del BDD |
 
-Migraciones previstas `0037`–`0041` (`0037` es el siguiente libre; `0021`/`0022` siguen siendo hueco deliberado).
+Migraciones previstas `0041`–`0045` (`0041` es el siguiente libre; `0021`/`0022` siguen siendo hueco deliberado).
 
 ### Out of scope
 
@@ -173,11 +173,11 @@ Lo que el repositorio **escribe** hoy es una fracción: el seed inserta `org_own
 
 | Área | Impacto | Descripción |
 |---|---|---|
-| `supabase/migrations/0037_identity_account_lifecycle.sql` | Nuevo | `profiles.account_status`, `profiles.created_at`, `CHECK` de rol, RPC `SECURITY DEFINER` de alta/baja/rol, `FORCE RLS`, grant ampliado de `profiles` |
-| `0038_bands_as_organizations.sql` | Nuevo | `'Band'` en el `CHECK` de `org_type` (condicionado a D4) |
-| `0039_education.sql` | Nuevo | Las 5 tablas de `odd/tasks/cemurm-education-audit.md` §E + familia RLS, siguiendo la convención de una migración por familia (`0018`, `0019`, `0023`) |
-| `0040_inventory.sql` | Nuevo | `asset_types`, `assets` |
-| `0041_asset_loans.sql` | Nuevo | `asset_loans` + índice único parcial sobre `returned_at is null` |
+| `supabase/migrations/0041_identity_account_lifecycle.sql` | Nuevo | `profiles.account_status`, `profiles.created_at`, `CHECK` de rol, RPC `SECURITY DEFINER` de alta/baja/rol, `FORCE RLS`, grant ampliado de `profiles` |
+| `0042_bands_as_organizations.sql` | Nuevo | `'Band'` en el `CHECK` de `org_type` (condicionado a D4) |
+| `0043_education.sql` | Nuevo | Las 5 tablas de `odd/tasks/cemurm-education-audit.md` §E + familia RLS, siguiendo la convención de una migración por familia (`0018`, `0019`, `0023`) |
+| `0044_inventory.sql` | Nuevo | `asset_types`, `assets` |
+| `0045_asset_loans.sql` | Nuevo | `asset_loans` + índice único parcial sobre `returned_at is null` |
 | `features/event-attendance.feature` | Nuevo | Primer BDD de asistencia. Hoy ningún feature menciona RSVP |
 | `features/analytics-and-insights.feature` | **Modificado** | 23 escenarios, de personal a institucional. Reescritura, no adición |
 | `features/*.feature` (identidad, bandas, inventario, préstamos) | Nuevo | BDD antes que código, sin excepción |
@@ -186,7 +186,7 @@ Lo que el repositorio **escribe** hoy es una fracción: el seed inserta `org_own
 | `supabase/functions/admin-accounts/` | Nuevo | La **primera** Edge Function de escritura del repo. Hoy hay una sola (`send-guardian-consent`) y CI corre `deno check` sobre ellas |
 | `src/data/repositories/{identity,events,inventory,loans,education}.js` | Nuevo | El `data/` es la única frontera con Supabase (ADR-010) |
 | `src/features/{identity,bands,events,inventory,loans,education}/` | Nuevo | Carpetas por feature, layout post-reubicación |
-| `scripts/smoke/00{37..41}-*.sql` | Nuevo | Los smokes son manuales, con `expects N PASS`, y **requieren `supabase db reset` antes**: no son idempotentes |
+| `scripts/smoke/00{41..45}-*.sql` | Nuevo | Los smokes son manuales, con `expects N PASS`, y **requieren `supabase db reset` antes**: no son idempotentes |
 
 ## Verification — cómo se prueba esto
 
@@ -206,11 +206,11 @@ La verificación de JS es `pnpm test && pnpm typecheck && pnpm lint && pnpm buil
 
 Un contexto por migration group, y cada uno es reversible sin pérdida de datos:
 
-- **C1** — revertir `0037`/`0038` deja las columnas fuera y el GRANT como estaba. `org_memberships` vuelve al estado de hoy: solo lectura más `leave_organization`, que sobrevive intacto porque `0037` no lo toca. El sistema funciona como antes. **No hay que deshacer las pertenencias que C1 creara**, porque las únicas filas que existían antes de este change son las del seed —salvo que alguien haya usado el botón "salir" de `Organizations.jsx:318-340`, que sí escribe `status='former'` y `left_at` desde antes de este change y que el rollback no toca, porque tampoco lo revierte.
+- **C1** — revertir `0041`/`0042` deja las columnas fuera y el GRANT como estaba. `org_memberships` vuelve al estado de hoy: solo lectura más `leave_organization`, que sobrevive intacto porque `0041` no lo toca. El sistema funciona como antes. **No hay que deshacer las pertenencias que C1 creara**, porque las únicas filas que existían antes de este change son las del seed —salvo que alguien haya usado el botón "salir" de `Organizations.jsx:318-340`, que sí escribe `status='former'` y `left_at` desde antes de este change y que el rollback no toca, porque tampoco lo revierte.
 - **C2** — `DROP TABLE` de las 5 tablas. Se pierde el progreso escrito, no el catálogo musical.
 - **C3** — sin migración. Rollback es revertir el cliente.
 - **C4** — `DROP TABLE` de las 3 tablas. Se pierden inventario y préstamos registrados.
-- **S1 (`FORCE RLS`)** — es el único cambio cuyo rollback **reduce** seguridad. Si algo se rompe, el arreglo es la política, no quitar el `FORCE`. Por eso va solo en `0037` y con smoke propio.
+- **S1 (`FORCE RLS`)** — es el único cambio cuyo rollback **reduce** seguridad. Si algo se rompe, el arreglo es la política, no quitar el `FORCE`. Por eso va solo en `0041` y con smoke propio.
 
 ## Frozen decisions
 
@@ -247,7 +247,7 @@ La auditoría describe las políticas como *"owner/instructor scoped"* sin resol
 
 *Posición:* `events` coordina y **no crea una cuarta entidad**; un evento apunta opcionalmente a un `gig`, `rehearsal` o `service`. Resolver antes del BDD de asistencia.
 
-### D4 — Bandas: organización o entidad
+### D4 — Bandas: organización o entidad **(bloqueante)**
 
 | | A — organización con `org_type='Band'` | B — entidad `bands` propia |
 |---|---|---|
@@ -278,4 +278,4 @@ Patrones consulted, para que un revisor pueda refutarlos:
 
 ---
 
-*Elaborado contra `main` = `a610dd0` el 13 de octubre de 2026. Cada afirmación lleva su evidencia en `supabase/migrations/`, `src/`, `features/` u `odd/tasks/`. Nada de este change está autorizado para implementación hasta que D1, D2 y D5 estén decididas.*
+*Elaborado contra `main` = `a610dd0` el 13 de octubre de 2026. Cada afirmación lleva su evidencia en `supabase/migrations/`, `src/`, `features/` u `odd/tasks/`. Nada de este change está autorizado para implementación hasta que D1, D2 y D4 estén decididas.*

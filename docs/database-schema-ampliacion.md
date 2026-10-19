@@ -1,7 +1,7 @@
 # CEMURM — Ampliación institucional: modelo de datos de C1–C4
 
 **Estado:** especificación en revisión. **No aplicada.** Ninguna migración de este documento corrió.
-**Base:** `main` = `a610dd0`, 34 migraciones (`0001`–`0036`, hueco deliberado en `0021`/`0022`).
+**Base:** `main` = `d3f1269`, 38 migraciones (`0001`–`0040`, hueco deliberado en `0021`/`0022`).
 **Change:** `openspec/changes/ampliar-alcance-institucional`
 **Alcance:** las 9 tablas nuevas de C1–C4 y los 4 RPC de C1. C3 no necesita migración — ver §5.
 
@@ -142,7 +142,7 @@ Esta es la parte que más importa, porque es la que **desbloquea** C2, C3 y C4. 
 --
 -- NOTA SOBRE EL ESTADO ACTUAL, porque el change se apoya en el: org_memberships
 -- no esta completamente sin escribir. `leave_organization` (0016:455-459) la
--- actualiza, y es lo unico que lo hace en las 34 migraciones. Lo que no existe
+-- actualiza, y es lo unico que lo hace en las 38 migraciones. Lo que no existe
 -- es alta, cambio de rol ni baja de terceros. Este §2 agrega las tres acciones
 -- que faltan y no toca la cuarta.
 --
@@ -397,7 +397,7 @@ grant execute on function public.set_account_status(uuid,text)            to aut
 
 ## 3. RLS de C1
 
-Orden D6. `org_memberships` **no recibe** política `INSERT`/`UPDATE`/`DELETE`: la escritura pasa por los RPC, y esa es la razón por la que el requerimiento #1 no es "una pantalla más". `leave_organization` (`0016:455-459`) sobrevive intacto —no es una política, es una función `SECURITY DEFINER` con su propio guard— y sigue siendo la única forma en que un miembro modifica una fila de esta tabla sin ser `0037`.
+Orden D6. `org_memberships` **no recibe** política `INSERT`/`UPDATE`/`DELETE`: la escritura pasa por los RPC, y esa es la razón por la que el requerimiento #1 no es "una pantalla más". `leave_organization` (`0016:455-459`) sobrevive intacto —no es una política, es una función `SECURITY DEFINER` con su propio guard— y sigue siendo la única forma en que un miembro modifica una fila de esta tabla sin ser `0041`.
 
 ```sql
 alter table public.org_memberships enable row level security;
@@ -1484,7 +1484,7 @@ create policy assets_select_branch_admin on public.assets
 -- dos dispositivos dejarian status inconsistent aunque el indice los|frene.
 ```
 
-> **El trigger de `assets.status` no está escrito.** Es la pieza que convierte el indice parcial en un estado coherente, y sin ella `assets.status = 'loaned'` es una opinion del cliente. Queda como trabajo de la migracion `0041`, no como nota. Marcado, no resuelto.
+> **El trigger de `assets.status` no está escrito.** Es la pieza que convierte el indice parcial en un estado coherente, y sin ella `assets.status = 'loaned'` es una opinion del cliente. Queda como trabajo de la migracion `0045`, no como nota. Marcado, no resuelto.
 
 ### Grants de C4
 
@@ -1492,7 +1492,7 @@ Mismo orden D6 y misma razon que en C2: sin privilegio de tabla, las dos políti
 
 ```sql
 -- assets: solo lectura por ahora. Las dos politicas de arriba son SELECT, y la
--- escritura depende del trigger de §6.4 mas el RPC de prestamos de 0041, que
+-- escritura depende del trigger de §6.4 mas el RPC de prestamos de 0045, que
 -- todavia no esta escrito. Conceder INSERT aca seria una promesa sin politica
 -- detras: inerte hoy y peligroso el dia que la politica llegue.
 grant select on table public.assets to authenticated;
@@ -1507,7 +1507,7 @@ grant select, insert, update on table public.asset_types to authenticated;
 -- y condition_in). DELETE no: un prestamo es historia, igual que el ledger de XP.
 -- OJO: hasta que existan las politias INSERT/UPDATE de esta tabla, estos dos
 -- privilegios quedan INERTES — FORCE RLS sin politica los denies igual. El grant
--- fija el contrato de la migracion 0041; la politica que lo hace alcanzable es
+-- fija el contrato de la migracion 0045; la politica que lo hace alcanzable es
 -- trabajo abierto, no una nota.
 grant select, insert, update on table public.asset_loans to authenticated;
 ```

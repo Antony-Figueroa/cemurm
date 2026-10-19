@@ -87,7 +87,7 @@ Cliente: `propuestas/…-academia-v2.md` tiene errores de idioma visibles en un 
 **Alcance:** solo C-01 … C-15. S-01…S-06, WARNING y SUGGESTION quedan **sin tocar**, tal como aparecen arriba.
 **Restricciones respetadas:** nada commiteado, ningún PR, **la base de datos no se tocó** — no se corrió `supabase db reset`, no se aplicó ninguna migración, no se corrió ningún smoke. Kroki estaba levantado pero **no se regeneró ningún diagrama**.
 
-**Archivos tocados (9):**
+**Archivos tocados (6; las 3 entradas restantes de la lista original nunca existieron — ver corrección de 2026-10-19):**
 
 | Archivo | Cambio |
 |---|---|
@@ -97,9 +97,9 @@ Cliente: `propuestas/…-academia-v2.md` tiene errores de idioma visibles en un 
 | `openspec/changes/ampliar-alcance-institucional/proposal.md` | C-01, C-11, C-12, C-15 |
 | `docs/roadmap-ampliacion.md` | C-15 |
 | `docs/uml/build-all.sh` | C-04 |
-| `docs/uml/uc-04-alcance-institucional.cards.json` | C-15 |
-| `docs/uml/amp-01-estado-requerimientos.archify.json` | C-15 (fuera de la lista enumerada del encargo — ver nota) |
-| `docs/uml/amp-02-arquitectura-contextos.archify.json` | C-15 (fuera de la lista enumerada del encargo — ver nota) |
+| `docs/uml/uc-04-alcance-institucional.cards.json` | C-15 — **corrección 2026-10-19: el archivo nunca existió** (sí existen su `.puml` y su `.svg`) |
+| `docs/uml/amp-01-estado-requerimientos.archify.json` | C-15 (fuera de la lista enumerada del encargo — ver nota) — **corrección 2026-10-19: el archivo nunca existió** |
+| `docs/uml/amp-02-arquitectura-contextos.archify.json` | C-15 (fuera de la lista enumerada del encargo — ver nota) — **corrección 2026-10-19: el archivo nunca existió** |
 
 ---
 
@@ -526,9 +526,9 @@ $ … | uniq -c | awk '$1>1'     → 9 pares duplicados, 10 ocurrencias de más
 ```
 «174» es el número de sentencias y «164» el de políticas. El texto nuevo dice las dos cosas, para que un revisor no tenga que elegir.
 
-**Fuera de la lista enumerada del encargo:** `docs/uml/amp-01-estado-requerimientos.archify.json` y `docs/uml/amp-02-arquitectura-contextos.archify.json` afirmaban lo mismo («de 174, ninguna escribe», «org_memberships · solo lectura»). Son fuentes escritas a mano del mismo change, y dejarlas contradiciendo los seis documentos habría sido una corrección a medias. Se corrigieron. Verificados como JSON válidos.
+**Fuera de la lista enumerada del encargo:** `docs/uml/amp-01-estado-requerimientos.archify.json` y `docs/uml/amp-02-arquitectura-contextos.archify.json` ~~afirmaban lo mismo («de 174, ninguna escribe», «org_memberships · solo lectura»). Son fuentes escritas a mano del mismo change, y dejarlas contradiciendo los seis documentos habría sido una corrección a medias. Se corrigieron. Verificados como JSON válidos.~~ **Nunca existieron**: no hay ninguno de los dos en el árbol, ni en esta rama ni en `main` (`git ls-tree` lo confirma), así que no afirmaban nada, no se corrigió ninguna fuente y **ninguna verificación como JSON válido ocurrió**. *(Corrección posterior, 2026-10-19; el texto tachado es lo que este registro afirmó en su momento.)*
 
-**Lo que NO se hizo:** los `.html` y `.svg` generados de `uc-04`, `amp-01` y `amp-02` **siguen mostrando el texto viejo**. AGENTS.md es explícito —«edit the `.puml` or the pipeline, never the artifact»— y Kroki estaba levantado, pero regenerar reescribe artefactos fuera del conjunto acotado de esta ronda. **Acción pendiente: `bash docs/uml/build-all.sh`** (verificarla con `bash -n`, ya en verde).
+**Lo que NO se hizo:** los `.html` y `.svg` generados de `uc-01`, `uc-02`, `uc-03` y el `.svg` de `uc-04` (este no tiene `.html`) **siguen mostrando el texto viejo**. AGENTS.md es explícito —«edit the `.puml` or the pipeline, never the artifact»— y Kroki estaba levantado, pero regenerar reescribe artefactos fuera del conjunto acotado de esta ronda. **Acción pendiente: `bash docs/uml/build-all.sh`** (verificarla con `bash -n`, ya en verde). `amp-01` y `amp-02` no figuran en esa acción pendiente: sus fuentes nunca se crearon. *(Corrección posterior, 2026-10-19.)*
 
 **Rollback:** revertir los seis documentos y los tres JSON. Sin dependencias.
 **Estado:** **fixed**, con la regeneración de diagramas pendiente fuera de alcance.
@@ -570,7 +570,7 @@ Las cuatro puertas de JS se corrieron aunque no se tocara JS: es la red del repo
 
 ### Acciones pendientes para round 2
 
-1. `bash docs/uml/build-all.sh` — los `.html`/`.svg` de `uc-04`, `amp-01` y `amp-02` muestran el texto viejo.
+1. `bash docs/uml/build-all.sh` — los `.html`/`.svg` de `uc-01`–`uc-03` y el `.svg` de `uc-04` muestran el texto viejo (`amp-01`/`amp-02` quedan fuera: sus fuentes nunca se crearon).
 2. Smoke de `0039` para la función de racha rewritten (C-09): la evidencia de round 1 prueba el algoritmo, no el SQL.
 3. `Organizations.jsx:22` — `ROLE_LABELS` tiene `member` (inalcanzable) y le falta `org_member`, que se renderiza crudo. No se tocó: es código, y el encargo era documental.
 4. `odd/tasks/cemurm-education-audit.md:34` nombra cuatro roles y omite `org_member`. No se tocó: es un artefacto cerrado de round anterior.

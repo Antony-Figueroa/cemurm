@@ -76,7 +76,7 @@ grant select on table public.organizations, public.branches, public.org_membersh
 
 `org_memberships` tiene **tres políticas, las tres `SELECT`**: `select_self`, `select_org_admin`, `select_system`. **No hay política `INSERT`, `UPDATE` ni `DELETE`, y el único grant es `select`.**
 
-**Hay un camino de escritura, y es de una sola acción: salir.** `private.org_leave` (`0016:437-453`) pone `status='former'` y `left_at` sobre las filas del propio actor, envuelto por `public.leave_organization` (`0016:455-459`), con `grant execute … to authenticated` (`0016:534,544`), cableado a `src/data/repositories/orgRepertoire.js:180` y a un botón vivo en `Organizations.jsx:318-340`. Es el **único** `INSERT`/`UPDATE` sobre `org_memberships` en las 34 migraciones.
+**Hay un camino de escritura, y es de una sola acción: salir.** `private.org_leave` (`0016:437-453`) pone `status='former'` y `left_at` sobre las filas del propio actor, envuelto por `public.leave_organization` (`0016:455-459`), con `grant execute … to authenticated` (`0016:534,544`), cableado a `src/data/repositories/orgRepertoire.js:180` y a un botón vivo en `Organizations.jsx:318-340`. Es el **único** `INSERT`/`UPDATE` sobre `org_memberships` en las 38 migraciones.
 
 Lo que **no** existe: **alta** —nadie puede unirse a una organización desde la aplicación—, **cambio de rol**, ni **baja de terceros**. Un miembro solo se va a sí mismo. Todo lo demás sigue siendo seed o SQL manual.
 
@@ -257,15 +257,15 @@ El orden no es una preferencia: **C2, C3 y C4 no pueden construirse antes que C1
 
 ## 5. Migraciones
 
-`main` lleva **34 archivos, `0001`–`0036`, con `0021`/`0022` como hueco deliberado**. **El siguiente número libre es `0037`.**
+`main` lleva **38 archivos, `0001`–`0040`, con `0021`/`0022` como hueco deliberado**. **El siguiente número libre es `0041`.**
 
 | # | Migración | Contenido | Capa |
 |---|---|---|---|
-| `0037` | `identity_account_lifecycle.sql` | `profiles.account_status`, `profiles.created_at`, `CHECK` en `org_memberships.role`, grants + políticas de escritura, RPC `SECURITY DEFINER` | C1 |
-| `0038` | `bands_as_organizations.sql` | `'Band'` en el `CHECK` de `org_type`, `branch_admin` si aplica | C1 |
-| `0039` | `education.sql` | Las 5 tablas + familia completa de RLS, siguiendo la convención de una migración por familia (`0018`, `0019`, `0023`) | C2 |
-| `0040` | `inventory.sql` | `asset_types`, `assets` | C4 |
-| `0041` | `asset_loans.sql` | `asset_loans` + índice único parcial | C4 |
+| `0041` | `identity_account_lifecycle.sql` | `profiles.account_status`, `profiles.created_at`, `CHECK` en `org_memberships.role`, grants + políticas de escritura, RPC `SECURITY DEFINER` | C1 |
+| `0042` | `bands_as_organizations.sql` | `'Band'` en el `CHECK` de `org_type`, `branch_admin` si aplica | C1 |
+| `0043` | `education.sql` | Las 5 tablas + familia completa de RLS, siguiendo la convención de una migración por familia (`0018`, `0019`, `0023`) | C2 |
+| `0044` | `inventory.sql` | `asset_types`, `assets` | C4 |
+| `0045` | `asset_loans.sql` | `asset_loans` + índice único parcial | C4 |
 
 **C3 no necesita migración.** Es el único contexto cuyo número de migraciones es cero.
 
@@ -335,4 +335,4 @@ Un recordatorio de capa: la lógica de progreso, racha y XP va en `src/domain/ed
 
 ---
 
-*Elaborado contra `main` = `a610dd0` (34 migraciones, 45 features, 713 escenarios, 26 rutas), rama `docs/sync-ci-and-migration-facts` @ `cc2e7f9`, 2026-10-13. Cada afirmación lleva su evidencia en `supabase/migrations/`, `src/`, `features/` u `odd/tasks/`.*
+*Elaborado contra `main` = `d3f1269` (38 migraciones, 46 features, 734 escenarios, 30 rutas), rama `docs/sync-ci-and-migration-facts` @ `cc2e7f9`, 2026-10-13. Cada afirmación lleva su evidencia en `supabase/migrations/`, `src/`, `features/` u `odd/tasks/`.*
