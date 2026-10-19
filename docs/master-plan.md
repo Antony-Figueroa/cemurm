@@ -41,11 +41,11 @@ Prose in this repo has drifted. These are the facts, checked against git and cod
 | `main` | `c14e977`, in sync with `origin/main` |
 | **Test files on `main`** | **17** — 12 characterization + 5 BDD-tier in `src/test/gherkin/` (was 9 at `e849738`) |
 | **`test` script on `main`** | **present** — `package.json` has `build`, `check:visual`, `dev`, `lint`, `preview`, `test`, `test:gherkin`, `test:watch`, `typecheck` |
-| **CI on `main`** | `install --frozen-lockfile → lint → typecheck → check-test-integrity.sh → test → test:gherkin → build → check-visual-contract.sh` |
+| **CI on `main`** | `install --frozen-lockfile → lint → deno check 'supabase/functions/**/*.ts' → typecheck → check-test-integrity.sh → test → test:gherkin → build → check-migrations-unique.sh → check-visual-contract.sh` (both gates run last on purpose: a gate that precedes `test`/`build` exits 1 under `set -euo pipefail` and marks them SKIPPED) |
 | `src/` layout on `main` | post-relocation: `app/`, `data/`, `domain/`, `features/`, `hooks/`, `integrations/`, `lib/` (incl. `lib/storage.js`), `offline/`, `test/`, `ui/`. No `store/` and no `components/` — there is no Zustand |
 | Feature files | **46**, 734 scenarios — was 42 / 656 at `8b66394` |
-| Migrations on `main` | **33 files, numbered `0001`–`0035`, with `0021`/`0022` a deliberate free gap** — was 27 with a gap at `0021` |
-| Next free migration number | **`0021` / `0022`** (deliberately free), or **`0036`** for anything that must sort after `0035` |
+| Migrations on `main` | **38 files, numbered `0001`–`0040`, with `0021`/`0022` a deliberate free gap** — was 27 with a gap at `0021` |
+| Next free migration number | **`0041`** — `0021`/`0022` remain deliberately free, and everything from `0036` to `0040` is taken (`0036_guardian_approve_public_sharing.sql`, `0037_offline_tie_break.sql`, `0038_offboarding_cascade.sql`, `0039_leave_handoff_guard.sql`, `0040_fix_migration_chain_rls.sql`) |
 | Hito 5 | **complete and merged.** Migrations up to `0035` all on `main`; plan-freeze and projection landed as `0034_plan_freeze.sql` / `0035_projection.sql` (renumbered in `07522a0`) |
 | Hito 6 | **not started** — no implementation for any of its six features |
 | `// @ts-check` opt-ins | **47** files; `tsc --listFiles` reaches **62** `src/` files |
@@ -144,8 +144,10 @@ All four branches exist, are pushed, and are unmerged. Verified after `git fetch
 ### ⚠️ Migration numbering: one real collision, and the rest is fine
 
 > **RESOLVED — and the outcome is the opposite of what this section predicted.** Read this as the
-> post-mortem it now is. `main` is **33 files numbered `0001`–`0035`, with `0021`/`0022` left as a
-> deliberate free gap**; the slot after the end is **`0036`**.
+> post-mortem it now is. `main` is **38 files numbered `0001`–`0040`, with `0021`/`0022` left as a
+> deliberate free gap**; the next free slot is **`0041`**. The tie-break migration took **`0037`** in
+> #365 — the very slot this section was written to claim, so the collision it predicted did happen
+> and the number was allocated rather than left open.
 >
 > - The pair merged **renumbered**, not under the numbers this section defended. Commit `07522a0`
 >   renamed `plan_freeze` `0021 → 0034` and `projection` `0022 → 0035`, so `0021`/`0022` never
@@ -351,17 +353,18 @@ own decision, separate from this plan. See §5.
 
 ## 3. P2 — the ten spec findings
 
-> **🔴 NINE OF THE TEN ARE NOW FIXED AND MERGED. This section was badly stale.** It previously said
-> "All ten still hold on `main`" and that "one change proposal exists … B through J have none".
-> Verified 2026-09-30 against `762a040`: nine findings have their fix commit on `main`, and
-> `openspec/changes/` holds **eleven** live proposals, not one. Only **finding D** remains open.
+> **✅ ALL TEN FINDINGS NOW HAVE A FIX, AND ALL TEN ARE ON `main`. This section was badly stale.**
+> It previously said "All ten still hold on `main`" and that "one change proposal exists … B through
+> J have none". Verified 2026-09-30 against `762a040`: nine findings have their fix commit on `main`,
+> and `openspec/changes/` holds **eleven** live proposals, not one. **Finding D** closed the set —
+> its migration merged in #365 and its client, spec and docs halves merged with this change.
 
 | Finding | Subject | Status on `main` | Fix |
 |---|---|---|---|
 | **A** | `sectionKeyContexts` always empty; the sectional-key branch was dead | ✅ **fixed** | `20e79d0` via #218 |
 | **B** | enharmonic spelling from a hardcoded six-key set | ✅ **fixed** | `92e64f6` via #219 |
 | **C** | OnSong export cannot reach `agreed_key` | ✅ **fixed** | `63d1ed3` via #220 |
-| **D** | **no tie-break in offline conflict resolution, and nothing stores the applied rule** | 🔴 **OPEN** | proposal `fix-offline-tie-break` |
+| **D** | **no tie-break in offline conflict resolution, and nothing stores the applied rule** | ✅ **fixed** | `0037_offline_tie_break.sql` + `apply_setlist_item_op` + the client mirror; PR #365 (WU1: migration + smoke) and #366 (WU2/WU3: client + spec + docs) — both on `main` |
 | **E** | `qualityForDegree` inert — 0 of 49 correct | ✅ **fixed** | `0cf6907` via #218 |
 | **F**+**G** | readiness lifecycle and per-version tracking | ✅ **fixed** | `791d1de` via #222 |
 | **H** | reconcile silent drop — unidentifiable op reported as *superseded* | ✅ **fixed** | `e34e7c6` via #216 |
@@ -369,26 +372,30 @@ own decision, separate from this plan. See §5.
 | — | offline write-queue stalling on unsyncable ops | ✅ **fixed** | `057120a` via #253 |
 | — | three unspecified crashes that killed the caller | ✅ **fixed** | `5cc50f6` via #223 |
 
-**Finding D is the only real work left in this section**, and it is the hardest of the ten, which
-is why it is the one that survived: `features/offline-edit-conflict-policy.feature:47-51` requires
+**Finding D is now fixed, and it was the hardest of the ten**, which is why it was the
+one that survived longest: `features/offline-edit-conflict-policy.feature:47-51` requires
 both that the app "applies the recorded tie-break rule" and that "the applied rule is stored with
-the resolution so every device reaches the same result". Today `reconcileSetlistOp` uses a strict
-`>` comparison, no rule runs on an exact tie, and there is nowhere to store one. The suite says so
-in its own words — `src/domain/setlist/collab.test.js:125-126` carries the Gherkin quote and the
-note "The code has no tie-break". **No migration mentions a tie-break** (verified across
-`supabase/migrations/`), so the storage half is absent too.
+the resolution so every device reaches the same result". Before the fix, `reconcileSetlistOp` used a
+strict `>` comparison, no rule ran on an exact tie, and there was nowhere to store one. The suite
+said so in its own words — `src/domain/setlist/collab.test.js:125-126` carried the Gherkin quote and
+the note "The code has no tie-break". **No migration mentioned a tie-break** (verified across
+`supabase/migrations/`), so the storage half was absent too. Both halves are on `main`:
+`0037_offline_tie_break.sql` (append-only `public.setlist_conflict_resolutions` + the
+`apply_setlist_item_op` RPC) and the client mirror in `reconcileSetlistOp`.
 
 It is also the **only finding of the ten that needs a migration**, and the numbering question that
 blocked it is settled: `0034` was taken by plan-freeze (`0034_plan_freeze.sql`), so the
-tie-break migration should take **`0036`** — it extends the setlist/collab schema, so it must
-sort after `0035`; `0021`/`0022` are free but sort too early for it. The proposal deliberately
-left the number open, so filling it in is now a real, small decision rather than a blocker.
+tie-break migration takes **`0037`**, **not `0036`** — `0036` was taken by
+`0036_guardian_approve_public_sharing.sql`, so the next free slot after `0035` was `0037`, and #365
+consumed it. `0021`/`0022` are free but sort too early for it. The proposal deliberately
+left the number open; it is now resolved.
 
-**The three product decisions below were real, and two have since been made** — B (in #219) and
-E (in #218). D's decision is still unmade, and it is a **product** decision, not an engineering
-one: what is the tie-break rule, and is it a per-conflict stored value or a global constant? A
-schema change follows from the answer, and the Gherkin demands determinism across devices, which
-is the claim the product is sold on. This cannot be resolved by reading the code.
+**The three product decisions below were real, and all three have since been made** — B (in #219)
+and E (in #218) merged, and D decided. D's decision was a **product** decision, not an engineering
+one: what is the tie-break rule, and is it a per-conflict stored value or a global constant? It is
+now **decided and on `main`**: the per-operation `opKey` uuid, greater
+lowercased key wins. The Gherkin demands determinism across devices, which is the claim the product
+is sold on; the recorded rule satisfies it.
 
 The other seven (A, C, F, G, H, I, J) were mechanical against a written scenario — and all of them
 are done.
@@ -418,7 +425,8 @@ took its own PR. Three of them hid a **product decision** that no amount of read
 - **D** — what is the tie-break rule, and where is it stored? The Gherkin requires the applied
   rule be persisted "so every device reaches the same result", so this implies a **schema
   change** *and* an undefined rule. This is the determinism claim the product is sold on.
-  🔴 **Still undecided** — see above.
+  ✅ **Decided and on `main`** — the per-operation `opKey` uuid, greater
+  lowercased key wins (stored in `public.setlist_conflict_resolutions`, `0037_offline_tie_break.sql`).
 - **E** — what is the correct degree-quality algorithm? The code read consecutive scale steps
   as a triad's root/third/fifth; stacking real thirds is a different computation.
   ✅ **Decided and shipped in #218** (`0cf6907`).
@@ -557,8 +565,8 @@ M5   doc repairs, alongside each slice above
 
 ```
 N0  ✅ DONE — the visual gate passes on `main` (12 rules, 0 failing; ratchet step 1 landed)
-N1  finding D only (9 of 10 findings landed): the offline tie-break rule, 1 PR
-    → migration `0036`                                                        ← now provable against the suite
+N1  ✅ DONE — finding D: the offline tie-break rule. 2 chained PRs, both merged:
+    WU1 migration `0037` + smoke (#365); WU2/WU3 client + spec + docs (#366).
 N2  Hito 6 privacy slice: offboarding-cascade, then
     account-data-export-and-erasure                              ← obligations, not features
 N3  Hito 6 product slice: export-and-sharing, user-onboarding,
