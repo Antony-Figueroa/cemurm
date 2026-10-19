@@ -1,2 +1,4 @@
 allowBuilds:
   esbuild: true
+patchedDependencies:
+  postcss-selector-parser@6.1.4: patches/postcss-selector-parser@6.1.4.patch
