@@ -29,7 +29,7 @@ export default function NavCollapse({ menu, className }: NavCollapseProps) {
 
 
           <span className={cn(
-            "text-xs uppercase block font-semibold text-muted-foreground mb-2 transition-all duration-200",
+            "text-xs uppercase block font-semibold text-cem-secondary-elevated mb-2 transition-all duration-200",
             isCollapse ? "text-center group-hover:text-start group-data-[state=expanded]:text-start" : ""
           )}>
             {isCollapse ? (
@@ -91,7 +91,7 @@ export default function NavCollapse({ menu, className }: NavCollapseProps) {
                   />
                 </summary>
 
-                <div className="pl-3  ml-5  border-l border-border">
+                <div className="pl-3  ml-5  border-l border-cem-hover">
                   {item.items?.map((sub: ChildItem, index) =>
                     sub.items ? (
                       <NavCollapse
@@ -110,7 +110,7 @@ export default function NavCollapse({ menu, className }: NavCollapseProps) {
                           className,
                         )}
                       >
-                        <NavItem item={sub} hasChildren={false} className={cn("px-2! py-1! my-1!", pathname === sub.url && "bg-primary/5 text-primary")} isActive={pathname === sub.url} />
+                        <NavItem item={sub} hasChildren={false} className={cn("px-2! py-1! my-1!", pathname === sub.url && "bg-cem-amber/5 text-cem-amber")} isActive={pathname === sub.url} />
                       </Link>
                     )
                   )}

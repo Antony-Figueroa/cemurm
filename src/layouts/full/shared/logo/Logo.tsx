@@ -10,7 +10,7 @@ const Logo = () => {
 
             <SidebarMenuButton
                 size="lg"
-                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                className="data-[state=open]:bg-cem-elevated data-[state=open]:text-cem-text"
             >
                 <img src={LogoIcon} alt="logo" />
             </SidebarMenuButton>

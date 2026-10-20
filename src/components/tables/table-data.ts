@@ -41,7 +41,7 @@ const PerformersData = [
         project: "Elite Admin",
         priority: "Low",
         color: "primary",
-        bgcolor: "bg-primary/10! text-primary!",
+        bgcolor: "bg-cem-amber/10! text-cem-amber!",
         budget: "3.9k",
     },
     {

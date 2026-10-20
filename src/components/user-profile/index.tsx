@@ -93,10 +93,10 @@ const UserProfile = () => {
   ]
 
   return (
-    <div className="flex flex-col p-px bg-border gap-px">
+    <div className="flex flex-col p-px bg-cem-hover gap-px">
       <BreadcrumbComp title="User Profile" items={BCrumb} />
       <StyleDivider />
-      <div className='flex flex-col gap-px bg-border'>
+      <div className='flex flex-col gap-px bg-cem-hover'>
         <Card className='p-6 overflow-hidden'>
           <div className='flex flex-col sm:flex-row items-center gap-6 rounded-xl relative w-full break-words'>
             <div>
@@ -114,11 +114,11 @@ const UserProfile = () => {
                   {personal.firstName} {personal.lastName}
                 </h5>
                 <div className='flex flex-wrap items-center gap-1 md:gap-3'>
-                  <p className='text-sm text-gray-500 dark:text-gray-400'>
+                  <p className='text-sm text-cem-secondary'>
                     {personal.position}
                   </p>
-                  <div className='hidden h-4 w-px bg-gray-300 dark:bg-gray-700 xl:block'></div>
-                  <p className='text-sm text-gray-500 dark:text-gray-400'>
+                  <div className='hidden h-4 w-px bg-cem-elevated xl:block'></div>
+                  <p className='text-sm text-cem-secondary'>
                     {address.location}
                   </p>
                 </div>
@@ -129,7 +129,7 @@ const UserProfile = () => {
                     key={index}
                     to={item.href}
                     target='_blank'
-                    className='flex h-11 w-11 items-center justify-center gap-2 rounded-full shadow-md border border-border hover:bg-gray-50 dark:hover:bg-white/[0.03] dark:hover:text-gray-200'>
+                    className='flex h-11 w-11 items-center justify-center gap-2 rounded-full shadow-md border border-cem-hover hover:bg-cem-hover/40 hover:text-cem-text'>
                     <Icon icon={item.icon} width='20' height='20' />
                   </Link>
                 ))}
@@ -139,27 +139,27 @@ const UserProfile = () => {
         </Card>
 
         <div className='grid grid-cols-1 xl:grid-cols-2 gap-px'>
-          <div className='space-y-6 bg-background md:p-6 p-4 relative w-full break-words'>
+          <div className='space-y-6 bg-cem-base md:p-6 p-4 relative w-full break-words'>
             <h5 className='card-title'>Personal Information</h5>
             <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:gap-7 2xl:gap-x-32'>
               <div>
-                <p className='text-xs text-gray-500'>First Name</p>
+                <p className='text-xs text-cem-secondary'>First Name</p>
                 <p>{personal.firstName}</p>
               </div>
               <div>
-                <p className='text-xs text-gray-500'>Last Name</p>
+                <p className='text-xs text-cem-secondary'>Last Name</p>
                 <p>{personal.lastName}</p>
               </div>
               <div>
-                <p className='text-xs text-gray-500'>Email</p>
+                <p className='text-xs text-cem-secondary'>Email</p>
                 <p>{personal.email}</p>
               </div>
               <div>
-                <p className='text-xs text-gray-500'>Phone</p>
+                <p className='text-xs text-cem-secondary'>Phone</p>
                 <p>{personal.phone}</p>
               </div>
               <div>
-                <p className='text-xs text-gray-500'>Position</p>
+                <p className='text-xs text-cem-secondary'>Position</p>
                 <p>{personal.position}</p>
               </div>
             </div>
@@ -175,27 +175,27 @@ const UserProfile = () => {
             </div>
           </div>
 
-          <div className='space-y-6 bg-background md:p-6 p-4 relative w-full break-words'>
+          <div className='space-y-6 bg-cem-base md:p-6 p-4 relative w-full break-words'>
             <h5 className='card-title'>Address Details</h5>
             <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:gap-7 2xl:gap-x-32'>
               <div>
-                <p className='text-xs text-gray-500'>Location</p>
+                <p className='text-xs text-cem-secondary'>Location</p>
                 <p>{address.location}</p>
               </div>
               <div>
-                <p className='text-xs text-gray-500'>Province / State</p>
+                <p className='text-xs text-cem-secondary'>Province / State</p>
                 <p>{address.state}</p>
               </div>
               <div>
-                <p className='text-xs text-gray-500'>PIN Code</p>
+                <p className='text-xs text-cem-secondary'>PIN Code</p>
                 <p>{address.pin}</p>
               </div>
               <div>
-                <p className='text-xs text-gray-500'>ZIP</p>
+                <p className='text-xs text-cem-secondary'>ZIP</p>
                 <p>{address.zip}</p>
               </div>
               <div>
-                <p className='text-xs text-gray-500'>Federal Tax No.</p>
+                <p className='text-xs text-cem-secondary'>Federal Tax No.</p>
                 <p>{address.taxNo}</p>
               </div>
             </div>
@@ -410,7 +410,7 @@ const UserProfile = () => {
               Save Changes
             </Button>
             <Button
-              className='rounded-md bg-lighterror dark:bg-darkerror text-error hover:bg-error hover:text-white'
+              className='rounded-md bg-lighterror dark:bg-darkerror text-error hover:bg-error hover:text-cem-text'
               onClick={() => setOpenModal(false)}>
               Close
             </Button>

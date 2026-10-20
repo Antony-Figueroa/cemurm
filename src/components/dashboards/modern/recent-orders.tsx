@@ -110,21 +110,21 @@ export default function RecentOrders() {
           <div className="overflow-x-auto">
             <div className="min-w-[550px]">
               <Table>
-                <TableHeader className="border-b border-border">
+                <TableHeader className="border-b border-cem-hover">
                   <TableRow>
-                    <TableHead className="py-2 px-6 text-sm font-normal text-muted-foreground">
+                    <TableHead className="py-2 px-6 text-sm font-normal text-cem-secondary-elevated">
                       Project
                     </TableHead>
-                    <TableHead className="py-2 px-4 text-sm font-normal text-muted-foreground">
+                    <TableHead className="py-2 px-4 text-sm font-normal text-cem-secondary-elevated">
                       Assigned
                     </TableHead>
-                    <TableHead className="py-2 px-4 text-sm font-normal text-muted-foreground">
+                    <TableHead className="py-2 px-4 text-sm font-normal text-cem-secondary-elevated">
                       Timeline
                     </TableHead>
-                    <TableHead className="py-2 px-4 text-sm font-normal text-muted-foreground">
+                    <TableHead className="py-2 px-4 text-sm font-normal text-cem-secondary-elevated">
                       Budget
                     </TableHead>
-                    <TableHead className="py-2 px-4 text-sm font-normal text-muted-foreground">
+                    <TableHead className="py-2 px-4 text-sm font-normal text-cem-secondary-elevated">
                       Status
                     </TableHead>
                   </TableRow>
@@ -139,14 +139,14 @@ export default function RecentOrders() {
                         <div className="flex items-center gap-2">
                           <img
                             src={item.productImg}
-                            className="rounded-full bg-black/20 dark:bg-white/20 pt-0.5"
+                            className="rounded-full bg-cem-text/20 pt-0.5"
                             alt="product-img"
                             width={32}
                             height={32}
                           />
                           <div className="flex flex-col">
                             <h6 className="text-sm font-medium">{item.name}</h6>
-                            <p className="text-sm font-normal text-muted-foreground">{item.role}</p>
+                            <p className="text-sm font-normal text-cem-secondary-elevated">{item.role}</p>
                           </div>
                         </div>
                       </TableCell>

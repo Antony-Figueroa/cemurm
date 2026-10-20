@@ -194,7 +194,7 @@ const PlaceholdersInput = forwardRef<
           type='text'
           disabled={disabled}
           className={cn(
-            'w-full bg-transparent text-sm text-black pl-10 focus:outline-none dark:text-white sm:text-base',
+            'w-full bg-transparent text-sm text-cem-base pl-10 focus:outline-none dark:text-cem-text sm:text-base',
             animating && 'text-transparent',
             className
           )}
@@ -210,7 +210,7 @@ const PlaceholdersInput = forwardRef<
                 exit={{ y: -15, opacity: 0 }}
                 transition={{ duration: 0.3, ease: 'linear' }}
                 className={cn(
-                  'w-[calc(100%-2rem)] truncate text-sm pl-10 py-2 text-neutral-500 sm:text-sm dark:text-zinc-500',
+                  'w-[calc(100%-2rem)] truncate text-sm pl-10 py-2 text-cem-secondary sm:text-sm dark:text-cem-secondary',
                   className
                 )}>
                 {placeholders[currentPlaceholder]}

@@ -58,7 +58,7 @@ const Status = () => {
               </SelectGroup>
             </SelectContent>
           </Select>
-          <small className="text-xs text-muted-foreground">
+          <small className="text-xs text-cem-secondary-elevated">
             Set the blog status.
           </small>
         </div>

@@ -53,7 +53,7 @@ const Page = () => {
       <div className='grid grid-cols-1 xl:grid-cols-2 gap-px'>
         <div className='flex flex-col gap-px'>
           {/* Default Inputs */}
-          <div className='md:p-6 p-4 bg-background'>
+          <div className='md:p-6 p-4 bg-cem-base'>
             <h5 className='card-title'>Default Inputs</h5>
             <div className='mt-6 flex flex-col gap-6'>
               {/* Basic Input */}
@@ -112,7 +112,7 @@ const Page = () => {
                     <Button
                       variant='outline'
                       id='date'
-                      className='w-full justify-between font-normal hover:bg-transparent focus:border-primary'>
+                      className='w-full justify-between font-normal hover:bg-transparent focus:border-cem-amber'>
                       {date ? date.toLocaleDateString() : 'Select date'}
                       <Icon
                         icon='solar:calendar-minimalistic-linear'
@@ -155,7 +155,7 @@ const Page = () => {
                     icon='solar:clock-circle-linear'
                     width='18'
                     height='18'
-                    className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none'
+                    className='absolute right-3 top-1/2 -translate-y-1/2 text-cem-secondary pointer-events-none'
                   />
                 </div>
               </div>
@@ -168,7 +168,7 @@ const Page = () => {
                     icon='uim:master-card'
                     width='20'
                     height='20'
-                    className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-500'
+                    className='absolute left-3 top-1/2 -translate-y-1/2 text-cem-secondary'
                   />
                   <Input
                     id='card'
@@ -182,7 +182,7 @@ const Page = () => {
           </div>
 
           {/* Textarea */}
-          <div className='bg-background md:p-6 p-4 gap-px'>
+          <div className='bg-cem-base md:p-6 p-4 gap-px'>
             <h5 className='card-title'>Textarea Input</h5>
             <div className='mt-6 flex flex-col gap-6'>
               <div>
@@ -207,21 +207,21 @@ const Page = () => {
               </div>
 
               <div>
-                <Label htmlFor='error-comment' className='text-red-600'>
+                <Label htmlFor='error-comment' className='text-destructive'>
                   Description
                 </Label>
                 <Textarea
                   id='error-comment'
                   placeholder='Leave a comment...'
                   rows={4}
-                  className='border-red-600 text-red-600 focus-visible:border-red-600 mt-2'
+                  className='border-destructive text-destructive focus-visible:border-destructive mt-2'
                 />
               </div>
             </div>
           </div>
 
           {/* Input Colors */}
-          <div className='bg-background gap-px md:p-6 p-4'>
+          <div className='bg-cem-base gap-px md:p-6 p-4'>
             <h5 className='card-title'>Input Colors</h5>
             <div className='mt-6 flex flex-col gap-6'>
               <div>
@@ -261,7 +261,7 @@ const Page = () => {
         {/* Right side */}
         <div className='flex flex-col gap-px'>
           {/* Input Group with Icons */}
-          <div className='bg-background md:p-6 p-4'>
+          <div className='bg-cem-base md:p-6 p-4'>
             <h5 className='card-title'>Input Group</h5>
             <div className='mt-6 flex flex-col gap-6'>
               <div className='relative'>
@@ -327,7 +327,7 @@ const Page = () => {
                   />
                   <button
                     onClick={handleCopy}
-                    className='px-3 py-1 text-sm rounded-md border border-ld bg-primary/10 dark:bg-primary/10 text-primary hover:bg-gray-200'>
+                    className='px-3 py-1 text-sm rounded-md border border-ld bg-cem-amber/10 dark:bg-cem-amber/10 text-cem-amber hover:bg-cem-hover'>
                     {copied ? 'Copied' : 'Copy'}
                   </button>
                 </div>
@@ -336,13 +336,13 @@ const Page = () => {
           </div>
 
           {/* File Input */}
-          <div className='bg-background md:p-6 p-4'>
+          <div className='bg-cem-base md:p-6 p-4'>
             <h5 className='card-title'>File Input</h5>
             <Input type='file' className='mt-6' />
           </div>
 
           {/* Checkbox */}
-          <div className='bg-background md:p-6 p-4'>
+          <div className='bg-cem-base md:p-6 p-4'>
             <h5 className='card-title'>Checkbox</h5>
             <div className='flex gap-6 mt-6'>
               <div className='flex items-center gap-2'>
@@ -361,7 +361,7 @@ const Page = () => {
           </div>
 
           {/* Radio */}
-          <div className='bg-background md:p-6 p-4'>
+          <div className='bg-cem-base md:p-6 p-4'>
             <h5 className='card-title'>Radio Buttons</h5>
             <RadioGroup defaultValue='default' className='mt-6 flex gap-6'>
               <div className='flex items-center gap-2'>
@@ -380,7 +380,7 @@ const Page = () => {
           </div>
 
           {/* Switch */}
-          <div className='bg-background md:p-6 p-4 h-full'>
+          <div className='bg-cem-base md:p-6 p-4 h-full'>
             <h5 className='card-title'>Toggle Switch</h5>
             <div className='grid grid-cols-2 sm:grid-cols-3 gap-6 mt-6'>
               <div className='flex items-center gap-2'>

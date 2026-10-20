@@ -54,7 +54,7 @@ const BlogFeaturedCard = ({ post, index }: Btype) => {
                 width={786}
                 height={400}
               />
-              <div className="absolute inset-0 bg-black opacity-50 mix-blend-multiply"></div>
+              <div className="absolute inset-0 bg-cem-stage-bg opacity-50 mix-blend-multiply"></div>
             </div>
 
             <div>
@@ -70,18 +70,18 @@ const BlogFeaturedCard = ({ post, index }: Btype) => {
                     <Badge  >{category}</Badge>
                   </div>
                   <div>
-                    <h2 className="text-2xl text-white my-6">
+                    <h2 className="text-2xl text-cem-text my-6">
                       <Link to={`/apps/blog/detail/${linkTo}`}> {title}</Link>
                     </h2>
                     <div className="flex  gap-3">
-                      <div className="flex gap-2 items-center text-white text-sm">
+                      <div className="flex gap-2 items-center text-cem-text text-sm">
                         <Eye size={18} /> {view}
                       </div>
-                      <div className="flex gap-2 items-center text-white text-sm">
+                      <div className="flex gap-2 items-center text-cem-text text-sm">
                         <MessageSquare size={18} />{" "}
                         {comments?.length}
                       </div>
-                      <div className="ms-auto flex gap-2 items-center text-white text-sm">
+                      <div className="ms-auto flex gap-2 items-center text-cem-text text-sm">
                         <Circle size={7} />
                         <small>
                           {createdAt

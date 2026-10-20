@@ -17,7 +17,7 @@ const SocialButtons: React.FC<MyAppProps> = () => {
       <div className="flex items-center justify-center gap-3 w-full flex-col sm:flex-row">
         <Button
           variant="outline"
-          className="h-9 shadow-xs flex-1 gap-2 px-5! py-2! rounded-lg text-sm font-medium dark:bg-background hover:cursor-pointer w-full"
+          className="h-9 shadow-xs flex-1 gap-2 px-5! py-2! rounded-lg text-sm font-medium dark:bg-cem-base hover:cursor-pointer w-full"
         >
           <img
             src={google}
@@ -30,7 +30,7 @@ const SocialButtons: React.FC<MyAppProps> = () => {
         </Button>
         <Button
           variant="outline"
-          className="h-9 shadow-xs flex-1 gap-2 px-5! py-2! rounded-lg text-sm font-medium dark:bg-background hover:cursor-pointer w-full"
+          className="h-9 shadow-xs flex-1 gap-2 px-5! py-2! rounded-lg text-sm font-medium dark:bg-cem-base hover:cursor-pointer w-full"
         >
           <img
             src={github}
@@ -44,7 +44,7 @@ const SocialButtons: React.FC<MyAppProps> = () => {
       </div>
       {/* Divider */}
 
-      <div className="w-full flex items-center gap-3 text-sm font-normal text-muted-foreground before:content-[''] before:h-px before:flex-1 before:bg-border after:content-[''] after:h-px after:flex-1 after:bg-border">
+      <div className="w-full flex items-center gap-3 text-sm font-normal text-cem-secondary-elevated before:content-[''] before:h-px before:flex-1 before:bg-cem-hover after:content-[''] after:h-px after:flex-1 after:bg-cem-hover">
         or sign in with
       </div>
     </>

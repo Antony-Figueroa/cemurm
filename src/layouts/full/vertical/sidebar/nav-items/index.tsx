@@ -23,7 +23,7 @@ export default function NavItem({
   return (
 
     <motion.div className={cn("flex items-center gap-3 w-full group relative group-data-[state=collapsed]:px-2.5 px-3 py-2 my-0.5 transition-all duration-200 rounded-md",
-      isActive && "bg-primary text-background font-medium", className)}
+      isActive && "bg-cem-amber text-cem-base font-medium", className)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -32,7 +32,7 @@ export default function NavItem({
         {isHovered && (
           <motion.div
             layoutId="nav-hover-bg"
-            className="absolute inset-0 bg-primary/5  rounded-lg"
+            className="absolute inset-0 bg-cem-amber/5  rounded-lg"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -54,8 +54,8 @@ export default function NavItem({
         {item.badge && (
           <span
             className={`ms-auto  hide-menu text-xs rounded-full px-2 py-0.5 ${item.badgeType === "filled"
-              ? "bg-primary text-white dark:text-black"
-              : "border border-primary text-primary"
+              ? "bg-cem-amber text-cem-base"
+              : "border border-cem-amber text-cem-amber"
               }`}
           >
             {item.badgeContent}
@@ -64,7 +64,7 @@ export default function NavItem({
 
         {/* Pro Badge */}
         {item.isPro && (
-          <Badge className="ms-auto hide-menu text-[10px]! px-1.5 py-0.5 h-auto! bg-primary! text-background! rounded-md">
+          <Badge className="ms-auto hide-menu text-[10px]! px-1.5 py-0.5 h-auto! bg-cem-amber! text-cem-base! rounded-md">
             Pro
           </Badge>
         )}

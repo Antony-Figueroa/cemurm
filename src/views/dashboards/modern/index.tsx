@@ -16,7 +16,7 @@ const page = () => {
         <OverviewTab />
       </div>
       <StyleAwareWrapper
-        lyraClassName="grid grid-cols-12 p-px gap-px bg-border"
+        lyraClassName="grid grid-cols-12 p-px gap-px bg-cem-hover"
         defaultClassName="grid grid-cols-12 gap-4"
       >
         <div className="col-span-12">

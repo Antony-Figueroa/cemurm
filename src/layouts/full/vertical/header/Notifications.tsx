@@ -31,11 +31,11 @@ const Notifications = ({ className }: { className?: string }) => {
                     <div className="relative cursor-pointer">
                         {unreadCount > 0 && (
                             <>
-                                <span className="h-2.5 w-2.5 bg-destructive rounded-full absolute top-1 end-2 text-xs text-center text-white z-1 animate-ping" />
-                                <span className="h-2.5 w-2.5 bg-destructive rounded-full absolute top-1 end-2 text-xs text-center text-white z-1" />
+                                <span className="h-2.5 w-2.5 bg-destructive rounded-full absolute top-1 end-2 text-xs text-center text-cem-text z-1 animate-ping" />
+                                <span className="h-2.5 w-2.5 bg-destructive rounded-full absolute top-1 end-2 text-xs text-center text-cem-text z-1" />
                             </>
                         )}
-                        <div className="flex justify-center items-center hover:bg-primary/5 w-10 h-10 rounded-full">
+                        <div className="flex justify-center items-center hover:bg-cem-amber/5 w-10 h-10 rounded-full">
                             <Bell
                                 className="size-5"
                             />
@@ -49,7 +49,7 @@ const Notifications = ({ className }: { className?: string }) => {
                     <div className="flex items-center px-6 justify-between">
                         <h3 className="text-lg font-semibold">Notifications</h3>
                         {unreadCount > 0 && (
-                            <Badge className="px-3 bg-primary dark:bg-primary hover:bg-primary">{unreadCount} new</Badge>
+                            <Badge className="px-3 bg-cem-amber dark:bg-cem-amber hover:bg-cem-amber">{unreadCount} new</Badge>
                         )}
                     </div>
 
@@ -60,7 +60,7 @@ const Notifications = ({ className }: { className?: string }) => {
                                 <div
                                     key={index}
                                     onClick={() => handleMarkAsRead(index)}
-                                    className="px-6 py-3 flex justify-between items-center hover:bg-primary/5 cursor-pointer"
+                                    className="px-6 py-3 flex justify-between items-center hover:bg-cem-amber/5 cursor-pointer"
                                 >
                                     <div className="flex items-center w-full">
                                         <div
@@ -79,12 +79,12 @@ const Notifications = ({ className }: { className?: string }) => {
                                                 <h5 className={cn("mb-1 text-sm font-normal", !item.isRead && "font-semibold")}>
                                                     {item.title}
                                                 </h5>
-                                                <div className="text-xs text-muted-foreground line-clamp-1">
+                                                <div className="text-xs text-cem-secondary-elevated line-clamp-1">
                                                     {item.subtitle}
                                                 </div>
                                             </div>
 
-                                            <div className="text-xs self-start pt-1.5 dark:text-muted-foreground">
+                                            <div className="text-xs self-start pt-1.5 dark:text-cem-secondary-elevated">
                                                 {item.time}
                                             </div>
                                         </div>

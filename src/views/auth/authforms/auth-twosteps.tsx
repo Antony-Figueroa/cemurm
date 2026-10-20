@@ -16,10 +16,10 @@ const AuthTwoSteps = () => {
         <div className="w-full max-w-md flex flex-col gap-6 items-center">
 
           <div className="text-center flex flex-col gap-1">
-            <p className="text-2xl font-medium text-foreground">
+            <p className="text-2xl font-medium text-cem-text">
               Two Steps Verification
             </p>
-            <p className="text-sm font-normal text-muted-foreground">
+            <p className="text-sm font-normal text-cem-secondary-elevated">
               We sent a verification code to your mobile. Enter the code below to verify your identity.
 
 
@@ -49,11 +49,11 @@ const AuthTwoSteps = () => {
                   >
                     Verify Now
                   </Button>
-                  <FieldDescription className="text-center text-sm font-normal text-muted-foreground">
+                  <FieldDescription className="text-center text-sm font-normal text-cem-secondary-elevated">
                     Didn't get the code?{" "}
                     <a
                       href="/"
-                      className="font-medium text-card-foreground no-underline!"
+                      className="font-medium text-cem-text no-underline!"
                     >
                       Resend code
                     </a>

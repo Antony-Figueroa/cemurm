@@ -13,7 +13,7 @@ import SocialButtons from "../../authforms/social-buttons";
 const BoxedLogin = () => {
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center bg-accent  px-4">
+      <div className="min-h-screen flex items-center justify-center bg-cem-hover  px-4">
         <Card className="w-full max-w-md border-none shadow-lg p-6">
           {/* Logo */}
           <div className="mx-auto  w-fit">
@@ -26,7 +26,7 @@ const BoxedLogin = () => {
               <div className="space-y-1.5">
                 <Label
                   htmlFor="email"
-                  className="text-sm font-normal text-muted-foreground"
+                  className="text-sm font-normal text-cem-secondary-elevated"
                 >
                   Email*
                 </Label>
@@ -40,7 +40,7 @@ const BoxedLogin = () => {
               <div className="space-y-1.5">
                 <Label
                   htmlFor="password"
-                  className="text-sm font-normal text-muted-foreground"
+                  className="text-sm font-normal text-cem-secondary-elevated"
                 >
                   Password*
                 </Label>
@@ -59,7 +59,7 @@ const BoxedLogin = () => {
                   />
                   <Label
                     htmlFor="remember"
-                    className="text-muted-foreground font-normal cursor-pointer leading-0"
+                    className="text-cem-secondary-elevated font-normal cursor-pointer leading-0"
                   >
                     Remember this device
                   </Label>
@@ -81,10 +81,10 @@ const BoxedLogin = () => {
           </form>
           {/* Footer */}
           <div className="flex gap-2 text-base font-medium mt-4 items-center justify-center">
-            <p className="text-muted-foreground">New to ShadcnDashboard ?</p>
+            <p className="text-cem-secondary-elevated">New to ShadcnDashboard ?</p>
             <Link
               to={"/auth/auth2/register"}
-              className="text-primary/80 hover:text-primary text-sm font-medium"
+              className="text-cem-amber/80 hover:text-cem-amber text-sm font-medium"
             >
               Create an account
             </Link>

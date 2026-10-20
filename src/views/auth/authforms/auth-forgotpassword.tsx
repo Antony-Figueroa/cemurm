@@ -10,10 +10,10 @@ const AuthForgotPassword = () => {
         <div className="w-full max-w-md flex flex-col gap-6 items-center">
 
           <div className="text-center flex flex-col gap-1">
-            <p className="text-2xl font-medium text-foreground">
+            <p className="text-2xl font-medium text-cem-text">
               Forgot your password?
             </p>
-            <p className="text-sm font-normal text-muted-foreground">
+            <p className="text-sm font-normal text-cem-secondary-elevated">
               Please enter the email address associated with your account and
               we will email you a link to reset your password.
             </p>
@@ -25,7 +25,7 @@ const AuthForgotPassword = () => {
               <div className="space-y-1.5">
                 <Label
                   htmlFor="email"
-                  className="text-sm font-normal text-muted-foreground"
+                  className="text-sm font-normal text-cem-secondary-elevated"
                 >
                   Email*
                 </Label>

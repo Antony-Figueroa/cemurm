@@ -90,8 +90,8 @@ const TicketListing = () => {
         : ticket.Status === "Pending"
           ? "bg-chart-4/12! text-chart-4!"
           : ticket.Status === "Moderate"
-            ? "bg-primary/5! text-primary!"
-            : "bg-primary/5! text-primary! ";
+            ? "bg-cem-amber/5! text-cem-amber!"
+            : "bg-cem-amber/5! text-cem-amber! ";
   };
 
   return (
@@ -114,7 +114,7 @@ const TicketListing = () => {
             </Button>
             <div className="relative sm:max-w-60 max-w-full w-full">
               <SearchIcon size={16}
-                className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+                className="absolute left-2 top-1/2 -translate-y-1/2 text-cem-secondary-elevated"
               />
               <InputPlaceholderAnimate
                 value={ticketSearch}
@@ -152,7 +152,7 @@ const TicketListing = () => {
                   </TableHead>
                 </TableRow>
               </TableHeader>
-              <AnimatedTableBody className="divide-y divide-border">
+              <AnimatedTableBody className="divide-y divide-cem-hover">
                 {visibleTickets.map((ticket, index) => (
                   <AnimatedTableRow key={ticket.Id} index={index}>
                     <TableCell className="whitespace-nowrap">
@@ -162,7 +162,7 @@ const TicketListing = () => {
                       <h6 className="text-base truncate line-clamp-1">
                         {ticket.ticketTitle}
                       </h6>
-                      <p className="text-sm text-muted-foreground truncate line-clamp-1 text-wrap sm:max-w-56">
+                      <p className="text-sm text-cem-secondary-elevated truncate line-clamp-1 text-wrap sm:max-w-56">
                         {ticket.ticketDescription}
                       </p>
                     </TableCell>
@@ -188,7 +188,7 @@ const TicketListing = () => {
                       </Badge>
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-cem-secondary-elevated">
                         {format(new Date(ticket.Date), "E, MMM d")}
                       </p>
                     </TableCell>
@@ -200,7 +200,7 @@ const TicketListing = () => {
                               variant="destructive"
                               size="icon"
                               onClick={() => deleteTicket(ticket.Id)}
-                              className="bg-background dark:bg-background"
+                              className="bg-cem-base dark:bg-cem-base"
                             >
                               <Trash size="18" />
                             </Button>

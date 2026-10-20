@@ -3,7 +3,7 @@
 .editor-container {
   max-width: 100%;
   padding: 1rem;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-cem-hover);
   border-radius: 8px;
   background-color: transparent;
   
@@ -13,7 +13,7 @@
   overflow-y: auto;
 }
 .dark .editor-container{
-  border: 1px solid var(--color-border)!important;
+  border: 1px solid var(--color-cem-hover)!important;
 }
 .editor-container ol{
     list-style-type: decimal;
@@ -30,7 +30,7 @@
   margin-bottom: 1rem;
   background-color: transparent;
   padding: 0.5rem;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-cem-hover);
   border-radius: 8px;
   /* V1/S1: the template's soft functional-rgb shadow became a Tailwind
      arbitrary shadow (gate rule 01a bans that notation in src/; the
@@ -39,19 +39,19 @@
 }
 
 .dark .toolbar{
-  border: 1px solid var(--color-border)!important;
+  border: 1px solid var(--color-cem-hover)!important;
 }
 
 
 .tiptap.ProseMirror.ProseMirror-focused{
   outline: none;
-  border: 1px solid var(--color-primary) !important;
+  border: 1px solid var(--color-cem-amber) !important;
   border-radius: 6px;
 }
 .tiptap.ProseMirror{
   height: 100px;
   padding:6px 10px;
-  border: 1px solid var(--color-border) !important;
+  border: 1px solid var(--color-cem-hover) !important;
   border-radius: 4px;
   font-size: 16px;
   color: var(--color-dark);
@@ -63,7 +63,7 @@
 }
 
 .dark .tiptap.ProseMirror{
-  border: 1px solid var(--color-border) !important;
+  border: 1px solid var(--color-cem-hover) !important;
 }
 
 .output h3{
@@ -85,7 +85,7 @@
 .editor-content {
   min-height: 300px;
   padding: 1rem;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-cem-hover);
   border-radius: 4px;
   /* V1/S1: template literals mapped to cem tokens (same-role light surface on
      the dark palette -> cem.surface, foreground -> cem.text). */
@@ -105,9 +105,9 @@
 
 /* Blockquote */
 .editor-content blockquote {
-  /* V1/S1: template literals mapped: blue accent -> cem.sky; body text ->
+  /* V1/S1: template literals mapped: blue accent -> chart-2; body text ->
      cem.text; grey panel -> cem.surface. */
-  border-left: 4px solid var(--color-cem-sky);
+  border-left: 4px solid var(--color-chart-2);
   padding-left: 1rem;
   font-style: italic;
   color: var(--color-cem-text);
@@ -129,27 +129,27 @@
 
 /* Inline Code */
 .editor-content code {
-  /* V1/S1: template literals mapped: chip surface -> cem.elevated; the
-     template's pink inline-code accent is nearest cem.rose (S4; the source
-     hexes live in the improvement log, not in comments — the gate reads both). */
+  /* V1/S1: template literals mapped: chip surface -> cem.elevated; code text
+     stays on the success slot (S4; the source hexes live in the improvement
+     log, not in comments — the gate reads both). */
   background-color: var(--color-cem-elevated);
   border-radius: 4px;
   padding: 2px 4px;
   font-size: 90%;
-  color: var(--color-cem-rose);
+  color: var(--color-success);
 }
 
 /* Links */
 .editor-content a {
-  /* V1/S1: template blue accent -> cem.sky; the hover step collapses onto the
+  /* V1/S1: template blue accent -> chart-2; the hover step collapses onto the
      same token (no second blue in the CEM palette; S4, documented in the Log). */
-  color: var(--color-cem-sky);
+  color: var(--color-chart-2);
   text-decoration: underline;
 }
 
 .editor-content a:hover {
   text-decoration: none;
-  color: var(--color-cem-sky);
+  color: var(--color-chart-2);
 }
 
 /* Lists */

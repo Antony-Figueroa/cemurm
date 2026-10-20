@@ -51,10 +51,10 @@ const AuthRegister = () => {
         </a>
 
         <div className="text-center flex flex-col gap-1">
-          <p className="text-2xl font-medium text-foreground">
+          <p className="text-2xl font-medium text-cem-text">
             Welcome to ShadcnDashboard
           </p>
-          <p className="text-sm font-normal text-muted-foreground">
+          <p className="text-sm font-normal text-cem-secondary-elevated">
             Sign up to your account now
           </p>
         </div>
@@ -68,7 +68,7 @@ const AuthRegister = () => {
             <div className="space-y-1.5">
               <Label
                 htmlFor="name"
-                className="text-sm font-normal text-muted-foreground"
+                className="text-sm font-normal text-cem-secondary-elevated"
               >
                 Name*
               </Label>
@@ -83,7 +83,7 @@ const AuthRegister = () => {
             <div className="space-y-1.5">
               <Label
                 htmlFor="email"
-                className="text-sm font-normal text-muted-foreground"
+                className="text-sm font-normal text-cem-secondary-elevated"
               >
                 Email*
               </Label>
@@ -98,7 +98,7 @@ const AuthRegister = () => {
             <div className="space-y-1.5">
               <Label
                 htmlFor="password"
-                className="text-sm font-normal text-muted-foreground"
+                className="text-sm font-normal text-cem-secondary-elevated"
               >
                 Password*
               </Label>
@@ -118,11 +118,11 @@ const AuthRegister = () => {
           >
             Sign up
           </Button>
-          <p className="text-center text-sm font-normal text-muted-foreground">
+          <p className="text-center text-sm font-normal text-cem-secondary-elevated">
             Already have an account?{" "}
             <a
               href="/auth/auth2/login"
-              className="text-foreground font-medium hover:underline underline-offset-4 transition-all"
+              className="text-cem-text font-medium hover:underline underline-offset-4 transition-all"
             >
               Sign in
             </a>

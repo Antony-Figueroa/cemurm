@@ -54,7 +54,7 @@ const LightDark = () => {
       {activeMode === "light" ? (
         <Button
           variant="ghost"
-          className=" h-10 w-10  hover:bg-primary/5  rounded-full cursor-pointer"
+          className=" h-10 w-10  hover:bg-cem-amber/5  rounded-full cursor-pointer"
           onClick={toggleTheme}
         >
           <Moon className="size-5" />
@@ -63,7 +63,7 @@ const LightDark = () => {
         // Dark Mode Button
         <Button
           variant="ghost"
-          className=" h-10 w-10  hover:bg-primary/5  rounded-full cursor-pointer"
+          className=" h-10 w-10  hover:bg-cem-amber/5  rounded-full cursor-pointer"
           onClick={toggleTheme}
         >
           <Sun className="size-5" />

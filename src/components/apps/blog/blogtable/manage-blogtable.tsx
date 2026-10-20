@@ -119,14 +119,14 @@ const ManageBlogTable = () => {
         const categoryColors: Record<string, string> = {
           Design: "bg-chart-2/12! text-chart-2!",
           Lifestyle: "bg-chart-4/12! text-chart-4!",
-          Gadget: "bg-primary/5! text-primary!",
+          Gadget: "bg-cem-amber/5! text-cem-amber!",
           Social: "bg-destructive/12! text-destructive!",
           Health: "bg-chart-5/12! text-chart-5!",
         };
 
         return (
           <Badge
-            className={`text-xs font-medium ${categoryColors[category] ?? "bg-muted text-muted-foreground"
+            className={`text-xs font-medium ${categoryColors[category] ?? "bg-cem-hover text-cem-secondary-elevated"
               }`}
             variant="secondary"
           >
@@ -215,7 +215,7 @@ const ManageBlogTable = () => {
                     onClick={handleEdit}
                     size={"sm"}
                     variant={"outline"}
-                    className={"h-8! w-8! rounded-md! hover:bg-primary/5 bg-background"}
+                    className={"h-8! w-8! rounded-md! hover:bg-cem-amber/5 bg-cem-base"}
                   >
                     <Pen size={18} />
                   </Button>
@@ -228,7 +228,7 @@ const ManageBlogTable = () => {
                     size={"sm"}
                     onClick={handleRowDelete}
                     variant={"outline"}
-                    className={"h-8! w-8! rounded-md! text-destructive! bg-background hover:bg-destructive/5"}
+                    className={"h-8! w-8! rounded-md! text-destructive! bg-cem-base hover:bg-destructive/5"}
                   >
                     <Trash2 size={18} />
                   </Button>
@@ -451,7 +451,7 @@ const ManageBlogTable = () => {
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-4 gap-3">
               {/* Page Size Selector */}
               <div className="flex items-center gap-2">
-                <p className="text-sm text-muted-foreground ">Show</p>
+                <p className="text-sm text-cem-secondary-elevated ">Show</p>
                 <Select
                   value={String(table.getState().pagination.pageSize)}
                   onValueChange={(value) => table.setPageSize(Number(value))}
@@ -468,12 +468,12 @@ const ManageBlogTable = () => {
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="text-sm text-muted-foreground ">per page</p>
+                <p className="text-sm text-cem-secondary-elevated ">per page</p>
               </div>
               <div className="flex items-center gap-3">
                 {/* Page Summary */}
                 <div>
-                  <p className="text-sm font-normal text-muted-foreground">
+                  <p className="text-sm font-normal text-cem-secondary-elevated">
                     {table.getRowModel().rows.length > 0
                       ? `${table.getState().pagination.pageIndex *
                       table.getState().pagination.pageSize +
@@ -490,18 +490,18 @@ const ManageBlogTable = () => {
                 <div className="flex items-center gap-2">
                   <ChevronLeft
                     size={20}
-                    className={`text-muted-foreground hover:text-primary cursor-pointer ${table.getState().pagination.pageIndex === 0
+                    className={`text-cem-secondary-elevated hover:text-cem-amber cursor-pointer ${table.getState().pagination.pageIndex === 0
                       ? "opacity-50 cursor-not-allowed!"
                       : ""
                       }`}
                     onClick={() => table.previousPage()}
                   />
-                  <span className="w-8 h-8 text-primary flex items-center justify-center rounded-md  text-sm font-normal">
+                  <span className="w-8 h-8 text-cem-amber flex items-center justify-center rounded-md  text-sm font-normal">
                     {table.getState().pagination.pageIndex + 1}
                   </span>
                   <ChevronRight
                     size={20}
-                    className={`text-muted-foreground hover:text-primary cursor-pointer ${table.getState().pagination.pageIndex + 1 ===
+                    className={`text-cem-secondary-elevated hover:text-cem-amber cursor-pointer ${table.getState().pagination.pageIndex + 1 ===
                       table.getPageCount()
                       ? "opacity-50 cursor-not-allowed!"
                       : ""
@@ -521,14 +521,14 @@ const ManageBlogTable = () => {
                 <DialogTitle>Confirm Deletion</DialogTitle>
               </DialogHeader>
               <div className="text-center">
-                <p className="mb-5 text-lg font-normal text-muted-foreground">
+                <p className="mb-5 text-lg font-normal text-cem-secondary-elevated">
                   Are you sure you want to delete the selected posts?
                 </p>
               </div>
               <DialogFooter className="flex justify-center gap-4">
                 <Button
                   onClick={handleDelete}
-                  className={"bg-primary/5 text-primary hover:bg-primary/30 "}
+                  className={"bg-cem-amber/5 text-cem-amber hover:bg-cem-amber/30 "}
                 >
                   Yes, Delete
                 </Button>

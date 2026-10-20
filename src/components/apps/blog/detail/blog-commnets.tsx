@@ -16,7 +16,7 @@ const BlogComment = ({ comment }: { comment: BlogType }) => {
   const [showReply, setShowReply] = useState(false);
   return (
     <>
-      <div className="mt-5 p-5 bg-primary/5 rounded-md">
+      <div className="mt-5 p-5 bg-cem-amber/5 rounded-md">
         <div className="flex gap-3 items-center">
           <Avatar>
             <AvatarImage
@@ -26,7 +26,7 @@ const BlogComment = ({ comment }: { comment: BlogType }) => {
             <AvatarFallback>{comment?.profile?.name}</AvatarFallback>
           </Avatar>
           <h6 className="text-base">{comment?.profile?.name}</h6>
-          <span className="h-2 w-2 rounded-full bg-muted-foreground opacity-40  block"></span>
+          <span className="h-2 w-2 rounded-full bg-cem-secondary-elevated opacity-40  block"></span>
           <p>{comment?.profile?.time}</p>
         </div>
         <div className="py-4">
@@ -38,7 +38,7 @@ const BlogComment = ({ comment }: { comment: BlogType }) => {
               <TooltipTrigger>
                 <Button
                   variant={"ghost"}
-                  className="flex items-center border border-border"
+                  className="flex items-center border border-cem-hover"
                   onClick={() => setShowReply(!showReply)}
                 >
                   <CornerUpLeft size={18} className="shrink-0!" />
@@ -54,7 +54,7 @@ const BlogComment = ({ comment }: { comment: BlogType }) => {
           {comment?.replies.map((reply: BlogType) => {
             return (
               <div className="ps-8 " key={reply.comment}>
-                <div className="mt-5 p-5 rounded-md bg-primary/5 ">
+                <div className="mt-5 p-5 rounded-md bg-cem-amber/5 ">
                   <div className="flex gap-3 items-center">
                     <Avatar>
                       <AvatarImage
@@ -64,7 +64,7 @@ const BlogComment = ({ comment }: { comment: BlogType }) => {
                       <AvatarFallback>{reply.profile?.name}</AvatarFallback>
                     </Avatar>
                     <h6 className="text-base">{reply.profile?.name}</h6>
-                    <span className="h-2 w-2 rounded-full bg-muted-foreground   opacity-40 block"></span>
+                    <span className="h-2 w-2 rounded-full bg-cem-secondary-elevated   opacity-40 block"></span>
                     <p>{reply.profile?.time}</p>
                   </div>
                   <div className="py-4">

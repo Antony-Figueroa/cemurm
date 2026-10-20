@@ -62,12 +62,12 @@ const Notelist = () => {
 
 
   const colorClasses: Record<NoteColor, string> = {
-    primary: "bg-primary/5  text-primary border border-primary/20",
-    destructive: "bg-destructive/5  text-primary border border-destructive/20",
-    "chart-3": "bg-chart-3/5  text-primary  border border-chart-3/20",
-    "chart-4": "bg-chart-4/5 text-primary border border-chart-4/20",
-    "chart-2": "bg-chart-2/5 text-primary  border border-chart-2/20",
-    secondary: "bg-secondary/5 text-primary  border border-secondary/20",
+    primary: "bg-cem-amber/5  text-cem-amber border border-cem-amber/20",
+    destructive: "bg-destructive/5  text-cem-amber border border-destructive/20",
+    "chart-3": "bg-chart-3/5  text-cem-amber  border border-chart-3/20",
+    "chart-4": "bg-chart-4/5 text-cem-amber border border-chart-4/20",
+    "chart-2": "bg-chart-2/5 text-cem-amber  border border-chart-2/20",
+    secondary: "bg-cem-elevated/5 text-cem-amber  border border-cem-elevated/20",
   };
 
   return (
@@ -75,7 +75,7 @@ const Notelist = () => {
       <div className="overflow-hidden">
         <div className="relative w-full">
 
-          <SearchIcon size={16} className="absolute left-2 top-1/2 -translate-y-1/2  text-muted-foreground" />
+          <SearchIcon size={16} className="absolute left-2 top-1/2 -translate-y-1/2  text-cem-secondary-elevated" />
 
           <PlaceholdersInput
             value={searchTerm}
@@ -102,7 +102,7 @@ const Notelist = () => {
                       } transition-transform duration-200`}
                     onClick={() => handleNoteClick(note.id)}
                   >
-                    <h6 className={`text-base truncate text-primary`}>
+                    <h6 className={`text-base truncate text-cem-amber`}>
                       {note.title}
                     </h6>
                     <div className="flex items-center justify-between">
@@ -116,7 +116,7 @@ const Notelist = () => {
                               <Button
                                 variant={"ghost"}
                                 className={
-                                  "hover:text-destructive hover:bg-destructive/12 text-black dark:text-white dark:hover:text-destructive dark:hover:bg-destructive/12"
+                                  "hover:text-destructive hover:bg-destructive/12 text-cem-text dark:hover:text-destructive dark:hover:bg-destructive/12"
                                 }
                                 size="icon"
                                 onClick={() => deleteNote(note.id)}

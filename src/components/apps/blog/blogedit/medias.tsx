@@ -22,7 +22,7 @@ const Media = () => {
           <div className="flex w-full items-center justify-center mb-4">
             <Label
               htmlFor="dropzone-file"
-              className="flex h-64 w-full cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-primary bg-primary/5"
+              className="flex h-64 w-full cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-cem-amber bg-cem-amber/5"
             >
               {coverImage ? (
                 <img
@@ -32,12 +32,12 @@ const Media = () => {
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center pb-6 pt-5">
-                  <CloudUpload size={32} className="mb-3 text-primary" />
-                  <p className="mb-2 text-sm text-primary ">
+                  <CloudUpload size={32} className="mb-3 text-cem-amber" />
+                  <p className="mb-2 text-sm text-cem-amber ">
                     <span className="font-semibold">Click to upload</span> or
                     drag and drop
                   </p>
-                  <p className="text-xs text-primary ">
+                  <p className="text-xs text-cem-amber ">
                     SVG, PNG, JPG or GIF (MAX. 800x400px)
                   </p>
                 </div>

@@ -106,12 +106,12 @@ const NotesApp = () => {
 
             {/* NOTES CONTENT */}
             <div className="w-full">
-              <div className="flex justify-between items-center border-b border-border py-4 px-6">
+              <div className="flex justify-between items-center border-b border-cem-hover py-4 px-6">
                 <div className="flex gap-3 items-center">
                   <Button
                     variant="ghost"
                     onClick={() => setIsOpen(true)}
-                    className="!h-8 !w-8 !rounded-md  justify-center items-center  p-0 lg:!hidden flex  border border-border"
+                    className="!h-8 !w-8 !rounded-md  justify-center items-center  p-0 lg:!hidden flex  border border-cem-hover"
                   >
                     <Menu size={18} />
                   </Button>

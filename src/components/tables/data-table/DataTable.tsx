@@ -41,32 +41,32 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 // V1/S1: the template hashed a value into a light chip on the default
-// palette (bg-blue-100 / text-blue-700, ...). Those chips are substituted by
+// palette (a pale blue fill with a dark blue label, ...). Those chips are substituted by
 // translucent cem.tint + cem-coloured text at the same pairing strength
 // (S4, documented in gerencial-template-adaptacion.md L3): blue/indigo ->
-// cem.sky, green/teal -> cem.emerald, yellow -> cem.amber, purple/orange ->
-// cem.coral, pink/red -> cem.rose. Eight slots are kept so
+// chart-2, green/teal -> success, yellow -> amber, purple/orange ->
+// chart-5, pink/red -> destructive. Eight slots are kept so
 // getColorForValue's hash space does not change.
 const badgeColors = [
-  'bg-cem-sky/15 text-cem-sky',
-  'bg-cem-emerald/15 text-cem-emerald',
+  'bg-chart-2/15 text-chart-2',
+  'bg-success/15 text-success',
   'bg-cem-amber/15 text-cem-amber',
-  'bg-cem-coral/15 text-cem-coral',
-  'bg-cem-rose/15 text-cem-rose',
-  'bg-cem-sky/15 text-cem-sky',
-  'bg-cem-emerald/15 text-cem-emerald',
-  'bg-cem-coral/15 text-cem-coral',
+  'bg-chart-5/15 text-chart-5',
+  'bg-destructive/15 text-destructive',
+  'bg-chart-2/15 text-chart-2',
+  'bg-success/15 text-success',
+  'bg-chart-5/15 text-chart-5',
 ]
 
 // V1/S1: the mocked status colours are remapped onto cem tokens — chart-1..4
-// keep their role (amber/sky/emerald/rose) and destructive joins cem.rose. The
-// fallback class keeps the hash route intact when the key is unknown.
+// keep their role (amber/sky/emerald/rose) and destructive shares the rose
+// slot. The fallback class keeps the hash route intact when the key is unknown.
 const ROW_STATUS_CLASS: Record<string, string> = {
   'chart-1': 'bg-cem-amber/15 text-cem-amber',
-  'chart-2': 'bg-cem-sky/15 text-cem-sky',
-  'chart-3': 'bg-cem-emerald/15 text-cem-emerald',
-  'chart-4': 'bg-cem-rose/15 text-cem-rose',
-  destructive: 'bg-cem-rose/15 text-cem-rose',
+  'chart-2': 'bg-chart-2/15 text-chart-2',
+  'chart-3': 'bg-success/15 text-success',
+  'chart-4': 'bg-destructive/15 text-destructive',
+  destructive: 'bg-destructive/15 text-destructive',
 }
 
 export function getColorForValue(value: string) {
@@ -190,15 +190,15 @@ const DataTable = <T extends Record<string, unknown>>({
         }
 
         if (typeof value === 'boolean') {
-          // V1/S1: the light status chips (bg-red/green-100 + text-*-700) are
-          // remapped to the same tinted-chip pair in cem tokens (S4,
-          // documented): red -> cem.rose, green -> cem.emerald.
+          // V1/S1: the light status chips (pale red/green fills with dark
+          // labels) are remapped to the same tinted-chip pair in cem tokens
+          // (S4, documented): red -> destructive, green -> success.
           return value ? (
-            <Badge className='px-2 py-1 rounded-full text-xs font-semibold bg-cem-rose/15 text-cem-rose'>
+            <Badge className='px-2 py-1 rounded-full text-xs font-semibold bg-destructive/15 text-destructive'>
               Inactive
             </Badge>
           ) : (
-            <Badge className='px-2 py-1 rounded-full text-xs font-semibold bg-cem-emerald/15 text-cem-emerald'>
+            <Badge className='px-2 py-1 rounded-full text-xs font-semibold bg-success/15 text-success'>
               Active
             </Badge>
           )
@@ -206,7 +206,7 @@ const DataTable = <T extends Record<string, unknown>>({
 
         if (col.toLowerCase().includes('id')) {
           return (
-            <span className='text-gray-900 dark:text-white font-medium max-w-50 truncate whitespace-nowrap'>
+            <span className='text-cem-text font-medium max-w-50 truncate whitespace-nowrap'>
               {renderValue(value)}
             </span>
           )
@@ -295,8 +295,8 @@ const DataTable = <T extends Record<string, unknown>>({
                       key={k}
                       className={
                         k === 'name'
-                          ? 'text-gray-900 dark:text-white font-semibold max-w-50 truncate whitespace-nowrap pe-6'
-                          : 'text-sm text-gray-500 dark:text-gray-400 max-w-50 truncate whitespace-nowrap pe-6'
+                          ? 'text-cem-text font-semibold max-w-50 truncate whitespace-nowrap pe-6'
+                          : 'text-sm text-cem-secondary max-w-50 truncate whitespace-nowrap pe-6'
                       }>
                       {renderValue(displayValue)}
                     </span>
@@ -342,7 +342,7 @@ const DataTable = <T extends Record<string, unknown>>({
                   {value ? String(value)[0]?.toUpperCase() : '?'}
                 </Badge>
               )}
-              <span className='text-gray-900 dark:text-white font-semibold max-w-50 truncate whitespace-nowrap'>
+              <span className='text-cem-text font-semibold max-w-50 truncate whitespace-nowrap'>
                 {renderValue(value)}
               </span>
             </div>
@@ -350,7 +350,7 @@ const DataTable = <T extends Record<string, unknown>>({
         }
 
         return (
-          <span className='text-gray-900 dark:text-white font-medium max-w-50 truncate block '>
+          <span className='text-cem-text font-medium max-w-50 truncate block '>
             {renderValue(value)}
           </span>
         )
@@ -367,8 +367,8 @@ const DataTable = <T extends Record<string, unknown>>({
         return (
           <div className='flex items-center gap-2'>
             <Button
-              className='bg-muted! rounded-md'>
-              <Pencil className='size-4 text-primary' />
+              className='bg-cem-hover! rounded-md'>
+              <Pencil className='size-4 text-cem-amber' />
             </Button>
             <Button
               className='bg-destructive/10! rounded-md'>
@@ -430,7 +430,7 @@ const DataTable = <T extends Record<string, unknown>>({
     <Card>
       <div>
         {data?.length === 0 ? (
-          <p className='text-center py-8 text-gray-500'>No data available.</p>
+          <p className='text-center py-8 text-cem-secondary'>No data available.</p>
         ) : (
           <>
             {/* Search + Download */}
@@ -444,7 +444,7 @@ const DataTable = <T extends Record<string, unknown>>({
                 <div className='flex items-center gap-2 flex-wrap'>
                   <Input
                     type='text'
-                    className='max-w-96 lg:min-w-96 min-w-full placeholder:text-gray-400 dark:placeholder:text-white/20'
+                    className='max-w-96 lg:min-w-96 min-w-full placeholder:text-cem-text/20'
                     value={globalFilter ?? ''}
                     onChange={(e) => setGlobalFilter(e.target.value)}
                     placeholder='Search your relevant items...'
@@ -475,7 +475,7 @@ const DataTable = <T extends Record<string, unknown>>({
                             className='cursor-pointer select-none min-w-42 px-0'>
                             {header.isPlaceholder ? null : (
                               <Button variant={"ghost"}
-                                className='flex items-center gap-1 px-4 bg-transparent hover:bg-transparent text-foreground font-semibold'
+                                className='flex items-center gap-1 px-4 bg-transparent hover:bg-transparent text-cem-text font-semibold'
                                 onClick={header.column.getToggleSortingHandler()}>
                                 {flexRender(
                                   header.column.columnDef.header,
@@ -501,11 +501,11 @@ const DataTable = <T extends Record<string, unknown>>({
                       table.getRowModel().rows.map((row) => (
                         <TableRow
                           key={row.id}
-                          className='hover:bg-primary/10 transition-colors'>
+                          className='hover:bg-cem-amber/10 transition-colors'>
                           {row.getVisibleCells().map((cell) => (
                             <TableCell
                               key={cell.id}
-                              className='text-gray-700 dark:text-white/70'>
+                              className='text-cem-text/70'>
                               {flexRender(
                                 cell.column.columnDef.cell,
                                 cell.getContext()
@@ -518,7 +518,7 @@ const DataTable = <T extends Record<string, unknown>>({
                       <TableRow>
                         <TableCell
                           colSpan={columns.length}
-                          className='text-center p-6 text-gray-500 dark:text-white/70 font-medium'>
+                          className='text-center p-6 text-cem-secondary dark:text-cem-text/70 font-medium'>
                           No results found.
                         </TableCell>
                       </TableRow>
@@ -544,7 +544,7 @@ const DataTable = <T extends Record<string, unknown>>({
                 </Button>
               </div>
 
-              <div className='text-forest-black dark:text-white/90 font-medium text-base'>
+              <div className='text-cem-text/90 font-medium text-base'>
                 Page {table.getState().pagination.pageIndex + 1} of{' '}
                 {table.getPageCount()}
               </div>
@@ -552,7 +552,7 @@ const DataTable = <T extends Record<string, unknown>>({
               <div className='flex items-center gap-2'>
                 <Label
                   htmlFor='pageSize'
-                  className='mr-0 text-forest-black dark:text-white/90 text-base font-medium whitespace-nowrap min-w-32'>
+                  className='mr-0 text-cem-text/90 text-base font-medium whitespace-nowrap min-w-32'>
                   Rows per page:
                 </Label>
                 <Select

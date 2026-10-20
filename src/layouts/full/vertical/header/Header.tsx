@@ -22,7 +22,7 @@ const Header = () => {
 
   return (
     <>
-      <header className={cn(`sticky top-0 z-2 bg-background border-b border-border`)}>
+      <header className={cn(`sticky top-0 z-2 bg-cem-base border-b border-cem-hover`)}>
         <nav>
           <div className="mx-auto flex flex-wrap items-center justify-between p-2">
             <div className="flex gap-2 items-center">
@@ -33,7 +33,7 @@ const Header = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="p-2 hover:bg-primary/5 rounded-full transition cursor-pointer"
+                className="p-2 hover:bg-cem-amber/5 rounded-full transition cursor-pointer"
                 onClick={toggleSidebar}
               >
                 <PanelLeft size={21}
@@ -45,12 +45,12 @@ const Header = () => {
 
                {/* <Separator
                 orientation="vertical"
-                className="w-px h-5 mx-2 bg-border self-center max-lg:hidden"
+                className="w-px h-5 mx-2 bg-cem-hover self-center max-lg:hidden"
               /> */}
 
  <Separator
                 orientation="vertical"
-                className="h-4 mr-4 w-px  ml-2   bg-border self-center max-lg:hidden"
+                className="h-4 mr-4 w-px  ml-2   bg-cem-hover self-center max-lg:hidden"
               />
 
 

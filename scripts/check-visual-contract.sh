@@ -69,24 +69,15 @@ REPORT_CONFIG_TOKEN_COUNT=report
 # Measured against the working tree on the branch this gate landed on. Re-run
 # the script after lowering one; the printed count is the number to compare.
 #
-# 5 occurrences across 4 files, down from 92 (ceiling 82). Step 1 retired the
-# stage/projection surface: 87 were bg-black, text-white/*, border-white/*,
-# bg-white/* and ring-amber-500 on a projector or the musician's tablet, all
-# remapped onto an existing token with the opacity modifier kept — cem.stage.bg
-# (#000000) is Tailwind black exactly, and cem.amber (#f59e0b) is amber-500
-# exactly. What is left is NOT a stage site:
-#   * 4 modal scrims on tier-1 product surfaces -- bg-black/85 on
-#     ReportDialog.jsx (x2) and SongDetail.jsx, bg-black/50 on FeedbackForm.jsx.
-#     There is no scrim token, and adding one is palette growth, which rule 04
-#     exists to prevent and which this unit deliberately did not do. Note the
-#     stage surface's own scrim IS tokenised (StageMode.jsx uses
-#     bg-cem-stage-bg/85) because cem.stage.bg already is black -- the blocker
-#     for these four is the missing token in the cem namespace, not the value.
-#   * 1 text-red-400 on the foot-pedal error line in StageMode.jsx. No token
-#     equals Tailwind red-400 (#f87171): cem.rose is #f43f5e, so mapping it
-#     would trade a rule-01b occurrence for a rule-02 one, and cem.amber is a
-#     hue change to a live-performance surface. Both are worse than leaving it.
-RATCHET_01B_MAX=5
+# 0 occurrences, down from 92 (ceiling 82) and then 5. The last 5 went with the
+# admin-template import (Fase 2): the 4 tier-1 modal scrims (ReportDialog.jsx
+# x2, SongDetail.jsx, FeedbackForm.jsx) now use bg-cem-stage-bg at the same
+# opacity, which is Tailwind black exactly, so the missing-scrim-token blocker
+# recorded here no longer applies; and the foot-pedal error line had already
+# dropped text-red-400 in 5817536. The imported template's own default-palette
+# utilities were remapped onto cem tokens in the same unit. A count above zero
+# now means a new violation, not tolerated debt.
+RATCHET_01B_MAX=0
 # 240 occurrences across 37 files, as the Tailwind class form
 # (cem-rose 169, cem-emerald 65, cem-sky 4, cem-coral 0). NOT zero: these four
 # accents are declared in tailwind.config.js and used across the UI, they are
@@ -182,6 +173,13 @@ OVERLAY_CHROME_ALLOWLIST=(
 # palette: 17 leaves, flat CSS form (12 flat under cem, 5 flattened from the
 # v3 cem.stage.* namespace; the @theme
 # convention is one hyphen for the first separator, hence stage-bg).
+# Decisión (c), usuario 2026-10-16: el vocabulario declarado en el @theme es
+# exactamente este: los 17 leaves cem.* (la paleta) más 9 keys de estado/chart
+# que la plantilla importada trajo como alias de esos mismos leaves. Los ~26
+# alias de rol de shadcn (background, card, popover, primary, sidebar-*, page,
+# etc.) se eliminaron del @theme y sus usos se reescribieron a clases cem.*
+# directas, para que la plantilla hable la paleta del proyecto sin una segunda
+# capa de nombres. Cualquier key nueva sigue siendo palette growth y falla.
 CSS_COLOUR_KEY_ALLOWLIST=(
   "cem.base"
   "cem.surface"
@@ -200,6 +198,15 @@ CSS_COLOUR_KEY_ALLOWLIST=(
   "cem.stage-lyric"
   "cem.stage-section"
   "cem.stage-dim"
+  "destructive"
+  "chart-1"
+  "chart-2"
+  "chart-3"
+  "chart-4"
+  "chart-5"
+  "success"
+  "warning"
+  "error"
 )
 
 # ---------------------------------------------------------------------------

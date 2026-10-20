@@ -14,13 +14,13 @@ export default function UpdateBanner() {
             <span className="h-2 w-2 rounded-full bg-chart-1 animate-ping absolute inline-flex" />
             <span className="h-2 w-2 rounded-full bg-chart-1 absolute inline-flex" />
             <p className="text-sm font-medium  ps-4">Update</p>
-            <span className="w-1 h-1 rounded-full bg-border" />
-            <p className="text-sm font-normal text-muted-foreground">
+            <span className="w-1 h-1 rounded-full bg-cem-hover" />
+            <p className="text-sm font-normal text-cem-secondary-elevated">
               {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
             </p>
           </div>
           <p className="text-sm font-normal">
-            Sales revenue increased <span className="text-emerald-600">40%</span> in 1 week
+            Sales revenue increased <span className="text-success">40%</span> in 1 week
           </p>
         </div>
         <Link to={'#'}>

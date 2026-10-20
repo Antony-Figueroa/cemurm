@@ -16,13 +16,13 @@ const BCrumb = [
 function TablesPage() {
   return (
     <StyleAwareWrapper
-      lyraClassName="flex flex-col p-px gap-px bg-border"
+      lyraClassName="flex flex-col p-px gap-px bg-cem-hover"
     >
       <BreadcrumbComp title="Tables" items={BCrumb} />
       <StyleDivider />
 
       <StyleAwareWrapper
-        lyraClassName="grid grid-cols-12 gap-px bg-border">
+        lyraClassName="grid grid-cols-12 gap-px bg-cem-hover">
         <div className="col-span-12">
           <BasicTable />
         </div>

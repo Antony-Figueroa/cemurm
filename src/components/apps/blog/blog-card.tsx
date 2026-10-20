@@ -41,7 +41,7 @@ const BlogCard = ({ post }: Btype) => {
               </div>
               <Badge
 
-                className="absolute bottom-8 end-6 bg-muted text-muted-foreground"
+                className="absolute bottom-8 end-6 bg-cem-hover text-cem-secondary-elevated"
               >
                 2 min Read
               </Badge>
@@ -63,10 +63,10 @@ const BlogCard = ({ post }: Btype) => {
             </div>
           </div>
           <div className="px-6 pb-6">
-            <Badge className="mt-3 rounded-md bg-muted text-muted-foreground">
+            <Badge className="mt-3 rounded-md bg-cem-hover text-cem-secondary-elevated">
               {category}
             </Badge>
-            <h5 className="text-xl py-6 group-hover:text-primary">
+            <h5 className="text-xl py-6 group-hover:text-cem-amber">
               <Link
                 to={`/apps/blog/detail/${linkTo}`}
                 className="line-clamp-2"

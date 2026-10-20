@@ -86,7 +86,7 @@ const BlogDetailData = () => {
 
               <Badge
 
-                className="absolute bottom-8 end-6 bg-muted text-muted-foreground"
+                className="absolute bottom-8 end-6 bg-cem-hover text-cem-secondary-elevated"
               >
                 2 min Read
               </Badge>
@@ -195,7 +195,7 @@ const BlogDetailData = () => {
               </ol>
               <Separator className="my-8" />
               <h3 className="text-xl mb-3">Quotes</h3>
-              <div className="pt-5 pb-4 px-4 rounded-md border-s-2 border-primary flex gap-1 items-start bg-primary/5">
+              <div className="pt-5 pb-4 px-4 rounded-md border-s-2 border-cem-amber flex gap-1 items-start bg-cem-amber/5">
                 <Quote size={20} className="-mt-1" />
                 <h2 className="text-base font-bold">
                   Life is short, Smile while you still have teeth!
@@ -226,7 +226,7 @@ const BlogDetailData = () => {
               <div className="mt-6">
                 <div className="flex gap-3 items-center">
                   <h5 className="text-xl ">Comments</h5>
-                  <div className="h-8 w-8 rounded-full flex items-center justify-center text-primary bg-primary/5 font-bold">
+                  <div className="h-8 w-8 rounded-full flex items-center justify-center text-cem-amber bg-cem-amber/5 font-bold">
                     {post?.comments?.length || 0}
                   </div>
                 </div>

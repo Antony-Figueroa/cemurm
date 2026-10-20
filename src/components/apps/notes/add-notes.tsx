@@ -73,7 +73,7 @@ const AddNotes = ({ colors }: Props) => {
                 className={`h-7 w-7 flex justify-center items-center rounded-full cursor-pointer bg-${color.disp}`}
               >
                 {scolor === color.disp && (
-                  <Check size={18} className="text-white" />
+                  <Check size={18} className="text-cem-text" />
                 )}
               </div>
             ))}

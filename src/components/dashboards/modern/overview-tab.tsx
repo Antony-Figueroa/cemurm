@@ -46,7 +46,7 @@ export default function OverviewTab() {
           <h2 className="text-xl flex item-center gap-2">
             {greeting}, Cameron <span className="flex items-center">{getGreetingIcon()}</span>
           </h2>
-          <p className='text-sm font-normal text-muted-foreground'>Stay informed with today’s analytics</p>
+          <p className='text-sm font-normal text-cem-secondary-elevated'>Stay informed with today’s analytics</p>
         </div>
         <div className="flex items-center lg:flex-nowrap flex-wrap gap-2">
           <Button variant="outline" className={"p-2.5 h-auto outline rounded-lg cursor-pointer"}>
@@ -54,7 +54,7 @@ export default function OverviewTab() {
           </Button>
           <div>
             <Select value={selectedYear} onValueChange={(value) => value && setSelectedYear(value)}>
-              <SelectTrigger className="w-fit h-auto! text-foreground cursor-pointer">
+              <SelectTrigger className="w-fit h-auto! text-cem-text cursor-pointer">
                 <div className="flex items-center gap-2">
                   <CalendarDays size={16} />
                   <SelectValue />

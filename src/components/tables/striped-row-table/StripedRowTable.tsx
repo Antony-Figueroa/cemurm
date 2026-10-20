@@ -49,7 +49,7 @@ Striped-Row Table
 
                   <TableBody>
                     {PerformersData.map((item, index) => (
-                      <TableRow key={index} className='group/row bg-transparent odd:bg-transparent even:bg-muted'>
+                      <TableRow key={index} className='group/row bg-transparent odd:bg-transparent even:bg-cem-hover'>
                         <TableCell className='ps-3 min-w-[200px]'>
                           <div className='flex gap-3 items-center'>
                             <img
@@ -61,13 +61,13 @@ Striped-Row Table
                             />
                             <div>
                               <h6 className='text-sm font-semibold mb-1'>{item.username}</h6>
-                              <p className='text-xs text-muted-foreground font-medium'>{item.designation}</p>
+                              <p className='text-xs text-cem-secondary-elevated font-medium'>{item.designation}</p>
                             </div>
                           </div>
                         </TableCell>
 
                         <TableCell>
-                          <p className='text-muted-foreground text-sm font-medium'>{item.project}</p>
+                          <p className='text-cem-secondary-elevated text-sm font-medium'>{item.project}</p>
                         </TableCell>
 
                         <TableCell>
@@ -79,7 +79,7 @@ Striped-Row Table
                         <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger>
-                              <span className='h-9 w-9 flex justify-center items-center rounded-full hover:bg-lightprimary hover:text-primary cursor-pointer'>
+                              <span className='h-9 w-9 flex justify-center items-center rounded-full hover:bg-lightprimary hover:text-cem-amber cursor-pointer'>
                                 <EllipsisVertical size={22} />
                               </span>
                             </DropdownMenuTrigger>

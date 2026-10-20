@@ -76,8 +76,8 @@ const xAxisLabels: Record<string, Set<string>> = {
   // is re-anchored on the palette's amber token directly; the 60%-muted
   // companion rendering is retired (S4 delta, documented in the Log).
   const chartConfig = {
-  newUser: { label: "New User", color: "var(--color-primary)" },
-  existingUser: { label: "Existing User", color: "var(--color-primary)" },
+  newUser: { label: "New User", color: "var(--color-cem-amber)" },
+  existingUser: { label: "Existing User", color: "var(--color-cem-amber)" },
 } satisfies ChartConfig;
 
 const periodOptions = ["Last 30 Days", "Last 7 Days", "Last 90 Days"];
@@ -124,14 +124,14 @@ function AnimatedTooltipContent({ active, payload, label, hideLabel = false, con
   const items = payload.filter((item) => item.type !== "none" && item.value !== undefined);
   if (!items.length) return null;
   return (
-    <div className="grid min-w-32 items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
+    <div className="grid min-w-32 items-start gap-1.5 rounded-lg border border-cem-hover/50 bg-cem-base px-2.5 py-1.5 text-xs shadow-xl">
       {!hideLabel && label && <div className="font-medium">{label}</div>}
       <div className="grid gap-1.5">
         {items.map((item, index) => (
           <div key={index} className="flex w-full items-center gap-2">
             <div className="h-2.5 w-2.5 shrink-0 rounded-[2px]" style={{ backgroundColor: item.color }} />
-            <span className="text-muted-foreground">{config?.[item.dataKey ?? ""]?.label ?? item.name}</span>
-            <span className="ml-auto font-mono font-medium tabular-nums text-foreground">
+            <span className="text-cem-secondary-elevated">{config?.[item.dataKey ?? ""]?.label ?? item.name}</span>
+            <span className="ml-auto font-mono font-medium tabular-nums text-cem-text">
               <AnimatedValue value={item.value as number} />
             </span>
           </div>
@@ -150,9 +150,9 @@ export default function TotalSales() {
   return (
     <DashboardCard className="flex flex-col gap-0!">
       {/* Header */}
-      <CardHeader className="border-b border-border">
+      <CardHeader className="border-b border-cem-hover">
         <CardTitle className="flex items-center gap-2">
-          <TrendingUp size={16} className="text-muted-foreground" />
+          <TrendingUp size={16} className="text-cem-secondary-elevated" />
           Sales Overview
         </CardTitle>
       </CardHeader>
@@ -161,18 +161,18 @@ export default function TotalSales() {
         {/* Stats row + period selector */}
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex flex-col gap-1">
-            <span className="text-base font-normal text-foreground leading-6">Total Sales</span>
+            <span className="text-base font-normal text-cem-text leading-6">Total Sales</span>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-2xl font-semibold tracking-[-0.3px] text-foreground leading-8">
+              <span className="text-2xl font-semibold tracking-[-0.3px] text-cem-text leading-8">
                 $12,450.00
               </span>
               <span className="text-sm font-medium text-chart-2">+22%</span>
-              <span className="text-sm font-normal text-muted-foreground">vs last month</span>
+              <span className="text-sm font-normal text-cem-secondary-elevated">vs last month</span>
             </div>
           </div>
 
           <Select value={period} onValueChange={(v) => v && setPeriod(v)}>
-            <SelectTrigger className="h-auto! w-fit text-sm font-medium text-foreground border-border shadow-[0px_1px_2px_rgba(0,0,0,0.05)] cursor-pointer gap-1.5 px-3">
+            <SelectTrigger className="h-auto! w-fit text-sm font-medium text-cem-text border-cem-hover shadow-[0px_1px_2px_rgba(0,0,0,0.05)] cursor-pointer gap-1.5 px-3">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -232,10 +232,10 @@ export default function TotalSales() {
             <Line
               dataKey="newUser"
               type="linear"
-              stroke="var(--color-primary)"
+              stroke="var(--color-cem-amber)"
               strokeWidth={1.5}
               dot={false}
-              activeDot={{ r: 4, fill: "var(--color-primary)", strokeWidth: 0 }}
+              activeDot={{ r: 4, fill: "var(--color-cem-amber)", strokeWidth: 0 }}
               isAnimationActive
               animationBegin={0}
               animationDuration={700}
@@ -245,11 +245,11 @@ export default function TotalSales() {
             <Line
               dataKey="existingUser"
               type="linear"
-              stroke="var(--color-primary)"
+              stroke="var(--color-cem-amber)"
               strokeWidth={1.5}
               strokeDasharray="4 4"
               dot={false}
-              activeDot={{ r: 4, fill: "var(--color-primary)", strokeWidth: 0 }}
+              activeDot={{ r: 4, fill: "var(--color-cem-amber)", strokeWidth: 0 }}
               isAnimationActive
               animationBegin={120}
               animationDuration={700}

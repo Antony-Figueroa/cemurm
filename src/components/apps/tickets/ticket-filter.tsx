@@ -50,7 +50,7 @@ const TicketFilter = () => {
       <div className="grid grid-cols-12 gap-6">
         <div className="lg:col-span-3 md:col-span-6  col-span-12">
           <div
-            className="p-8 bg-primary/5 border border-primary/20 text-center rounded-lg cursor-pointer"
+            className="p-8 bg-cem-amber/5 border border-cem-amber/20 text-center rounded-lg cursor-pointer"
             onClick={() => setFilter("total_tickets")}
           >
             <h3 className="text-2xl">{tickets.length}</h3>

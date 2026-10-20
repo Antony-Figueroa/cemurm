@@ -1,8 +1,8 @@
 const Divider = ({ noContainer }: { noContainer?: boolean }) => {
     return (
-        <section className={`${noContainer ? "" : "border-y"} border-border overflow-hidden bg-background`}>
+        <section className={`${noContainer ? "" : "border-y"} border-cem-hover overflow-hidden bg-cem-base`}>
             <div className={noContainer ? "" : "container"}>
-                <div className={`${noContainer ? "" : "border-x"} border-border h-4 overflow-hidden relative`}>
+                <div className={`${noContainer ? "" : "border-x"} border-cem-hover h-4 overflow-hidden relative`}>
                     <div
                         className="absolute inset-0"
                         style={{

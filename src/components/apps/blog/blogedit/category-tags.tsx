@@ -109,11 +109,11 @@ const CategoryTags = () => {
             </Label>
           </div>
           <div className="relative">
-            <div className="flex flex-wrap items-center gap-1 min-h-[40px] w-full rounded-md border border-input bg-background px-2 py-1 focus-within:ring-1 focus-within:ring-primary">
+            <div className="flex flex-wrap items-center gap-1 min-h-[40px] w-full rounded-md border border-cem-hover bg-cem-base px-2 py-1 focus-within:ring-1 focus-within:ring-cem-amber">
               {Cats.map((cat, index) => (
                 <span
                   key={index}
-                  className="flex items-center rounded-full bg-primary/5 px-2 py-1 text-sm text-primary"
+                  className="flex items-center rounded-full bg-cem-amber/5 px-2 py-1 text-sm text-cem-amber"
                 >
                   {cat}
                   <X
@@ -132,16 +132,16 @@ const CategoryTags = () => {
               />
             </div>
 
-            <small className="text-xs text-muted-foreground">
+            <small className="text-xs text-cem-secondary-elevated">
               Add blog to a category.
             </small>
 
             {showCatOptions && (
-              <div className="absolute z-10 mt-1 w-full rounded-md bg-card shadow-lg">
+              <div className="absolute z-10 mt-1 w-full rounded-md bg-cem-surface shadow-lg">
                 {catOptions.map((option, index) => (
                   <div
                     key={index}
-                    className="cursor-pointer px-3 py-2 hover:bg-muted"
+                    className="cursor-pointer px-3 py-2 hover:bg-cem-hover"
                     onClick={() => handleCatClick(option)}
                   >
                     {option}
@@ -163,11 +163,11 @@ const CategoryTags = () => {
             <Label htmlFor="tags">Tags</Label>
           </div>
           <div className="relative">
-            <div className="flex flex-wrap items-center gap-1 min-h-[40px] w-full rounded-md border border-input bg-background px-2 py-1 focus-within:ring-1 focus-within:ring-primary">
+            <div className="flex flex-wrap items-center gap-1 min-h-[40px] w-full rounded-md border border-cem-hover bg-cem-base px-2 py-1 focus-within:ring-1 focus-within:ring-cem-amber">
               {tags.map((tag, index) => (
                 <span
                   key={index}
-                  className=" py-1 px-2 rounded-full text-primary bg-primary/5 flex items-center"
+                  className=" py-1 px-2 rounded-full text-cem-amber bg-cem-amber/5 flex items-center"
                 >
                   {tag}
                   <X
@@ -186,7 +186,7 @@ const CategoryTags = () => {
               />
             </div>
 
-            <small className="text-xs text-muted-foreground">
+            <small className="text-xs text-cem-secondary-elevated">
               Add tags for blog.
             </small>
 

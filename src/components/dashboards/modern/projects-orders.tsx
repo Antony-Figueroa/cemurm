@@ -18,16 +18,13 @@ type StatusKey = "Processing" | "Delayed" | "Delivered" | "Cancelled";
 
 // V1/S1: the template's literal hex status chips became cem tokens (S4
 // mapping; the source hexes are listed in the improvement log, not here —
-// the gate reads comments too): orange -> cem.coral, red -> cem.rose,
-// teal green -> cem.emerald.</think><tool_call>edit<arg_key>newString</arg_key><arg_value>// V1/S1: the template's literal hex status chips became cem tokens (S4
-// mapping; the source hexes are listed in the improvement log, not here —
-// the gate reads comments too): orange -> cem.coral, red -> cem.rose,
-// teal green -> cem.emerald.
+// the gate reads comments too): orange -> chart-5, red -> destructive,
+// teal green -> success.
 const statusConfig: Record<StatusKey, { bg: string; text: string }> = {
-  Processing: { bg: "bg-cem-coral/10", text: "text-cem-coral" },
-  Delayed: { bg: "bg-cem-rose/10", text: "text-cem-rose" },
-  Delivered: { bg: "bg-cem-emerald/10", text: "text-cem-emerald" },
-  Cancelled: { bg: "bg-cem-rose/10", text: "text-cem-rose" },
+  Processing: { bg: "bg-chart-5/10", text: "text-chart-5" },
+  Delayed: { bg: "bg-destructive/10", text: "text-destructive" },
+  Delivered: { bg: "bg-success/10", text: "text-success" },
+  Cancelled: { bg: "bg-destructive/10", text: "text-destructive" },
 };
 
 const orders: {
@@ -116,9 +113,9 @@ export default function ProjectsOrders() {
   return (
     <DashboardCard className="flex flex-col gap-0!">
       {/* Header */}
-      <CardHeader className="border-b border-border">
+      <CardHeader className="border-b border-cem-hover">
         <CardTitle className="flex items-center gap-2">
-          <BriefcaseBusiness size={16} className="text-foreground" />
+          <BriefcaseBusiness size={16} className="text-cem-text" />
           <span>
             Projects & Orders
           </span>
@@ -132,35 +129,35 @@ export default function ProjectsOrders() {
             <div className="min-w-[820px]">
               <Table>
                 <TableHeader>
-                  <TableRow className="hover:bg-transparent border-border">
-                    <TableHead className="pl-4! px-4 py-3 h-auto text-sm font-normal text-muted-foreground w-[160px]">
+                  <TableRow className="hover:bg-transparent border-cem-hover">
+                    <TableHead className="pl-4! px-4 py-3 h-auto text-sm font-normal text-cem-secondary-elevated w-[160px]">
                       <div className="flex items-center gap-1.5 whitespace-nowrap">
                         Project
-                        <ArrowDownUp size={14} className="text-muted-foreground shrink-0" />
+                        <ArrowDownUp size={14} className="text-cem-secondary-elevated shrink-0" />
                       </div>
                     </TableHead>
-                    <TableHead className="px-4 py-3 h-auto text-sm font-normal text-muted-foreground">
+                    <TableHead className="px-4 py-3 h-auto text-sm font-normal text-cem-secondary-elevated">
                       <div className="flex items-center gap-1.5 whitespace-nowrap">
                         Item
-                        <ArrowDownUp size={14} className="text-muted-foreground shrink-0" />
+                        <ArrowDownUp size={14} className="text-cem-secondary-elevated shrink-0" />
                       </div>
                     </TableHead>
-                    <TableHead className="px-4 py-3 h-auto text-sm font-normal text-muted-foreground w-[130px]">
+                    <TableHead className="px-4 py-3 h-auto text-sm font-normal text-cem-secondary-elevated w-[130px]">
                       <div className="flex items-center gap-1.5 whitespace-nowrap">
                         Status
-                        <ArrowDownUp size={14} className="text-muted-foreground shrink-0" />
+                        <ArrowDownUp size={14} className="text-cem-secondary-elevated shrink-0" />
                       </div>
                     </TableHead>
-                    <TableHead className="px-4 py-3 h-auto text-sm font-normal text-muted-foreground w-[120px]">
+                    <TableHead className="px-4 py-3 h-auto text-sm font-normal text-cem-secondary-elevated w-[120px]">
                       <div className="flex items-center gap-1.5 whitespace-nowrap">
                         Price
-                        <ArrowDownUp size={14} className="text-muted-foreground shrink-0" />
+                        <ArrowDownUp size={14} className="text-cem-secondary-elevated shrink-0" />
                       </div>
                     </TableHead>
-                    <TableHead className="px-4 py-3 h-auto text-sm font-normal text-muted-foreground w-[130px]">
+                    <TableHead className="px-4 py-3 h-auto text-sm font-normal text-cem-secondary-elevated w-[130px]">
                       <div className="flex items-center gap-1.5 whitespace-nowrap">
                         Deadline
-                        <ArrowDownUp size={14} className="text-muted-foreground shrink-0" />
+                        <ArrowDownUp size={14} className="text-cem-secondary-elevated shrink-0" />
                       </div>
                     </TableHead>
                     <TableHead className="pr-4! px-2 py-3 h-auto w-[48px]" />
@@ -173,15 +170,15 @@ export default function ProjectsOrders() {
                     return (
                       <TableRow
                         key={order.id}
-                        className="border-border hover:bg-muted/30"
+                        className="border-cem-hover hover:bg-cem-hover/30"
                       >
                         {/* Project */}
                         <TableCell className="pl-4! px-4 py-3 w-[160px]">
                           <div className="flex flex-col leading-5">
-                            <span className="text-sm font-medium text-foreground whitespace-nowrap">
+                            <span className="text-sm font-medium text-cem-text whitespace-nowrap">
                               {order.id}
                             </span>
-                            <span className="text-sm font-normal text-muted-foreground whitespace-nowrap">
+                            <span className="text-sm font-normal text-cem-secondary-elevated whitespace-nowrap">
                               {order.project}
                             </span>
                           </div>
@@ -198,10 +195,10 @@ export default function ProjectsOrders() {
                               className="rounded-full object-cover shrink-0"
                             />
                             <div className="flex flex-col leading-5">
-                              <span className="text-sm font-medium text-foreground whitespace-nowrap">
+                              <span className="text-sm font-medium text-cem-text whitespace-nowrap">
                                 {order.name}
                               </span>
-                              <span className="text-sm font-normal text-muted-foreground whitespace-nowrap">
+                              <span className="text-sm font-normal text-cem-secondary-elevated whitespace-nowrap">
                                 {order.role}
                               </span>
                             </div>
@@ -219,14 +216,14 @@ export default function ProjectsOrders() {
 
                         {/* Price */}
                         <TableCell className="px-4 py-3 w-[120px]">
-                          <span className="text-sm font-normal text-muted-foreground whitespace-nowrap">
+                          <span className="text-sm font-normal text-cem-secondary-elevated whitespace-nowrap">
                             {order.price}
                           </span>
                         </TableCell>
 
                         {/* Deadline */}
                         <TableCell className="px-4 py-3 w-[130px]">
-                          <span className="text-sm font-normal text-muted-foreground whitespace-nowrap">
+                          <span className="text-sm font-normal text-cem-secondary-elevated whitespace-nowrap">
                             {order.deadline}
                           </span>
                         </TableCell>
@@ -235,10 +232,10 @@ export default function ProjectsOrders() {
                         <TableCell className="pr-4! px-2 py-3 w-[48px]">
                           <Button
                             variant="ghost"
-                            className="p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                            className="p-2 rounded-lg hover:bg-cem-hover/50 transition-colors cursor-pointer"
                             aria-label="More options"
                           >
-                            <Ellipsis size={16} className="text-foreground" />
+                            <Ellipsis size={16} className="text-cem-text" />
                           </Button>
                         </TableCell>
                       </TableRow>

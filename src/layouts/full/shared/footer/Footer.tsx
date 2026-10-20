@@ -14,11 +14,11 @@ const searchSugg: SearchType[] = [
 export default function Footer() {
     return (
         <div className="flex md:flex-row flex-col items-center justify-between gap-3 text-center">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-cem-secondary-elevated">
                 © 2026 by{" "}
                 <Link
                     to="https://www.wrappixel.com/" target="_blank"
-                    className="hover:text-primary text-muted-foreground"
+                    className="hover:text-cem-amber text-cem-secondary-elevated"
                 >
                     shadcndashboard
                 </Link>
@@ -31,7 +31,7 @@ export default function Footer() {
                         key={index}
                         target="_blank"
                         to={item.href}
-                        className="text-sm hover:text-primary text-muted-foreground"
+                        className="text-sm hover:text-cem-amber text-cem-secondary-elevated"
                     >
                         {item.title}
                     </Link>

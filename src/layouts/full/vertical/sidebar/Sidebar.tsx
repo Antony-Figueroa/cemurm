@@ -24,10 +24,10 @@ const SidebarLayout = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
             variant="inset"
             collapsible="icon"
             {...props}
-            className="sidebar-box **:data-[slot=sidebar-inner]:bg-background **:data-[slot=sidebar-inner]:border **:data-[slot=sidebar-inner]:border-border group-data-[state=collapsed]:hover:shadow-xl"
+            className="sidebar-box **:data-[slot=sidebar-inner]:bg-cem-base **:data-[slot=sidebar-inner]:border **:data-[slot=sidebar-inner]:border-cem-hover group-data-[state=collapsed]:hover:shadow-xl"
             side="left"
         >
-            <SidebarHeader className="p-3 group-data-[state=collapsed]:px-2.5 flex flex-row items-center justify-between border-b border-border">
+            <SidebarHeader className="p-3 group-data-[state=collapsed]:px-2.5 flex flex-row items-center justify-between border-b border-cem-hover">
                 <FullLogo />
                 <Badge className="group-data-[state=collapsed]:hidden" variant={"secondary"}>V.1.0</Badge>
             </SidebarHeader>

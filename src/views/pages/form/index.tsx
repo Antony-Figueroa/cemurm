@@ -6,7 +6,7 @@ const BCrumb = [{ to: '/', title: 'Home' }, { title: 'Form' }];
 
 function TablesPage() {
   return (
-    <StyleAwareWrapper lyraClassName="flex flex-col p-px gap-px bg-border">
+    <StyleAwareWrapper lyraClassName="flex flex-col p-px gap-px bg-cem-hover">
       <BreadcrumbComp title="Form Elements" items={BCrumb} />
       <StyleDivider />
       <FormCompo />

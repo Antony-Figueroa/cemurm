@@ -11,7 +11,7 @@ const BCrumb = [
 const Notes = () => {
   return (
     <StyleAwareWrapper
-      lyraClassName="flex flex-col p-px gap-px bg-border"
+      lyraClassName="flex flex-col p-px gap-px bg-cem-hover"
       defaultClassName="flex flex-col gap-4"
     >
       <BreadcrumbComp title="Notes app" items={BCrumb} />

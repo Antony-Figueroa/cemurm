@@ -25,7 +25,7 @@ const GeneralDetail = () => {
               </Label>
             </div>
             <Input id="prednm" type="text" placeholder="Blog Title" />
-            <small className="text-xs text-muted-foreground">
+            <small className="text-xs text-cem-secondary-elevated">
               A blog title is required and recommended to be unique.
             </small>
           </div>
@@ -34,7 +34,7 @@ const GeneralDetail = () => {
               <Label htmlFor="desc">Content</Label>
             </div>
             <TiptapEdit />
-            <small className="text-xs  text-muted-foreground">
+            <small className="text-xs  text-cem-secondary-elevated">
               Set a Content to the blog for better visibility.
             </small>
           </div>

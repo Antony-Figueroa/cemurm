@@ -27,7 +27,7 @@ const Status = () => {
               {selectedStatus === "Publish" ? (
                 <span className="h-3 w-3 p-0 bg-chart-2 rounded-full" />
               ) : selectedStatus === "Schedule" ? (
-                <span className="h-3 w-3 p-0 bg-secondary rounded-full" />
+                <span className="h-3 w-3 p-0 bg-cem-elevated rounded-full" />
               ) : selectedStatus === "Draft" ? (
                 <span className="h-3 w-3 p-0 bg-destructive rounded-full" />
               ) : (
@@ -60,7 +60,7 @@ const Status = () => {
                 </SelectGroup>
               </SelectContent>
             </Select>
-            <small className="text-xs text-muted-foreground">
+            <small className="text-xs text-cem-secondary-elevated">
               Set the blog status.
             </small>
           </div>

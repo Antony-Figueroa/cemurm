@@ -16,7 +16,7 @@ const FullLayout: FC = () => {
       
         <Sidebar />
      
-      <SidebarInset className="outline outline-border m-2 rounded-none! overflow-hidden">
+      <SidebarInset className="outline outline-cem-hover m-2 rounded-none! overflow-hidden">
         {/* Top Header  */}
        <Header /> 
         

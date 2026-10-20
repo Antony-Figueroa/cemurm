@@ -72,77 +72,77 @@ const MyEditor = () => {
       <div className="toolbar flex gap-5 flex-wrap">
         <button onClick={handleBold}>
           <Bold
-            className="text-lg font-semibold  hover:text-primary dark:hover:text-primary"
+            className="text-lg font-semibold  hover:text-cem-amber dark:hover:text-cem-amber"
             size={16}
           />
         </button>
         <button onClick={handleItalic}>
           <Italic
-            className="text-lg font-semibold  hover:text-primary dark:hover:text-primary"
+            className="text-lg font-semibold  hover:text-cem-amber dark:hover:text-cem-amber"
             size={16}
           />
         </button>
         <button onClick={handleUnderline}>
 
           <UnderlineIcon
-            className="text-lg font-semibold  hover:text-primary dark:hover:text-primary"
+            className="text-lg font-semibold  hover:text-cem-amber dark:hover:text-cem-amber"
             size={16}
           />
         </button>
         <button onClick={handleH1}>
-          <span className="text-sm font-medium  hover:text-primary dark:hover:text-primary">
+          <span className="text-sm font-medium  hover:text-cem-amber dark:hover:text-cem-amber">
             H1
           </span>
         </button>
         <button onClick={handleH2}>
-          <span className="text-sm font-medium  hover:text-primary dark:hover:text-primary">
+          <span className="text-sm font-medium  hover:text-cem-amber dark:hover:text-cem-amber">
             H2
           </span>
         </button>
         <button onClick={handleH3}>
-          <span className="text-sm font-medium  hover:text-primary dark:hover:text-primary">
+          <span className="text-sm font-medium  hover:text-cem-amber dark:hover:text-cem-amber">
             H3
           </span>
         </button>
         <button onClick={handleList}>
           <List
-            className="text-lg font-semibold  hover:text-primary dark:hover:text-primary"
+            className="text-lg font-semibold  hover:text-cem-amber dark:hover:text-cem-amber"
             size={16}
           />
         </button>
         <button onClick={handleOrderedList}>
           <ListOrdered
-            className="text-lg font-semibold  hover:text-primary dark:hover:text-primary"
+            className="text-lg font-semibold  hover:text-cem-amber dark:hover:text-cem-amber"
             size={16}
           />
         </button>
         <button onClick={handleLink}>
           <Link2
-            className="text-lg font-semibold  hover:text-primary dark:hover:text-primary"
+            className="text-lg font-semibold  hover:text-cem-amber dark:hover:text-cem-amber"
             size={16}
           />
         </button>
         <button onClick={handleImage}>
           <ImageIcon
-            className="text-lg font-semibold  hover:text-primary dark:hover:text-primary"
+            className="text-lg font-semibold  hover:text-cem-amber dark:hover:text-cem-amber"
             size={16}
           />
         </button>
         <button onClick={handleCodeBlock}>
           <Code
-            className="text-lg font-semibold  hover:text-primary dark:hover:text-primary"
+            className="text-lg font-semibold  hover:text-cem-amber dark:hover:text-cem-amber"
             size={16}
           />
         </button>
         <button onClick={handleUndo}>
           <Undo
-            className="text-lg font-semibold  hover:text-primary dark:hover:text-primary"
+            className="text-lg font-semibold  hover:text-cem-amber dark:hover:text-cem-amber"
             size={16}
           />
         </button>
         <button onClick={handleRedo}>
           <Redo
-            className="text-lg font-semibold  hover:text-primary dark:hover:text-primary"
+            className="text-lg font-semibold  hover:text-cem-amber dark:hover:text-cem-amber"
             size={16}
           />
         </button>

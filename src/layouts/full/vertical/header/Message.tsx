@@ -33,7 +33,7 @@ const Message = () => {
     <div className="relative group/menu ">
       <DropdownMenu>
         <DropdownMenuTrigger>
-          <div className="relative flex justify-center items-center  cursor-pointer hover:bg-primary/5 w-10 h-10 rounded-full">
+          <div className="relative flex justify-center items-center  cursor-pointer hover:bg-cem-amber/5 w-10 h-10 rounded-full">
             <Mail
               className="size-5"
             />
@@ -46,7 +46,7 @@ const Message = () => {
           <div className="flex items-center px-6 justify-between">
             <h3 className="text-lg font-semibold">Inbox</h3>
             {unreadCount > 0 && (
-              <Badge className="px-3 bg-primary ">{unreadCount} new</Badge>
+              <Badge className="px-3 bg-cem-amber ">{unreadCount} new</Badge>
             )}
           </div>
           <SimpleBar className="max-h-80 mt-3">
@@ -56,8 +56,8 @@ const Message = () => {
                   key={index}
                   onClick={() => handleMarkAsRead(index)}
                   className={cn(
-                    "px-6 py-3 flex justify-between items-center hover:bg-primary/5 cursor-pointer",
-                    index !== messages.length - 1 && "border-b border-border"
+                    "px-6 py-3 flex justify-between items-center hover:bg-cem-amber/5 cursor-pointer",
+                    index !== messages.length - 1 && "border-b border-cem-hover"
                   )}
                 >
                   <div className="flex items-center w-full gap-3">
@@ -82,14 +82,14 @@ const Message = () => {
                         >
                           {item.title}
                         </h6>
-                        <p className="text-sm font-normal text-muted-foreground">
+                        <p className="text-sm font-normal text-cem-secondary-elevated">
                           {item.time}
                         </p>
                       </div>
                       <p
                         className={cn(
-                          "text-sm font-normal text-muted-foreground truncate",
-                          !item.isRead && "text-foreground font-medium"
+                          "text-sm font-normal text-cem-secondary-elevated truncate",
+                          !item.isRead && "text-cem-text font-medium"
                         )}
                       >
                         {item.subtitle}

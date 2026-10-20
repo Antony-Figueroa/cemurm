@@ -16,18 +16,18 @@ const BCrumb = [
 const BlogCreate = () => {
   return (
     <StyleAwareWrapper
-      lyraClassName="flex flex-col p-px gap-px bg-border"
+      lyraClassName="flex flex-col p-px gap-px bg-cem-hover"
       defaultClassName="flex flex-col gap-4"
     >
       <BreadcrumbComp title="Blog Create" items={BCrumb} />
       <StyleDivider />
       <StyleAwareWrapper
-        lyraClassName="grid grid-cols-12 gap-px bg-border"
+        lyraClassName="grid grid-cols-12 gap-px bg-cem-hover"
         defaultClassName="grid grid-cols-12 gap-[30px]"
       >
         <div className="lg:col-span-8 col-span-12">
           <StyleAwareWrapper
-            lyraClassName="flex flex-col gap-px bg-border"
+            lyraClassName="flex flex-col gap-px bg-cem-hover"
             defaultClassName="flex flex-col gap-[30px]"
           >
             <GeneralDetail />
@@ -36,7 +36,7 @@ const BlogCreate = () => {
         </div>
         <div className="lg:col-span-4 col-span-12">
           <StyleAwareWrapper
-            lyraClassName="flex flex-col gap-px bg-border h-full"
+            lyraClassName="flex flex-col gap-px bg-cem-hover h-full"
             defaultClassName="flex flex-col gap-[30px]"
           >
             <Status />
@@ -45,7 +45,7 @@ const BlogCreate = () => {
           </StyleAwareWrapper>
         </div>
         <StyleAwareWrapper
-          lyraClassName="bg-background col-span-12 p-4"
+          lyraClassName="bg-cem-base col-span-12 p-4"
           defaultClassName="lg:col-span-8 col-span-12"
         >
           <div className="flex gap-3">

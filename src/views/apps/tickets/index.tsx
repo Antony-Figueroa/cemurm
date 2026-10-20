@@ -11,7 +11,7 @@ const BCrumb = [
 const Tickets = () => {
   return (
     <StyleAwareWrapper
-      lyraClassName="flex flex-col p-px gap-px bg-border"
+      lyraClassName="flex flex-col p-px gap-px bg-cem-hover"
       defaultClassName="flex flex-col gap-4"
     >
       <BreadcrumbComp title="Tickets App" items={BCrumb} />

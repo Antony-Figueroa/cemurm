@@ -46,8 +46,8 @@ type AssetCardProps = {
 
 function AssetCard({ title, value, icon: Icon }: AssetCardProps) {
   return (
-    <div className='flex flex-col justify-between p-6 bg-background'>
-      <div className='border border-border rounded-md p-2 w-fit'>
+    <div className='flex flex-col justify-between p-6 bg-cem-base'>
+      <div className='border border-cem-hover rounded-md p-2 w-fit'>
         <Icon width={16} height={16} />
       </div>
       <div>
@@ -61,15 +61,15 @@ function AssetCard({ title, value, icon: Icon }: AssetCardProps) {
 export default function TotalAssets() {
   return (
     <DashboardCard className="flex flex-col gap-0! pb-0!">
-      <CardHeader className="border-b border-border">
+      <CardHeader className="border-b border-cem-hover">
         <CardTitle className="flex items-center gap-2">
-          <Box size={16} className="text-muted-foreground" />
+          <Box size={16} className="text-cem-secondary-elevated" />
           Total Assets
         </CardTitle>
       </CardHeader>
       <CardContent className='h-full! px-0!'>
         <div className='h-full!'>
-          <div className='grid grid-cols-2 h-full! gap-px bg-border'>
+          <div className='grid grid-cols-2 h-full! gap-px bg-cem-hover'>
             {assetsData.map((item) => (
               <AssetCard key={item.id} {...item} />
             ))}

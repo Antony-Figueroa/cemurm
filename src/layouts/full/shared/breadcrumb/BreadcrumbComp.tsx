@@ -17,7 +17,7 @@ const BreadcrumbComp = ({ title }: BreadCrumbType) => {
   return (
     <>
       <Card
-        className={`py-5 px-6 bg-background  overflow-hidden rounded-xl border`}
+        className={`py-5 px-6 bg-cem-base  overflow-hidden rounded-xl border`}
       >
         <div className="flex items-center justify-between gap-6 relative">
           <h4 className="font-semibold text-xl text-forground">{title}</h4>

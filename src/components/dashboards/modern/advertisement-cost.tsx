@@ -13,7 +13,7 @@ export default function AdvertisementCost() {
         <div className="flex flex-col items-start gap-4 w-full">
           <div className="flex items-center justify-between w-full">
             <div className="flex flex-col gap-1">
-              <p className="text-sm font-normal text-foreground">
+              <p className="text-sm font-normal text-cem-text">
                 Purchase Orders
               </p>
               <div className="flex items-center gap-2">
@@ -21,7 +21,7 @@ export default function AdvertisementCost() {
                 <Badge className="bg-chart-2/10! text-chart-2!">40%</Badge>
               </div>
             </div>
-            <div className="border border-border p-2.5 w-fit rounded-md">
+            <div className="border border-cem-hover p-2.5 w-fit rounded-md">
               <Box size={16} />
             </div>
           </div>

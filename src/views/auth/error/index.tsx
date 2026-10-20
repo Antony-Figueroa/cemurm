@@ -14,8 +14,8 @@ const Error = () => {
             width={500}
             height={500}
           />
-          <h1 className="text-foreground text-4xl mb-6">Opps!!!</h1>
-          <h6 className="text-xl text-foreground">
+          <h1 className="text-cem-text text-4xl mb-6">Opps!!!</h1>
+          <h6 className="text-xl text-cem-text">
             This page you are looking for could not be found.
           </h6>
           <Button className="mt-6 mx-auto">

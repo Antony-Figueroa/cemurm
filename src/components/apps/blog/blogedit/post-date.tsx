@@ -48,7 +48,7 @@ const PostDate = () => {
                   variant={"outline"}
                   className={cn(
                     "w-full justify-start text-left font-normal",
-                    !publishDate && "text-muted-foreground"
+                    !publishDate && "text-cem-secondary-elevated"
                   )}
                 >
                   <CalendarCog />
@@ -68,7 +68,7 @@ const PostDate = () => {
               </PopoverContent>
             </Popover>
           </div>
-          <small className="text-xs text-muted-foreground">
+          <small className="text-xs text-cem-secondary-elevated">
             Choose the date when this blog post should be published.
           </small>
         </div>

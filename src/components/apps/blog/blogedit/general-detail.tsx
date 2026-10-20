@@ -43,7 +43,7 @@ const GeneralDetail = () => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
-            <small className="text-xs  text-muted-foreground">
+            <small className="text-xs  text-cem-secondary-elevated">
               A blog title is required and recommended to be unique.
             </small>
           </div>
@@ -58,7 +58,7 @@ const GeneralDetail = () => {
               value={content}
               onChange={(e) => setContent(e.target.value)}
             />
-            <small className="text-xs text-muted-foreground ">
+            <small className="text-xs text-cem-secondary-elevated ">
               Set a Content to the blog for better visibility.
             </small>
           </div>

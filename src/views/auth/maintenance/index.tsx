@@ -9,7 +9,7 @@ import maintenance from "@/assets/images/backgrounds/maintenance.svg"
 const Maintenance = () => {
   return (
     <>
-      <div className="h-screen flex items-center  justify-center bg-white dark:bg-card">
+      <div className="h-screen flex items-center  justify-center bg-cem-surface">
         <div className="text-center">
           <div className="max-w-3xl">
             <img
@@ -20,10 +20,10 @@ const Maintenance = () => {
               height={500}
             />
           </div>
-          <h1 className="text-foreground text-4xl mb-6">
+          <h1 className="text-cem-text text-4xl mb-6">
             Maintenance Mode!!!
           </h1>
-          <h6 className="text-xl text-foreground">
+          <h6 className="text-xl text-cem-text">
             Website is Under Construction. Check back later!
           </h6>
           <Button className="mt-6 mx-auto">

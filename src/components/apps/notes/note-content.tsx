@@ -87,7 +87,7 @@ const NoteContent = () => {
                   onClick={() => handleColorChange(color1.disp)}
                 >
                   {noteDetails.color === color1.disp ? (
-                    <Check width="18" className="text-white" />
+                    <Check width="18" className="text-cem-text" />
                   ) : null}
                 </div>
               ))}

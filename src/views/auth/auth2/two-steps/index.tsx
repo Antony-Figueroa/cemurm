@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 const BoxedTwoStep = () => {
   return (
     <>
-      <div className="relative overflow-hidden h-screen bg-muted">
+      <div className="relative overflow-hidden h-screen bg-cem-hover">
         <div className="flex h-full justify-center items-center px-4">
           <Card className="md:w-112.5 w-full border-none p-6">
 
@@ -23,7 +23,7 @@ const BoxedTwoStep = () => {
             </div>
             <div className="text-center flex flex-col gap-2">
 
-              <p className="text-sm font-normal text-muted-foreground">
+              <p className="text-sm font-normal text-cem-secondary-elevated">
                 We sent a verification code to your mobile. Enter the code below to verify your identity.
 
 
@@ -59,9 +59,9 @@ const BoxedTwoStep = () => {
                 </div>
               </FieldGroup>
             </form>
-            <div className="flex gap-2 text-base text-muted-foreground font-medium mt-4 items-center justify-center">
+            <div className="flex gap-2 text-base text-cem-secondary-elevated font-medium mt-4 items-center justify-center">
               <p>Didn't get the code?</p>
-              <Link to={"/"} className="text-primary text-sm font-medium">
+              <Link to={"/"} className="text-cem-amber text-sm font-medium">
                 Resend
               </Link>
             </div>

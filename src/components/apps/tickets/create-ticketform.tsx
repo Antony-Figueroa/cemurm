@@ -99,7 +99,7 @@ const CreateTicketForm = () => {
       <CardContent>
         <p> ID : {ticketId !== undefined ? ticketId : ""}</p>
         <p>Date : {formattedOrderDate}</p>
-        <div className="bg-background border   my-6 rounded-xl p-4">
+        <div className="bg-cem-base border   my-6 rounded-xl p-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <div className="mb-2 block">

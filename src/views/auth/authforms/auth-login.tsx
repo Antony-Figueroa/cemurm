@@ -58,10 +58,10 @@ const AuthLogin = () => {
         </a>
 
         <div className="text-center flex flex-col gap-1">
-          <p className="text-2xl font-medium text-foreground">
+          <p className="text-2xl font-medium text-cem-text">
             Welcome to ShadcnDashboard
           </p>
-          <p className="text-sm font-normal text-muted-foreground">
+          <p className="text-sm font-normal text-cem-secondary-elevated">
             Login to your account now
           </p>
         </div>
@@ -77,7 +77,7 @@ const AuthLogin = () => {
             <div className="space-y-1.5">
               <Label
                 htmlFor="email"
-                className="text-sm font-normal text-muted-foreground"
+                className="text-sm font-normal text-cem-secondary-elevated"
               >
                 Email*
               </Label>
@@ -91,7 +91,7 @@ const AuthLogin = () => {
             <div className="space-y-1.5">
               <Label
                 htmlFor="password"
-                className="text-sm font-normal text-muted-foreground"
+                className="text-sm font-normal text-cem-secondary-elevated"
               >
                 Password*
               </Label>
@@ -110,7 +110,7 @@ const AuthLogin = () => {
                 />
                 <Label
                   htmlFor="remember"
-                  className="text-muted-foreground font-normal cursor-pointer leading-0"
+                  className="text-cem-secondary-elevated font-normal cursor-pointer leading-0"
                 >
                   Remember this device
                 </Label>
@@ -130,11 +130,11 @@ const AuthLogin = () => {
           >
             Sign in
           </Button>
-          <p className="text-center text-sm font-normal text-muted-foreground">
+          <p className="text-center text-sm font-normal text-cem-secondary-elevated">
             Don&apos;t have an account?{" "}
             <a
               href="/auth/auth2/register"
-              className="text-foreground font-medium hover:underline underline-offset-4 transition-all"
+              className="text-cem-text font-medium hover:underline underline-offset-4 transition-all"
             >
               Create an account
             </a>

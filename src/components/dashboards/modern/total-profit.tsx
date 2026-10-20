@@ -13,7 +13,7 @@ export default function TotalProfit() {
         <div className="flex flex-col items-start gap-4 w-full">
           <div className="flex items-center justify-between w-full">
             <div className="flex flex-col gap-1">
-              <p className="text-sm font-normal text-foreground">
+              <p className="text-sm font-normal text-cem-text">
                 New users
               </p>
               <div className="flex items-center gap-2">
@@ -21,7 +21,7 @@ export default function TotalProfit() {
                 <Badge variant={"destructive"}>20%</Badge>
               </div>
             </div>
-            <div className="border border-border p-2.5 w-fit rounded-md">
+            <div className="border border-cem-hover p-2.5 w-fit rounded-md">
               <Users size={16} />
             </div>
           </div>
