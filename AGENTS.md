@@ -103,6 +103,10 @@ actually checked, each via the canonical pragma, and the relocation moved all fo
 - `src/domain/music/transpose.js`, `src/domain/music/annotations.js`
 - `src/data/repositories/songs.js`, `src/data/repositories/setlists.js`
 
+The vendored admin template's `.ts/.tsx` tree is **not** in `include` yet (171 of 172 files), so
+`pnpm typecheck` does not check it and its green exit says nothing about that code. Follow-up in
+`odd/tasks/tw4-stack-foundation.md` L5.
+
 **Do not flip `checkJs` on globally.** Doing so type-checks everything the include can reach:
 ~760 errors, ~530 in files that were never in scope (rationale is recorded in `tsconfig.json`).
 To bring a new module under the baseline, add `// @ts-check` to that one file — not a global

@@ -54,11 +54,11 @@
   border: 1px solid var(--color-cem-hover) !important;
   border-radius: 4px;
   font-size: 16px;
-  color: var(--color-dark);
+  color: var(--color-cem-text);
   font-weight: 500 !important;
 }
 .dark .tiptap.ProseMirror{
-  color: var(--color-white);
+  color: var(--color-cem-text);
   font-weight: 500 !important;
 }
 
@@ -72,11 +72,11 @@
 }
 .output p{
   font-size: 16px;
-  color: var(--color-dark);
+  color: var(--color-cem-text);
 }
 .dark .output p{
   font-size: 16px;
-  color: var(--color-bodytext);
+  color: var(--color-cem-text);
 }
 
 
@@ -96,7 +96,7 @@
   overflow-y: auto;
 }
 .dark .editor-content {
-  border: 1px solid var(--color-darkborder)!important;
+  border: 1px solid var(--color-cem-hover)!important;
 }
 /* Editor Content Placeholder */
 .editor-content p {

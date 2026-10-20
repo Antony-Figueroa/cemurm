@@ -476,7 +476,7 @@ while IFS= read -r hit; do
     entry_file="${entry%%|*}"
     entry_token="${entry##*|}"
     if [ "$hit_file" = "$entry_file" ] \
-      && printf '%s' "$hit_text" | grep -q -- "$entry_token"; then
+      && grep -q -- "$entry_token" <<<"$hit_text"; then
       excused=1
       break
     fi
@@ -512,15 +512,20 @@ fi
 # allowlisted. Adding a fifth accent -- or renaming one -- fails the gate and
 # becomes a deliberate, reviewable act. The tokens are CSS custom properties:
 # --color-cem-secondary-elevated, --color-cem-stage-bg, flat, no nesting. The
-# dotted allowlist path is rebuilt from the variable name by stripping the
-# "--color-" prefix and converting the FIRST hyphen into a dot
-# ("cem-secondary-elevated" -> "cem.secondary-elevated"), which reproduces the
-# path shape the v3 config allowed for the same 17 leaves, re-allowlisted
-# below for the flat CSS form.
+# allowlist key is rebuilt from the variable name by stripping the "--color-"
+# prefix. Only the `cem-` namespace becomes dotted
+# ("cem-secondary-elevated" -> "cem.secondary-elevated"); every other key keeps
+# its literal CSS spelling ("chart-1", "destructive") so the allowlist below is
+# byte-identical to the declared set.
 : >"$TMP_DIR/keys"
 : >"$TMP_DIR/findings"
 : >"$TMP_DIR/token_values"
+# Write the allowlist once and grep the file: piping into `grep -q` under
+# `pipefail` can fail spuriously when grep exits on the first match and printf
+# dies of SIGPIPE (141), turning a matching key into a false finding.
+printf '%s\n' "${CSS_COLOUR_KEY_ALLOWLIST[@]}" >"$TMP_DIR/allowlist"
 css_decl_regex='^[[:space:]]*--color-([A-Za-z0-9_-]+)[[:space:]]*:[[:space:]]*([^;]+);'
+theme_start="$(grep -m1 -nE '^[[:space:]]*@[[:space:]]*theme[[:space:]]*\{' "$CSS_TOKEN_FILE" | cut -d: -f1)"
 lineno=0
 while IFS= read -r line; do
   lineno=$((lineno + 1))
@@ -530,19 +535,19 @@ while IFS= read -r line; do
     # A value may carry a trailing comment; strip it and any spaces it leaves.
     raw="${raw%%/\**}"
     raw="${raw//[[:space:]]/}"
-    if [[ "$stem" == *-* ]]; then
-      path="${stem%%-*}.${stem#*-}"
+    if [[ "$stem" == cem-* ]]; then
+      path="cem.${stem#cem-}"
     else
       path="$stem"
     fi
     printf '%s\t%s\n' "$path" "$raw" >>"$TMP_DIR/token_values"
     printf '%s\n' "$path" >>"$TMP_DIR/keys"
-    if ! printf '%s\n' "${CSS_COLOUR_KEY_ALLOWLIST[@]}" | grep -qx -- "$path"; then
+    if ! grep -qxF -- "$path" "$TMP_DIR/allowlist"; then
       printf '%s:%s: undeclared colour key "%s"\n' \
-        "$CSS_TOKEN_FILE" "$lineno" "$path" >>"$TMP_DIR/findings"
+        "$CSS_TOKEN_FILE" "$((lineno + theme_start - 1))" "$path" >>"$TMP_DIR/findings"
     fi
   fi
-done < <(grep -m1 -nE '^[[:space:]]*--[A-Za-z]' "$CSS_TOKEN_FILE" >/dev/null 2>&1 && tail -n "+$(grep -m1 -nE '^[[:space:]]*@[[:space:]]*theme[[:space:]]*\{' "$CSS_TOKEN_FILE" | cut -d: -f1)" "$CSS_TOKEN_FILE"; true)
+done < <(grep -m1 -nE '^[[:space:]]*--[A-Za-z]' "$CSS_TOKEN_FILE" >/dev/null 2>&1 && tail -n "+$theme_start" "$CSS_TOKEN_FILE"; true)
 
 count_04="$(grep -c '' "$TMP_DIR/findings" 2>/dev/null || true)"
 if [ "$count_04" -eq 0 ] && [ ! -s "$TMP_DIR/keys" ]; then

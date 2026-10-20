@@ -79,5 +79,5 @@ suspect is wrong, with evidence. Never present a green gate as covering a rule i
 - `references/toolchain-options.md` — libraries, motion, external skills
 - `assets/tokens.css` — **NON-AUTHORITATIVE.** Design rationale for the ramp:
   where the warm dark steps and the amber come from, and what was rejected. Not
-  the token source (that is `tailwind.config.js`), not imported by the app, and
+  the token source (that is the `@theme` block in `src/app/index.css`), not imported by the app, and
   read by no gate. Read it for the *why*; do not copy a value out of it.

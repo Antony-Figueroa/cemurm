@@ -34,11 +34,13 @@ Runner: `pnpm && pnpm test`. Base: Fase 1 importada tal cual (commits U1–U5).
 
 - V1 — S1: DONE c55ba93 — hex literals del árbol template reescritos a roles cem.
 - V2 — S2: DONE 139ed74 — las clases shadcn (rol y paleta default) reescritas a cem.*;
-  los 26 alias de rol eliminados del @theme. Cierra reglas 01b, 02 y 04.
+  los 26 alias de rol eliminados del @theme. Cierra 01b y 04; 02 queda en 240/240
+  (techo exacto, cero holgura, mismo conteo que main).
 - V3 — S4: DONE 139ed74 — mapeos sin equivalente documentados en L3.
 - V4 — S5: DONE 139ed74 — extensión de allowlist aprobada como decisión (c); sin cambio
   de thresholds. El techo de 01b bajó 5 → 0 al desaparecer sus últimas ocurrencias.
-- V5 — S6: DONE — suite completa re-observada; evidencia en L5.
+- V5 — S6: DONE — suite completa re-observada; evidencia en L5. La identidad literal
+  de S6 no se cumplió: ver L7 (10 archivos, renames TW4 obligatorios).
 
 ## Log
 
@@ -93,3 +95,48 @@ Runner: `pnpm && pnpm test`. Base: Fase 1 importada tal cual (commits U1–U5).
   solicitado). El commit `4133168` saca del índice 13 rutas de trabajo local en
   curso (UML generado amp-02/uc-04, `features/internal-operations-console.feature`
   y su cambio OpenSpec), que quedan untracked en el working tree.
+- L7 (2026-10-20): auditoría pre-merge con dos verificadores read-only y correcciones
+  aplicadas en la rama. Hallazgos y resolución:
+  (a) `src/components/ui/chart.tsx` usaba `fill-cem-hover-foreground`, token
+      inexistente: el sweep convirtió `fill-muted-foreground` en un nombre inventado y
+      los ticks del chart perdían el fill. Corregido a
+      `fill-cem-secondary-elevated`, el rol que L3 asigna a muted-foreground.
+  (b) La regla 04 no era byte-idéntica: el parser convertía el primer guion en punto
+      (`chart-1` → `chart.1`) y la allowlist guardaba `chart-1`; pasaba solo porque
+      `grep -qx` interpretaba el path como regex y `.` matcheaba `-`. El parser ahora
+      solo convierte el namespace `cem-` y el match usa `grep -qxF` contra un archivo
+      (no un pipe): con `pipefail`, `grep -q` podía cerrar el pipe y `printf` morir
+      con SIGPIPE, produciendo un FAIL falso e intermitente sobre la primera key.
+      La allowlist (26 keys) coincide exacta con el `@theme` y r2 imprime `chart-1`.
+  (c) `Tiptap.css` tenía cuatro referencias a tres tokens inexistentes
+      (`--color-dark` ×2, `--color-bodytext`, `--color-darkborder`); las
+      declaraciones se descartaban. Reemplazados por `cem-text` (texto) y
+      `cem-hover` (borde). `--color-white` sí existía (default de Tailwind) y su
+      reemplazo por `cem-text` es el mapeo L3, no un token perdido.
+  (d) `reference.css` ya tenía su `@reference` (línea 14 en 8b7258d); la auditoría 1 se
+      equivocó al decir que faltaba. El fallo real es la forma citada de
+      `theme('colors.cem.*' / α)` en 7 lugares, que TW4 rechaza
+      (`Could not resolve value for theme function`). Se pasaron a la forma sin
+      comillas y el archivo compila con tailwindcss 4.3.3 (COMPILE OK, 29.800
+      bytes). El primer intento agregó un `@reference` duplicado; el verificador
+      lo detectó y se retiró. Es latente: DesignSystem no tiene ruta.
+  (e) `skills/cemurm-visual-system/SKILL.md` decía que el token source era
+      `tailwind.config.js` (borrado); ahora apunta al `@theme` de `src/app/index.css`.
+  (f) S6: `stage` queda intacto (0 archivos), pero `projection` y `landing` tienen 10
+      archivos con +14/−14: `outline-none`→`outline-hidden` y
+      `backdrop-blur-sm`→`backdrop-blur-xs`, renames obligatorios de TW4 sin cambio
+      visual. La frase "byte-idénticas" de L5 era falsa; se conserva como registro y
+      se corrige acá.
+  (g) Conteo del PR al momento de la auditoría (8b7258d): 431 archivos,
+      +29.858/−968 (L6 decía +29.841). El tip crece con este commit.
+  (h) Typecheck: `tsconfig.json` no incluye el árbol TS/TSX de la plantilla (171 de
+      172 archivos fuera), así que `pnpm typecheck` verde no cubre ese código. Se
+      corrigió el comentario del tsconfig y el follow-up quedó en
+      `tw4-stack-foundation.md` L5; va como PR encadenado, no en esta rama.
+  Deuda diferida, registrada: 9 utilidades del template sin CSS (18 usos), el par
+  `secondary-elevated`/`hover` a 3.93:1 (la regla 05b ya lo reporta), `.test.tsx` fuera
+  de Vitest y de `check-test-integrity.sh`, `msw`/`chance` importados sin declarar en la
+  capa MSW muerta, y `handbook.html` generado y ya desfasado (1.850 líneas) antes de
+  esta unidad. Evidencia: test nuevo `src/test/visual-contract-theme.test.js`
+  (5/5; 4 tests RED antes de los fixes), gate 12 reglas / 0 failing, regla 04
+  PASS, r2 con `chart-1`, `reference.css` compila.

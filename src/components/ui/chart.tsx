@@ -65,7 +65,7 @@ function ChartContainer({
         data-slot="chart"
         data-chart={chartId}
         className={cn(
-          "flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-cem-hover-foreground [&_.recharts-cartesian-grid_line]:stroke-cem-hover/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-cem-hover [&_.recharts-dot]:stroke-transparent [&_.recharts-layer]:outline-hidden [&_.recharts-polar-grid_]:stroke-cem-hover [&_.recharts-radial-bar-background-sector]:fill-cem-hover [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-cem-hover [&_.recharts-reference-line_]:stroke-cem-hover [&_.recharts-sector]:outline-hidden [&_.recharts-sector]:stroke-transparent [&_.recharts-surface]:outline-hidden",
+          "flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-cem-secondary-elevated [&_.recharts-cartesian-grid_line]:stroke-cem-hover/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-cem-hover [&_.recharts-dot]:stroke-transparent [&_.recharts-layer]:outline-hidden [&_.recharts-polar-grid_]:stroke-cem-hover [&_.recharts-radial-bar-background-sector]:fill-cem-hover [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-cem-hover [&_.recharts-reference-line_]:stroke-cem-hover [&_.recharts-sector]:outline-hidden [&_.recharts-sector]:stroke-transparent [&_.recharts-surface]:outline-hidden",
           className
         )}
         {...props}
