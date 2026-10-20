@@ -17,6 +17,11 @@ findings, or the audits. So it was re-scoped to the real remaining work rather t
 historical record. But it is no longer trustworthy as a whole, because **its central premise —
 four unmerged Hito 5 branches — is gone.** Every section is now labelled:
 
+- **Strategic pivot (2026-10-19) — current, decision-level.** Recorded *above* §0 because it
+  reframes every section rather than sitting beside them: the project pivots to a native
+  live-monitoring / live-sync app while the PWA continues against the same backend. It carries no
+  git state, and it opens one spec conflict that blocks native work — `pwa-updates-and-storage.feature`
+  still denies a native app (see that section's SC-1).
 - **§0, §5, §6 — current.** Re-derived from `main` = `762a040` on 2026-09-30; re-verified
   2026-10-02 against `main` = `e849738` — no drift found in any row; re-verified 2026-10-12 against
   `main` = `c14e977` — drift found and corrected (2026-10-12 notes in §0, §2, §3, §6).
@@ -30,6 +35,71 @@ The three defects this file was *written* to prevent are the reason for the labe
 Hito 5 was unmerged long after it merged, and a planner sequencing from it would have re-planned
 shipped work. Each later section below now carries the date and evidence that closed it.
 
+## Strategic pivot (2026-10-19) — two surfaces, one backend
+
+**Decision-level, not sequencing.** This section records a product decision that reframes everything
+below it. It carries no verified git state, and no row in §0–§6 depends on it.
+
+**What was decided (2026-10-19, by the maintainer):**
+
+CEMURM pivots to a **native app specialized in live monitoring and live synchronization**. The PWA is
+**not retired** — the two surfaces coexist against a single backend:
+
+| Surface | Covers | Status |
+|---|---|---|
+| **PWA** — the current `src/` | repertoires, setlists, collaboration, offline queue: everything Hitos 1–6 and the institutional scope of #363 cover | **unchanged and continuing** |
+| **Native app** — new | live monitoring and live synchronization between devices on stage | **decided, not started** |
+
+One backend for both. Supabase stays the source of truth: the native surface reads and writes the same
+schema and the same RLS policies the PWA does.
+
+**Why this is recorded here.** PR #335 (`spike/suite-modular`, milestone #7) assumes this pivot and is
+unintelligible without it — its three tracks only make sense for a live-performance instrument:
+
+- **S1 Audio Core** (`oboe`/`cpal`, p99 ≤ 5 ms, call and screen-lock interruption recovery): a browser
+  cannot reach that latency. Real-time monitoring needs a native audio path.
+- **S2 P2P Sync** (mDNS, UDP heartbeat, failover < 1 s, AP roaming, no underruns under 10% loss): stage
+  sync must survive the venue's network, so it cannot depend on the cloud alone.
+- **S3 MusicXML Layout** (Verovio WASM, transpose < 200 ms, 50-page stress): score on screen during
+  performance.
+
+Before this decision existed, all three were correctly rejected: no hito and no BDD feature asked for
+native audio or P2P, so AGENTS.md's entry rule ("implemented only when its hito or BDD feature
+requires it") turned them away. **The pivot is that missing requirement** — recorded here first, so
+the entry rule has something to point at.
+
+**⚠️ Naming collision: "Fase 1" means two unrelated things.**
+
+`docs/technical-spec.md` §10.7 (*Recommended Path*) defines a scaling ladder for the PWA:
+
+`Phase 0 (MVP)` → `Phase 1 (Scale, >5k MAU, same stack, Upstash Redis)` → `Phase 2 (Performance, Rust
+WASM)` → `Phase 3 (Independence, self-hosted PostgreSQL)` → `Phase 4 (Millions)`.
+
+Milestone #7 and PR #335 use **"Fase 1"** to mean *this pivot*. They are unrelated. That ladder still
+governs the PWA and is **not** superseded; the pivot is a parallel track, not the next rung. Until
+#335's text is corrected, read "Fase 1" inside the spike as "the native pivot", never as
+`Phase 1 (Scale)`.
+
+**Spec conflicts this decision opens — declared, not resolved here.**
+
+| # | Conflict | Consequence |
+|---|---|---|
+| **SC-1** | `features/pwa-updates-and-storage.feature` asserts verbatim in its NON-GOALS: "no native app-store or manual download update channel exists — updates flow only through the service worker" | The BDD files are the product source of truth and currently **deny a native app**. That feature must be reopened before any native work ships. |
+| **SC-2** | The "Fase 1" / `Phase 1 (Scale)` name collision above | Disambiguate in #335 and milestone #7 before either is read as sequencing. |
+| **SC-3** | The closest existing audio requirement is `features/practice-mode.feature` (metronome), which a PWA serves through the Web Audio API | Practice mode does not require native audio, so it is not evidence for S1. |
+
+**Open decisions.** This section settles direction, not implementation:
+
+| # | Decision | What it blocks |
+|---|---|---|
+| **OD-1** | Native implementation: from scratch (Swift/Kotlin, matching the spike's `oboe` + CMake) or wrapping the existing React app (Capacitor) | Whether any shipped `src/` runs in the native surface — and therefore whether S1 is a plugin or a rewrite |
+| **OD-2** | Where native code lives: this repository or a separate one | CI already needs self-hosted device runners; monorepo vs. split decides how they are wired |
+| **OD-3** | What exactly "live monitoring" monitors: audio (what S1 measures) or setlist/state across devices | S1 and S2 are measured against very different PASS thresholds |
+
+**Effect on §6.** The order there sequences the **PWA** track (N0–N5) and is unchanged by this decision:
+both surfaces share one backend, so the PWA work already on `main` keeps its value either way. The
+native track has no entry in that order yet; it gets one once OD-1–OD-3 are settled.
+
 ## 0. State of play — verified, not read from prose
 
 Prose in this repo has drifted. These are the facts, checked against git and code on
@@ -38,15 +108,16 @@ Prose in this repo has drifted. These are the facts, checked against git and cod
 
 | Fact | Value |
 |---|---|
-| `main` | `c14e977`, in sync with `origin/main` |
-| **Test files on `main`** | **17** — 12 characterization + 5 BDD-tier in `src/test/gherkin/` (was 9 at `e849738`) |
-| **`test` script on `main`** | **present** — `package.json` has `build`, `check:visual`, `dev`, `lint`, `preview`, `test`, `test:gherkin`, `test:watch`, `typecheck` |
-| **CI on `main`** | `install --frozen-lockfile → lint → typecheck → check-test-integrity.sh → test → test:gherkin → build → check-visual-contract.sh` |
+| `main` | `d3f1269`, in sync with `origin/main` (was `a610dd0` at the 2026-10-13 re-verification, and `c14e977` at the one before it) |
+| **Test files on `main`** | **23** — 18 unit/characterization + 5 BDD-tier in `src/test/gherkin/` (was 17 at `c14e977`, and 9 at `e849738`) |
+| **`test` script on `main`** | **present** — `package.json` has `build`, `check:visual`, `dev`, `lint`, `preview`, `test`, `test:gherkin`, `test:watch`, `typecheck`, plus the `test:e2e*` family (`test:e2e`, `:ci`, `:chromium`, `:firefox`, `:webkit`, `:debug`, `:headed`) |
+| **CI on `main`** | `install --frozen-lockfile → lint → deno check 'supabase/functions/**/*.ts' → typecheck → check-test-integrity.sh → test → test:gherkin → build → check-migrations-unique.sh → check-visual-contract.sh` (both gates run last on purpose: a gate that precedes `test`/`build` exits 1 under `set -euo pipefail` and marks them SKIPPED) |
+| **E2E on `main`** | **present** — `.github/workflows/e2e.yml`, 3 chained jobs (`e2e-chromium` → `e2e-firefox` → `e2e-webkit`, each gating the next through `needs`) |
 | `src/` layout on `main` | post-relocation: `app/`, `data/`, `domain/`, `features/`, `hooks/`, `integrations/`, `lib/` (incl. `lib/storage.js`), `offline/`, `test/`, `ui/`. No `store/` and no `components/` — there is no Zustand |
-| Feature files | **45**, 713 scenarios — was 42 / 656 at `8b66394` |
-| Migrations on `main` | **33 files, numbered `0001`–`0035`, with `0021`/`0022` a deliberate free gap** — was 27 with a gap at `0021` |
-| Next free migration number | **`0021` / `0022`** (deliberately free), or **`0036`** for anything that must sort after `0035` |
-| Hito 5 | **complete and merged.** Migrations up to `0035` all on `main`; plan-freeze and projection landed as `0034_plan_freeze.sql` / `0035_projection.sql` (renumbered in `07522a0`) |
+| Feature files | **46**, 734 scenarios — was 42 / 656 at `8b66394` |
+| Migrations on `main` | **38 files, numbered `0001`–`0040`, with `0021`/`0022` a deliberate free gap** — was 27 with a gap at `0021` |
+| Next free migration number | **`0041`** — `0021`/`0022` remain deliberately free, and everything from `0036` to `0040` is taken (`0036_guardian_approve_public_sharing.sql`, `0037_offline_tie_break.sql`, `0038_offboarding_cascade.sql`, `0039_leave_handoff_guard.sql`, `0040_fix_migration_chain_rls.sql`) |
+| Hito 5 | **complete and merged.** Migrations up to `0035` all on `main`; plan-freeze and projection landed as `0034_plan_freeze.sql` / `0035_projection.sql` (renumbered in `07522a0`); #360 added `0036_guardian_approve_public_sharing.sql` |
 | Hito 6 | **not started** — no implementation for any of its six features |
 | `// @ts-check` opt-ins | **47** files; `tsc --listFiles` reaches **62** `src/` files |
 | `docs/design-system.md` | superseded in part by `skills/cemurm-visual-system/` (PR #235, commit `5547150`); banner added in #238 |
@@ -144,8 +215,10 @@ All four branches exist, are pushed, and are unmerged. Verified after `git fetch
 ### ⚠️ Migration numbering: one real collision, and the rest is fine
 
 > **RESOLVED — and the outcome is the opposite of what this section predicted.** Read this as the
-> post-mortem it now is. `main` is **33 files numbered `0001`–`0035`, with `0021`/`0022` left as a
-> deliberate free gap**; the slot after the end is **`0036`**.
+> post-mortem it now is. `main` is **38 files numbered `0001`–`0040`, with `0021`/`0022` left as a
+> deliberate free gap**; the next free slot is **`0041`**. The tie-break migration took **`0037`** in
+> #365 — the very slot this section was written to claim, so the collision it predicted did happen
+> and the number was allocated rather than left open.
 >
 > - The pair merged **renumbered**, not under the numbers this section defended. Commit `07522a0`
 >   renamed `plan_freeze` `0021 → 0034` and `projection` `0022 → 0035`, so `0021`/`0022` never
@@ -351,17 +424,18 @@ own decision, separate from this plan. See §5.
 
 ## 3. P2 — the ten spec findings
 
-> **🔴 NINE OF THE TEN ARE NOW FIXED AND MERGED. This section was badly stale.** It previously said
-> "All ten still hold on `main`" and that "one change proposal exists … B through J have none".
-> Verified 2026-09-30 against `762a040`: nine findings have their fix commit on `main`, and
-> `openspec/changes/` holds **eleven** live proposals, not one. Only **finding D** remains open.
+> **✅ ALL TEN FINDINGS NOW HAVE A FIX, AND ALL TEN ARE ON `main`. This section was badly stale.**
+> It previously said "All ten still hold on `main`" and that "one change proposal exists … B through
+> J have none". Verified 2026-09-30 against `762a040`: nine findings have their fix commit on `main`,
+> and `openspec/changes/` holds **eleven** live proposals, not one. **Finding D** closed the set —
+> its migration merged in #365 and its client, spec and docs halves merged with this change.
 
 | Finding | Subject | Status on `main` | Fix |
 |---|---|---|---|
 | **A** | `sectionKeyContexts` always empty; the sectional-key branch was dead | ✅ **fixed** | `20e79d0` via #218 |
 | **B** | enharmonic spelling from a hardcoded six-key set | ✅ **fixed** | `92e64f6` via #219 |
 | **C** | OnSong export cannot reach `agreed_key` | ✅ **fixed** | `63d1ed3` via #220 |
-| **D** | **no tie-break in offline conflict resolution, and nothing stores the applied rule** | 🔴 **OPEN** | proposal `fix-offline-tie-break` |
+| **D** | **no tie-break in offline conflict resolution, and nothing stores the applied rule** | ✅ **fixed** | `0037_offline_tie_break.sql` + `apply_setlist_item_op` + the client mirror; PR #365 (WU1: migration + smoke) and #366 (WU2/WU3: client + spec + docs) — both on `main` |
 | **E** | `qualityForDegree` inert — 0 of 49 correct | ✅ **fixed** | `0cf6907` via #218 |
 | **F**+**G** | readiness lifecycle and per-version tracking | ✅ **fixed** | `791d1de` via #222 |
 | **H** | reconcile silent drop — unidentifiable op reported as *superseded* | ✅ **fixed** | `e34e7c6` via #216 |
@@ -369,26 +443,30 @@ own decision, separate from this plan. See §5.
 | — | offline write-queue stalling on unsyncable ops | ✅ **fixed** | `057120a` via #253 |
 | — | three unspecified crashes that killed the caller | ✅ **fixed** | `5cc50f6` via #223 |
 
-**Finding D is the only real work left in this section**, and it is the hardest of the ten, which
-is why it is the one that survived: `features/offline-edit-conflict-policy.feature:47-51` requires
+**Finding D is now fixed, and it was the hardest of the ten**, which is why it was the
+one that survived longest: `features/offline-edit-conflict-policy.feature:47-51` requires
 both that the app "applies the recorded tie-break rule" and that "the applied rule is stored with
-the resolution so every device reaches the same result". Today `reconcileSetlistOp` uses a strict
-`>` comparison, no rule runs on an exact tie, and there is nowhere to store one. The suite says so
-in its own words — `src/domain/setlist/collab.test.js:125-126` carries the Gherkin quote and the
-note "The code has no tie-break". **No migration mentions a tie-break** (verified across
-`supabase/migrations/`), so the storage half is absent too.
+the resolution so every device reaches the same result". Before the fix, `reconcileSetlistOp` used a
+strict `>` comparison, no rule ran on an exact tie, and there was nowhere to store one. The suite
+said so in its own words — `src/domain/setlist/collab.test.js:125-126` carried the Gherkin quote and
+the note "The code has no tie-break". **No migration mentioned a tie-break** (verified across
+`supabase/migrations/`), so the storage half was absent too. Both halves are on `main`:
+`0037_offline_tie_break.sql` (append-only `public.setlist_conflict_resolutions` + the
+`apply_setlist_item_op` RPC) and the client mirror in `reconcileSetlistOp`.
 
 It is also the **only finding of the ten that needs a migration**, and the numbering question that
 blocked it is settled: `0034` was taken by plan-freeze (`0034_plan_freeze.sql`), so the
-tie-break migration should take **`0036`** — it extends the setlist/collab schema, so it must
-sort after `0035`; `0021`/`0022` are free but sort too early for it. The proposal deliberately
-left the number open, so filling it in is now a real, small decision rather than a blocker.
+tie-break migration takes **`0037`**, **not `0036`** — `0036` was taken by
+`0036_guardian_approve_public_sharing.sql`, so the next free slot after `0035` was `0037`, and #365
+consumed it. `0021`/`0022` are free but sort too early for it. The proposal deliberately
+left the number open; it is now resolved.
 
-**The three product decisions below were real, and two have since been made** — B (in #219) and
-E (in #218). D's decision is still unmade, and it is a **product** decision, not an engineering
-one: what is the tie-break rule, and is it a per-conflict stored value or a global constant? A
-schema change follows from the answer, and the Gherkin demands determinism across devices, which
-is the claim the product is sold on. This cannot be resolved by reading the code.
+**The three product decisions below were real, and all three have since been made** — B (in #219)
+and E (in #218) merged, and D decided. D's decision was a **product** decision, not an engineering
+one: what is the tie-break rule, and is it a per-conflict stored value or a global constant? It is
+now **decided and on `main`**: the per-operation `opKey` uuid, greater
+lowercased key wins. The Gherkin demands determinism across devices, which is the claim the product
+is sold on; the recorded rule satisfies it.
 
 The other seven (A, C, F, G, H, I, J) were mechanical against a written scenario — and all of them
 are done.
@@ -418,7 +496,8 @@ took its own PR. Three of them hid a **product decision** that no amount of read
 - **D** — what is the tie-break rule, and where is it stored? The Gherkin requires the applied
   rule be persisted "so every device reaches the same result", so this implies a **schema
   change** *and* an undefined rule. This is the determinism claim the product is sold on.
-  🔴 **Still undecided** — see above.
+  ✅ **Decided and on `main`** — the per-operation `opKey` uuid, greater
+  lowercased key wins (stored in `public.setlist_conflict_resolutions`, `0037_offline_tie_break.sql`).
 - **E** — what is the correct degree-quality algorithm? The code read consecutive scale steps
   as a triad's root/third/fifth; stacking real thirds is a different computation.
   ✅ **Decided and shipped in #218** (`0cf6907`).
@@ -443,7 +522,22 @@ its six features.
 | `cross-organization-event-collaboration` | 16 | largest design lift: depends on org model + service planning + shared-setlist collab + repertoire ownership |
 | `user-onboarding` | 16 | none |
 | `account-data-export-and-erasure` | 11 | none |
-| `offboarding-cascade` | 10 | none |
+| `offboarding-cascade` | 10 | membership model, `former` state and `left_at` (`0001`), `notify_user` and `transfer_setlist_ownership` (`0008`, Hito 3), `withdraw_public_song` and `leave_organization` (`0012`/`0016`, Hito 4) all shipped earlier; the missing pieces were the CASCADE and the branch-visibility read `:37` depends on (corrected 2026-10-14) |
+
+**`offboarding-cascade` correction (2026-10-13).** The `none` this row carried was wrong about the
+code. The reconnaissance for N2 found the feature **mostly built**, with only its cascade absent:
+`private.org_leave` (`0016:437-453`) flipped the membership to `former` and stopped there, so an
+unavailable member could leave with her open substitution request left dangling — never closed, and
+the leader never told; and `private.assign_musician` (`0018:462-524`) accepted any user id as an
+assignee, former members included. `0038_offboarding_cascade.sql` closes both, verified by
+`scripts/smoke/0038-offboarding-cascade.sql` (33 PASS / 0 FAIL) — see `odd/tasks/offboarding-cascade.md`
+for the execution record. This is the one feature of Hito 6's six with any implementation, so the
+blanket "no implementation exists for any of its six features" above holds for the other five only.
+The row's count of 10 scenarios was right; the **size of the work was not**,
+and that is what made this row worth repairing rather than the code worth rewriting. Still open: the
+setlist handoff (`:53`), which needs a two-phase leave rather than a data-model change, and
+assertions for the scenarios that hold by construction — **except** `:37`, whose org read access has
+no implementation at all (`shared_to_branch` is read by no policy or RPC).
 
 Plus the non-BDD deliverables in `mvp-scope.md:254-261`: Lighthouse > 90, WCAG 2.1 AA, UI
 polish, bug-fix sprint, beta docs, error boundaries, analytics.
@@ -542,8 +636,8 @@ M5   doc repairs, alongside each slice above
 
 ```
 N0  ✅ DONE — the visual gate passes on `main` (12 rules, 0 failing; ratchet step 1 landed)
-N1  finding D only (9 of 10 findings landed): the offline tie-break rule, 1 PR
-    → migration `0036`                                                        ← now provable against the suite
+N1  ✅ DONE — finding D: the offline tie-break rule. 2 chained PRs, both merged:
+    WU1 migration `0037` + smoke (#365); WU2/WU3 client + spec + docs (#366).
 N2  Hito 6 privacy slice: offboarding-cascade, then
     account-data-export-and-erasure                              ← obligations, not features
 N3  Hito 6 product slice: export-and-sharing, user-onboarding,
@@ -555,6 +649,14 @@ N5  remaining doc rot, alongside whatever slice is open
 **N0 was first because it was the only item blocking something other than itself** — CI on `main`
 was red, every PR went red with it, and a red suite is a suite people learn to ignore. It is
 done as of 2026-10-12: the gate passes, and N1 has shrunk from the ten findings to the one — D.
+
+**The native track is deliberately absent from N0–N5.** The 2026-10-19 pivot (see *Strategic pivot*
+above) adds a second surface — a native app for live monitoring and sync — running against the same
+backend. It is not sequenced here for two concrete reasons: OD-1–OD-3 in that section (implementation
+model, code location, what "monitoring" monitors) are still open, and SC-1 means
+`features/pwa-updates-and-storage.feature` still denies a native app. Sequencing it before both are
+settled would order work whose defining decision has not finished being made. The PWA track above is
+unaffected either way — the two surfaces share one backend, so this work keeps its value regardless.
 
 Two things deliberately do **not** go in this plan:
 
