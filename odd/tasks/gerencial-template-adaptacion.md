@@ -76,3 +76,20 @@ Runner: `pnpm && pnpm test`. Base: Fase 1 importada tal cual (commits U1–U5).
   (`FeedbackForm.jsx` bg-black/50 y `SongDetail.jsx` bg-black/85 → `bg-cem-stage-bg`
   con la misma opacidad; negro exacto, cero cambio visual): son las ocurrencias
   toleradas por el techo de 01b, y sin ellas el techo no podía bajar a 0.
+- L6 (2026-10-20): integración de `main` (54 commits, `2f06b1f` → `0b311e9`) antes
+  del PR. Un solo conflicto, `pnpm-lock.yaml`: se tomó el lock de main y se
+  re-resolvió con `pnpm install`, probando después `pnpm install --frozen-lockfile`.
+  El merge heredó el parche CVE-2026-104844 de main para
+  `postcss-selector-parser@6.1.4`; con Tailwind 4 ese paquete ya no existe en el
+  árbol (0 ocurrencias en el lock resuelto), pnpm lo rechazó como parche sin uso y
+  se retiraron la entrada de `pnpm-workspace.yaml` y el archivo. El código
+  vulnerable no se distribuye en esta rama.
+  Evidencia post-merge en `4133168`: `pnpm lint` 0 · `pnpm typecheck` 0 ·
+  `scripts/check-test-integrity.sh` OK (23 archivos) · `pnpm test` 415/415 ·
+  `pnpm test:gherkin` 44/44 · `pnpm build` ✓ · gate 12 reglas / 0 failing.
+  `deno check 'supabase/functions/**/*.ts'` no se ejecutó localmente (Deno no
+  instalado); la rama no toca `supabase/`.
+  PR abierto: davidjesus516/cemurm#383 (431 archivos, +29.841/−968, reviewer
+  solicitado). El commit `4133168` saca del índice 13 rutas de trabajo local en
+  curso (UML generado amp-02/uc-04, `features/internal-operations-console.feature`
+  y su cambio OpenSpec), que quedan untracked en el working tree.
