@@ -18,10 +18,13 @@ CEMURM sin recortar su esquema, estructura ni visual. Branch:
   `org_owner`, `org_admin` o `branch_admin`. Sin acceso → `/`. Fail-closed: una
   lectura que falla no concede acceso.
 - **S3** (dashboard real): el home `/admin` deja de usar arrays hardcodeados y
-  lee conteos/listas de `src/data/repositories/` (`songs`, `setlists`, `gigs`,
-  `rehearsals`, `bandmates`, `orgRepertoire`) para la organización activa del
-  usuario. Se conserva la estructura de cards y grillas del template; sólo
-  cambian labels y datos.
+  lee conteos/listas de los repositorios existentes (`songs`, `setlists`, `gigs`,
+  `venues`, `rehearsals`, `bandmates`, `orgRepertoire`, `profiles`). Se conserva
+  la estructura de cards y grillas del template; sólo cambian labels y datos.
+  **Límite declarado:** esos repositorios son owner-scoped (`songs.created_by`,
+  `setlists.owner_id`, `gigs.owner_id`), así que el home muestra los números del
+  gerente autenticado, no un rollup de toda la organización. Un rollup org-wide
+  requiere queries RLS nuevas y queda fuera de esta fase.
 - **S4** (perfil real): `/admin/pages/user-profile` lee
   `profiles.getProfile` y `orgRepertoire.getMyOrganizations` en vez de datos
   demo.
@@ -40,13 +43,13 @@ CEMURM sin recortar su esquema, estructura ni visual. Branch:
 
 ## Tasks
 
-- T1 — S2: guard `RequireGerencial` + montaje de `/admin` dentro de los guards.
-- T2 — S7: `ThemeProvider` en el subtree admin.
-- T3 — S3: home con métricas y listas reales.
-- T4 — S4: user-profile real.
-- T5 — S5: tables real.
-- T6 — S6: marcar demo y aislar escrituras falsas.
-- T7 — S8: docs + gates + evidencia.
+- T1 — S2: ✅ `b234254` — guard `RequireGerencial` + montaje de `/admin` dentro de los guards.
+- T2 — S7: ✅ `b234254` — `ThemeProvider` en el subtree admin.
+- T3 — S3: ✅ commit de este slice — home con métricas y listas reales.
+- T4 — S4: pendiente — user-profile real.
+- T5 — S5: pendiente — tables real.
+- T6 — S6: pendiente — marcar demo y aislar escrituras falsas.
+- T7 — S8: pendiente — docs + gates + evidencia.
 
 ## Log
 
@@ -68,3 +71,12 @@ CEMURM sin recortar su esquema, estructura ni visual. Branch:
   preexistentes (`useActiveOrgName`, `useBandmates`, `useGigs`, `useMidi`,
   `useModeration`, `useNotifications`, `usePlanningCenter`, `usePreferences`,
   `useSetlists`, `useSongs`).
+- L4 (2026-10-20): T1/T2 cerrados en `b234254` (guard gerencial + ThemeProvider).
+  Verificación en navegador real: signed-out → `/auth`; demo@ (org_owner) →
+  `/admin` renderiza el template; isolation@ (org_member) → `/`. T3 cablea el
+  home con `useAdminOverview`: canciones, setlists, gigs + venues, ensayos,
+  bandmates, organizaciones y perfil. Verificación con demo@: 9 canciones, 1
+  setlist, 2 eventos, 1 banda, 1 organización, 0 ensayos; chart "9 new this
+  period" / "1 setlist created"; tabla de eventos con las 2 filas reales e IDs
+  únicos; 0 errores de consola. Gates: `pnpm typecheck` 0, `pnpm lint` 0,
+  `pnpm test` 425/425.
