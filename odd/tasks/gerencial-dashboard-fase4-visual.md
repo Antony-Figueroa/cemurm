@@ -44,11 +44,11 @@ and work-unit commit.
 
 | ID | Spec | Route | Status | Commit | Evidence |
 | --- | --- | --- | --- | --- | --- |
-| T1 | S1, S2 | inline | done | pending | `--cem-light-*` inputs + `html.light` mapping + `color-scheme`; admin-only class cleanup. Light body `rgb(248,250,252)`, text `rgb(15,23,42)`; dark reload and member app stay dark. |
-| T2 | S3, S4 | inline | done | pending | CEMURM mark/wordmark, local-only sidebar, CEMURM `<footer>` with Back to app; plan/help/buy/version removed. |
-| T3 | S3, S4 | inline | done | pending | Real profile sheet (Demo User / demo@cemurm.app), controlled close, Profile and Member app links, sign-out to `/auth`; fake notifications gone; search covers the local menu and parent paths. |
-| T4 | S2, S5 | inline | done | pending | Inset panel `m-2 lg:m-3`, rounded border, `p-4 lg:p-6`, material header; dark `secondary-elevated` #cbd5e1; light palette measured 5.2:1+ (text 17.06, secondary 7.24, amber 6.78). |
-| T5 | S1-S6 | inline | done | pending | Both themes, scope check, gates, screenshots and mobile shell verified. See L5. |
+| T1 | S1, S2 | inline | done | bfa78e7 | `--cem-light-*` inputs + `html.light` mapping + `color-scheme`; admin-only class cleanup. Light body `rgb(248,250,252)`, text `rgb(15,23,42)`; dark reload and member app stay dark. |
+| T2 | S3, S4 | inline | done | bfa78e7 | CEMURM mark/wordmark, local-only sidebar, CEMURM `<footer>` with Back to app; plan/help/buy/version removed. |
+| T3 | S3, S4 | inline | done | bfa78e7 | Real profile sheet (Demo User / demo@cemurm.app), controlled close, Profile and Member app links, sign-out to `/auth`; fake notifications gone; search covers the local menu and parent paths. |
+| T4 | S2, S5 | inline | done | bfa78e7 | Inset panel `m-2 lg:m-3`, rounded border, `p-4 lg:p-6`, material header; dark `secondary-elevated` #cbd5e1; light palette measured 5.2:1+ (text 17.06, secondary 7.24, amber 6.78). |
+| T5 | S1-S6 | inline | done | bfa78e7 | Both themes, scope check, gates, screenshots and mobile shell verified. See L5. |
 
 ## Log
 
@@ -116,4 +116,4 @@ L5 — 2026-10-20 — verification.
   `shell-profile-light.png`, `shell-mobile-light.png`,
   `shell-mobile-sidebar.png`, `shell-profile-page-light-2.png`,
   `member-after-admin-2.png`, `auth-after-signout.png`.
-- Shell work-unit commit: pending until committed; the close docs commit records it.
+- Shell work-unit commit: `bfa78e7`; this docs commit records it.
