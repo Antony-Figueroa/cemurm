@@ -53,7 +53,7 @@ apoya en F1.
 - T4 — S4: ✅ `ed64a3b` — perfil real (identidad + organizaciones), sin escrituras falsas.
 - T5 — S5: ✅ `da00f4a` — tables reales (canciones + setlists).
 - T6 — S6: ✅ `1623e7f` — demos explícitas, sin red ni escrituras falsas.
-- T7 — S8: ✅ este commit — docs + gates + evidencia.
+- T7 — S8: ✅ `841e44b` — docs + gates + evidencia.
 
 ## Log
 
