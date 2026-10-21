@@ -4,16 +4,18 @@ import CheckboxTable from 'src/components/tables/checkbox-table/CheckboxTable';
 import HoverTable from 'src/components/tables/hover-table/HoverTable';
 import StripedRowTable from 'src/components/tables/striped-row-table/StripedRowTable';
 import DataTable from 'src/components/tables/data-table/DataTable';
-import { EmployeeData } from 'src/components/tables/table-data';
 import StyleDivider from 'src/components/shared/StyleDivider';
 import StyleAwareWrapper from 'src/components/shared/StyleAwareWrapper';
+import { useAdminTables } from '@/hooks/shared/useAdminTables';
 
 const BCrumb = [
-  { to: '/', title: 'Home' },
+  { to: '/admin', title: 'Home' },
   { title: 'Tables' },
 ];
 
 function TablesPage() {
+  const { songs, setlists, dataTableRows } = useAdminTables();
+
   return (
     <StyleAwareWrapper
       lyraClassName="flex flex-col p-px gap-px bg-cem-hover"
@@ -24,31 +26,31 @@ function TablesPage() {
       <StyleAwareWrapper
         lyraClassName="grid grid-cols-12 gap-px bg-cem-hover">
         <div className="col-span-12">
-          <BasicTable />
+          <BasicTable rows={setlists} />
         </div>
         <div className="col-span-12">
           <StyleDivider />
         </div>
         <div className="col-span-12">
-          <DataTable data={EmployeeData} />
+          <DataTable data={dataTableRows} />
         </div>
         <div className="col-span-12">
           <StyleDivider />
         </div>
         <div className="col-span-12">
-          <HoverTable />
+          <HoverTable rows={songs} />
         </div>
         <div className="col-span-12">
           <StyleDivider />
         </div>
         <div className="col-span-12">
-          <StripedRowTable />
+          <StripedRowTable rows={songs} />
         </div>
         <div className="col-span-12">
           <StyleDivider />
         </div>
         <div className="col-span-12">
-          <CheckboxTable />
+          <CheckboxTable rows={songs} />
         </div>
         <div className="col-span-12">
           <StyleDivider />

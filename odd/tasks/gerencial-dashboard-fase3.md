@@ -47,7 +47,7 @@ CEMURM sin recortar su esquema, estructura ni visual. Branch:
 - T2 — S7: ✅ `b234254` — `ThemeProvider` en el subtree admin.
 - T3 — S3: ✅ `f198bb9` — home con métricas y listas reales.
 - T4 — S4: ✅ `ed64a3b` — perfil real (identidad + organizaciones), sin escrituras falsas.
-- T5 — S5: pendiente — tables real.
+- T5 — S5: ✅ commit de este slice — tables reales (canciones + setlists).
 - T6 — S6: pendiente — marcar demo y aislar escrituras falsas.
 - T7 — S8: pendiente — docs + gates + evidencia.
 
@@ -89,3 +89,15 @@ CEMURM sin recortar su esquema, estructura ni visual. Branch:
   `profiles.js` ahora expone `avatarUrl` (columna que el select ya traía).
   Verificado con demo@: Demo User, @demo, Owner · Demo Academy, membresía
   Active; 0 errores de consola. Gates: typecheck 0, lint 0, test 425/425.
+- L6 (2026-10-20): T5 reemplaza los dos datasets falsos del template
+  (`EmployeeData` y `PerformersData`) por filas reales. `useAdminTables` lee
+  `songs.listSongs` y `setlists.listSetlists`: el basic table muestra setlists
+  (nombre, cantidad de canciones, visibilidad y fecha), y las variantes hover,
+  striped, checkbox y TanStack muestran canciones (título, artista, tonalidad,
+  BPM y estado). `table-data.ts` queda sólo con el tipo `PerformerRow`
+  compartido; los menús Add/Edit/Delete y el botón de borrar se reemplazan por
+  un enlace real a `/songs/:id` o `/setlists/:id`. El DataTable conserva
+  búsqueda, orden, paginación y export CSV. Verificado con demo@: Demo Setlist
+  (2 songs, Shared), 9 canciones reales (Way Maker, Oceans, Amazing Grace…),
+  sin datos de empleados ni acciones falsas, 0 errores de consola. Gates:
+  typecheck 0, lint 0.

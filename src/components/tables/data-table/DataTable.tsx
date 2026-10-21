@@ -27,9 +27,9 @@ import {
   ArrowUp,
   ArrowDown,
   ChevronsUpDown,
-  Trash2,
   Pencil,
 } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import {
   Select,
   SelectContent,
@@ -111,12 +111,21 @@ const DataTable = <T extends Record<string, unknown>>({
 
     const keys = Object.keys(data[0]).filter((key) => {
       const val = data[0][key]
-      return !Array.isArray(val) && key !== 'avatar' && key !== 'statuscolor'
+      return (
+        !Array.isArray(val) &&
+        key !== 'avatar' &&
+        key !== 'statuscolor' &&
+        key !== 'href'
+      )
     })
+
+    const HEADER_LABELS: Record<string, string> = { bpm: 'BPM' }
 
     const baseColumns = keys.map((col) => ({
       accessorKey: col as keyof T & string,
-      header: toTitleCase(col.replace(/([A-Z])/g, ' $1').trim()),
+      header:
+        HEADER_LABELS[col] ??
+        toTitleCase(col.replace(/([A-Z])/g, ' $1').trim()),
       cell: (info: CellContext<T, unknown>) => {
         const value = info.getValue()
 
@@ -361,20 +370,19 @@ const DataTable = <T extends Record<string, unknown>>({
 
     const actionColumn: ColumnDef<T, unknown> = {
       id: 'action',
-      header: 'Action',
+      header: 'Open',
       enableSorting: false,
-      cell: () => {
+      cell: (info) => {
+        const href = (info.row.original as Record<string, unknown>).href
+        if (typeof href !== 'string' || !href) return null
         return (
-          <div className='flex items-center gap-2'>
-            <Button
-              className='bg-cem-hover! rounded-md'>
-              <Pencil className='size-4 text-cem-amber' />
-            </Button>
-            <Button
-              className='bg-destructive/10! rounded-md'>
-              <Trash2 className='size-4 text-destructive' />
-            </Button>
-          </div>
+          <Link
+            to={href}
+            aria-label='Open row'
+            className='bg-cem-hover! rounded-md inline-flex h-8 w-8 items-center justify-center'
+          >
+            <Pencil className='size-4 text-cem-amber' />
+          </Link>
         )
       },
     }
@@ -436,11 +444,7 @@ const DataTable = <T extends Record<string, unknown>>({
             {/* Search + Download */}
             <CardHeader className='pb-4'>
               <div className='pt-0 flex items-center justify-between flex-wrap gap-4'>
-                <CardTitle>
-                  <h3 className='text-xl font-semibold'></h3>
-                    Employee Data Table
-                  
-                </CardTitle>
+                <CardTitle>Songs</CardTitle>
                 <div className='flex items-center gap-2 flex-wrap'>
                   <Input
                     type='text'
