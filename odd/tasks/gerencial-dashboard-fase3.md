@@ -47,7 +47,7 @@ CEMURM sin recortar su esquema, estructura ni visual. Branch:
 - T2 — S7: ✅ `b234254` — `ThemeProvider` en el subtree admin.
 - T3 — S3: ✅ `f198bb9` — home con métricas y listas reales.
 - T4 — S4: ✅ `ed64a3b` — perfil real (identidad + organizaciones), sin escrituras falsas.
-- T5 — S5: ✅ commit de este slice — tables reales (canciones + setlists).
+- T5 — S5: ✅ `da00f4a` — tables reales (canciones + setlists).
 - T6 — S6: pendiente — marcar demo y aislar escrituras falsas.
 - T7 — S8: pendiente — docs + gates + evidencia.
 
