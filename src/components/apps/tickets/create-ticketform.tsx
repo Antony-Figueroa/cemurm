@@ -73,7 +73,7 @@ const CreateTicketForm = () => {
 
     addTicket(newTicket);
     resetForm();
-    router("/apps/tickets");
+    router("/admin/apps/tickets");
   };
 
   const resetForm = () => {
@@ -129,11 +129,9 @@ const CreateTicketForm = () => {
           <div className="flex flex-wrap items-center justify-between mt-6 gap-3">
             <div>
               <DropdownMenu>
-                <DropdownMenuTrigger>
-                  <Button >
-                    {selectedAgent.name}
-                    <ChevronDown className="h-4 w-4 ml-1" />
-                  </Button>
+                <DropdownMenuTrigger render={<Button />}>
+                  {selectedAgent.name}
+                  <ChevronDown className="h-4 w-4 ml-1" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="rounded-md">
                   {agents.map((agent) => (
@@ -170,7 +168,7 @@ const CreateTicketForm = () => {
                 variant={"destructive"}
                 className="rounded-md"
                 onClick={() => {
-                  router("/apps/tickets");
+                  router("/admin/apps/tickets");
                 }}
               >
                 Cancel

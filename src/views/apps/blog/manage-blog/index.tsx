@@ -3,9 +3,10 @@ import { BlogProvider } from "src/context/blog-context";
 import ManageBlogTable from "@/components/apps/blog/blogtable/manage-blogtable";
 import StyleAwareWrapper from "src/components/shared/StyleAwareWrapper";
 import StyleDivider from "src/components/shared/StyleDivider";
+import DemoNotice from "src/components/shared/DemoNotice";
 
 const BCrumb = [
-  { to: "/", title: "Home" },
+  { to: "/admin", title: "Home" },
   { title: "Manage Blog" },
 ];
 
@@ -16,8 +17,12 @@ const MangeBlog = () => {
         lyraClassName="flex flex-col p-px gap-px bg-cem-hover"
         defaultClassName="flex flex-col gap-4"
       >
-        <BreadcrumbComp title=" Manage Blog" items={BCrumb} />
+        <BreadcrumbComp title="Manage Blog" items={BCrumb} />
         <StyleDivider />
+        <DemoNotice>
+          Demo screen — the template&apos;s blog table. Nothing here is connected to
+          CEMURM data and no change is saved.
+        </DemoNotice>
         <ManageBlogTable />
       </StyleAwareWrapper>
     </BlogProvider>

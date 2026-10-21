@@ -2,9 +2,10 @@ import TicketsApp from "src/components/apps/tickets";
 import BreadcrumbComp from "src/layouts/full/shared/breadcrumb/BreadcrumbComp";
 import StyleAwareWrapper from "src/components/shared/StyleAwareWrapper";
 import StyleDivider from "src/components/shared/StyleDivider";
+import DemoNotice from "src/components/shared/DemoNotice";
 
 const BCrumb = [
-  { to: "/", title: "Home" },
+  { to: "/admin", title: "Home" },
   { title: "Tickets" },
 ];
 
@@ -16,6 +17,10 @@ const Tickets = () => {
     >
       <BreadcrumbComp title="Tickets App" items={BCrumb} />
       <StyleDivider />
+      <DemoNotice>
+        Demo screen — these tickets are template content. Changes live in
+        memory only and are lost on reload; nothing is saved to CEMURM.
+      </DemoNotice>
       <TicketsApp />
     </StyleAwareWrapper>
   );

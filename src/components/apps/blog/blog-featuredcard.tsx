@@ -71,7 +71,7 @@ const BlogFeaturedCard = ({ post, index }: Btype) => {
                   </div>
                   <div>
                     <h2 className="text-2xl text-cem-text my-6">
-                      <Link to={`/apps/blog/detail/${linkTo}`}> {title}</Link>
+                      <Link to={`/admin/apps/blog/detail/${linkTo}`}> {title}</Link>
                     </h2>
                     <div className="flex  gap-3">
                       <div className="flex gap-2 items-center text-cem-text text-sm">

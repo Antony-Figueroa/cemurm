@@ -1,8 +1,13 @@
-import { createContext, useState, useEffect } from 'react';
-
+// Demo notes store.
+//
+// The template shipped this context with SWR calls to /api/notes/* endpoints
+// that only existed in an MSW worker nobody starts, so the page always loaded
+// empty. The demo now keeps the template's fixed content in React state: no
+// network calls, no Supabase writes, and every change is lost on reload. The
+// notes screen renders a demo notice that says exactly that.
+import { createContext, useState } from 'react';
 import React from 'react';
-import useSWR from 'swr';
-import { deleteFetcher, getFetcher, postFetcher, putFetcher } from 'src/api/global-fetcher';
+import { demoNotes } from '@/demo/content';
 import { notesType } from 'src/types/apps/notes';
 
 // Define context type
@@ -17,77 +22,54 @@ interface NotesContextType {
   deleteNote: (id: number) => Promise<void>;
 }
 
-// Initial context values
 const initialContext: NotesContextType = {
-  notes: [],
-  loading: true,
+  notes: demoNotes,
+  loading: false,
   error: null,
-  selectedNoteId: 1,
+  selectedNoteId: demoNotes[0]?.id ?? 1,
   selectNote: () => {},
   addNote: async () => {},
   updateNote: async () => {},
   deleteNote: async () => {},
 };
 
-// Create context
 export const NotesContext = createContext<NotesContextType>(initialContext);
 
-// Provider component
 export const NotesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [notes, setNotes] = useState<notesType[]>(initialContext.notes);
-  const [loading, setLoading] = useState<boolean>(initialContext.loading);
-  const [error, setError] = useState<Error | null>(initialContext.error);
-  const [selectedNoteId, setSelectedNoteId] = useState<number>(initialContext.selectedNoteId);
+  const [notes, setNotes] = useState<notesType[]>(demoNotes);
+  const [selectedNoteId, setSelectedNoteId] = useState<number>(
+    demoNotes[0]?.id ?? 1,
+  );
 
-  // Fetch notes from the server
-  const {
-    data: notesData,
-    isLoading: isNotesLoading,
-    error: notesError,
-    mutate,
-  } = useSWR('/api/data/notes/NotesData', getFetcher);
-  useEffect(() => {
-    if (notesData) {
-      setNotes(notesData.data);
-      setLoading(false);
-    } else if (notesError) {
-      setError(notesError);
-      setLoading(false);
-    } else {
-      setLoading(false);
-    }
-  }, [notesData, notesError, isNotesLoading]);
-
-  // Select a note by its ID
   const selectNote = (id: number) => {
     setSelectedNoteId(id);
   };
 
-  // Add a new note
   const addNote = async (newNote: notesType) => {
-    try {
-      await mutate(postFetcher('/api/notes/add', newNote));
-    } catch (error) {
-      console.error('Error adding note:', error);
-    }
+    const nextId = notes.reduce((max, note) => Math.max(max, note.id), 0) + 1;
+    const created: notesType = {
+      ...newNote,
+      id: nextId,
+      datef: new Date().toISOString(),
+      deleted: false,
+    };
+    setNotes((current) => [created, ...current]);
+    setSelectedNoteId(nextId);
   };
 
-  // Update a note by its ID
   const updateNote = async (id: number, title: string, color: string) => {
-    try {
-      await mutate(putFetcher('/api/notes/update', { id, title, color }));
-    } catch (error) {
-      console.error('Error updating note:', error);
-    }
+    setNotes((current) =>
+      current.map((note) =>
+        note.id === id ? { ...note, title, color } : note,
+      ),
+    );
   };
 
-  // Delete a note by its ID
   const deleteNote = async (id: number) => {
-    try {
-      const response = await mutate(deleteFetcher('/api/notes/delete', { id }));
-      console.log(response.data);
-    } catch (error) {
-      console.error('Error deleting note:', error);
+    const remaining = notes.filter((note) => note.id !== id);
+    setNotes(remaining);
+    if (selectedNoteId === id) {
+      setSelectedNoteId(remaining[0]?.id ?? 0);
     }
   };
 
@@ -95,8 +77,8 @@ export const NotesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <NotesContext.Provider
       value={{
         notes,
-        loading,
-        error,
+        loading: false,
+        error: null,
         selectedNoteId,
         selectNote,
         addNote,

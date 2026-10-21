@@ -7,9 +7,10 @@ import Status from "@/components/apps/blog/blogadd/blog-status";
 import BreadcrumbComp from "src/layouts/full/shared/breadcrumb/BreadcrumbComp";
 import StyleAwareWrapper from "src/components/shared/StyleAwareWrapper";
 import StyleDivider from "src/components/shared/StyleDivider";
+import DemoNotice from "src/components/shared/DemoNotice";
 
 const BCrumb = [
-  { to: "/", title: "Home" },
+  { to: "/admin", title: "Home" },
   { title: "Blog Create" },
 ];
 
@@ -21,6 +22,10 @@ const BlogCreate = () => {
     >
       <BreadcrumbComp title="Blog Create" items={BCrumb} />
       <StyleDivider />
+      <DemoNotice>
+        Demo screen — this form does not save a post. The template&apos;s editor is
+        kept as a visual reference only.
+      </DemoNotice>
       <StyleAwareWrapper
         lyraClassName="grid grid-cols-12 gap-px bg-cem-hover"
         defaultClassName="grid grid-cols-12 gap-[30px]"

@@ -134,7 +134,7 @@ const SidebarContent: MenuItem[] = [
           {
             id: uniqueId(),
             name: "Blog Detail",
-            url: "/apps/blog/detail/streaming-video-way-before-it-was-cool-go-dark-tomorrow",
+            url: "/apps/blog/detail/the-quiet-craft-of-a-setlist",
           },
           {
             id: uniqueId(),
@@ -396,7 +396,7 @@ const SidebarContent: MenuItem[] = [
         id: uniqueId(),
         name: "Error",
         icon: Unlink,
-        url: "/auth/error",
+        url: "/auth/404",
       },
       {
         name: "Login",

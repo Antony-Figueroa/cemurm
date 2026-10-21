@@ -48,7 +48,7 @@ CEMURM sin recortar su esquema, estructura ni visual. Branch:
 - T3 — S3: ✅ `f198bb9` — home con métricas y listas reales.
 - T4 — S4: ✅ `ed64a3b` — perfil real (identidad + organizaciones), sin escrituras falsas.
 - T5 — S5: ✅ `da00f4a` — tables reales (canciones + setlists).
-- T6 — S6: pendiente — marcar demo y aislar escrituras falsas.
+- T6 — S6: ✅ commit de este slice — demos explícitas, sin red ni escrituras falsas.
 - T7 — S8: pendiente — docs + gates + evidencia.
 
 ## Log
@@ -101,3 +101,28 @@ CEMURM sin recortar su esquema, estructura ni visual. Branch:
   (2 songs, Shared), 9 canciones reales (Way Maker, Oceans, Amazing Grace…),
   sin datos de empleados ni acciones falsas, 0 errores de consola. Gates:
   typecheck 0, lint 0.
+- L7 (2026-10-20): T6 convierte las pantallas sin dominio en demos explícitas.
+  Los módulos mock del template llamaban a `/api/...` contra un worker MSW que
+  nunca se inicia, así que blog, notes y tickets cargaban vacíos. Se reemplazan
+  por contenido estático en `src/demo/content.ts` (6 posts con comentarios, 4
+  notas, 6 tickets) y los tres contextos pasan a estado local: sin red, sin
+  Supabase y sin `chance`/MSW en runtime. `DemoNotice` marca blog (5 vistas),
+  notes, tickets (2) e icons; `BlankLayout` marca las pantallas auth y excluye
+  `/admin/auth/404`. El `TicketProvider` se monta una vez alrededor del layout
+  admin para que un ticket creado en `/admin/apps/tickets/create` siga en la
+  lista al navegar (el template dependía de la caché global de SWR). Verificado
+  con demo@: blog con 6 posts, detalle con comentarios, notes con 4 notas y alta
+  en memoria, tickets con 6 y alta que sobrevive al cambio de ruta (7 en la
+  lista), auth con aviso; 0 errores de consola.
+  Además se corrigió la navegación del subtree: el template enlazaba con rutas
+  absolutas (`/`, `/apps/...`, `/pages/...`) que escapaban de `/admin`. Se
+  agregó `toAdminPath` (con test) y se aplicó al sidebar, breadcrumb, logo y
+  menú del header; se corrigieron el slug del blog detail y la ruta del error, y
+  se convirtieron los triggers anidados de Base UI (`asChild` inválido) a
+  `render={<Button/>}` en 10 puntos, eliminando los errores de hidratación.
+  Límite conocido: el sheet del avatar conserva la identidad demo del template
+  (Cameron) y su "Log Out" lleva a la pantalla auth marcada como demo, no al
+  signOut real; no es una de las pantallas de S6 y queda como deuda visual.
+  Gates: typecheck 0, lint 0, test 427/427; sidebar con 17 links internos, 0
+  fuera de `/admin`; logout demo verificado a `/admin/auth/auth2/login` sin
+  errores de consola.

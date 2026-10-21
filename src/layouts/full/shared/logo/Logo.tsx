@@ -5,7 +5,7 @@ import { SidebarMenuButton } from 'src/components/ui/sidebar'
 
 const Logo = () => {
     return (
-        <Link to={'/'}>
+        <Link to={'/admin'}>
 
 
             <SidebarMenuButton

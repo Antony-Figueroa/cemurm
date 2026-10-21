@@ -4,7 +4,7 @@ import Logowhite from "src/assets/images/logos/whitelogo.svg";
 
 const FullLogo = () => {
   return (
-    <Link to={'/'} className="max-w-[40px] block lg:max-w-[120px] overflow-hidden">
+    <Link to={'/admin'} className="max-w-[40px] block lg:max-w-[120px] overflow-hidden">
       {/* Dark Logo   */}
       <img
         src={Logo}

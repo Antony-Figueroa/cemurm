@@ -12,6 +12,7 @@ import { Button } from "src/components/ui/button";
 import { Icon } from "@iconify/react";
 
 import { cn } from "src/lib/utils";
+import { toAdminPath } from "src/lib/admin-path";
 import { Mailbox } from 'lucide-react';
 
 import { profileDD } from "./data";
@@ -19,8 +20,6 @@ import { Link } from "react-router-dom";
 import avatar from '@/assets/images/profile/avtar.webp';
 import Buynow from '@/assets/images/backgrounds/sidebarbuynow.svg';
 export default function ProfileSheet() {
-
-
   return (
     <Sheet>
       {/* Trigger Button */}
@@ -73,7 +72,7 @@ export default function ProfileSheet() {
             {profileDD.map((item) => (
               <li key={item.title} className="group">
                 <Link
-                  to={item.href}
+                  to={toAdminPath(item.href)}
                   className={cn(
                     "flex gap-3 py-2 px-3 rounded-md group-hover:bg-cem-amber/5 text-cem-secondary-elevated"
                   )}
@@ -123,7 +122,8 @@ export default function ProfileSheet() {
 
               <Button
                 variant="secondary"
-                render={<Link to="/auth/auth2/login" />}
+                nativeButton={false}
+                render={<Link to={toAdminPath("/auth/auth2/login")} />}
                 className="text-cem-amber"
               >
                 Log Out

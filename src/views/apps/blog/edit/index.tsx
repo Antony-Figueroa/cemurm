@@ -8,9 +8,10 @@ import Media from "@/components/apps/blog/blogedit/medias";
 import Status from "@/components/apps/blog/blogedit/blog-status";
 import StyleAwareWrapper from "src/components/shared/StyleAwareWrapper";
 import StyleDivider from "src/components/shared/StyleDivider";
+import DemoNotice from "src/components/shared/DemoNotice";
 
 const BCrumb = [
-  { to: "/", title: "Home" },
+  { to: "/admin", title: "Home" },
   { title: "Blog Edit" },
 ];
 
@@ -23,6 +24,10 @@ const BlogEdit = () => {
       >
         <BreadcrumbComp title="Blog Edit" items={BCrumb} />
         <StyleDivider />
+        <DemoNotice>
+          Demo screen — this form does not save changes. The template&apos;s editor
+          is kept as a visual reference only.
+        </DemoNotice>
         <StyleAwareWrapper
           lyraClassName="grid grid-cols-12 gap-px bg-cem-hover"
           defaultClassName="grid grid-cols-12 gap-[30px]"

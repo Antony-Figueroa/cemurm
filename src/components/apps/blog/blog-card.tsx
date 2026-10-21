@@ -30,7 +30,7 @@ const BlogCard = ({ post }: Btype) => {
     <>
       <div className="lg:col-span-4 md:col-span-6 col-span-12 ">
         <Card className="py-0! group card-hover h-full gap-2!">
-          <Link to={`/apps/blog/detail/${linkTo}`} >
+          <Link to={`/admin/apps/blog/detail/${linkTo}`} >
             <div className="relative overflow-hidden">
               <div className="overflow-hidden! h-[240px]">
                 <img
@@ -68,7 +68,7 @@ const BlogCard = ({ post }: Btype) => {
             </Badge>
             <h5 className="text-xl py-6 group-hover:text-cem-amber">
               <Link
-                to={`/apps/blog/detail/${linkTo}`}
+                to={`/admin/apps/blog/detail/${linkTo}`}
                 className="line-clamp-2"
               >
                 {" "}

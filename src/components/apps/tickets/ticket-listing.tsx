@@ -107,7 +107,7 @@ const TicketListing = () => {
         <div className="my-6">
           <div className="flex justify-between  flex-wrap  items-center mb-4 gap-4">
             <Button
-              onClick={() => router("/apps/tickets/create")}
+              onClick={() => router("/admin/apps/tickets/create")}
               className=" whitespace-nowrap"
             >
               Create Ticket
@@ -195,15 +195,17 @@ const TicketListing = () => {
                     <TableCell className="text-end">
                       <TooltipProvider>
                         <Tooltip>
-                          <TooltipTrigger>
-                            <Button
-                              variant="destructive"
-                              size="icon"
-                              onClick={() => deleteTicket(ticket.Id)}
-                              className="bg-cem-base dark:bg-cem-base"
-                            >
-                              <Trash size="18" />
-                            </Button>
+                          <TooltipTrigger
+                            render={
+                              <Button
+                                variant="destructive"
+                                size="icon"
+                                onClick={() => deleteTicket(ticket.Id)}
+                                className="bg-cem-base dark:bg-cem-base"
+                              />
+                            }
+                          >
+                            <Trash size="18" />
                           </TooltipTrigger>
                           <TooltipContent>
                             <p>Delete Ticket</p>
