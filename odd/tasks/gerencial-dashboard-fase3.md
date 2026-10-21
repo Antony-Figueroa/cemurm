@@ -45,7 +45,7 @@ CEMURM sin recortar su esquema, estructura ni visual. Branch:
 
 - T1 — S2: ✅ `b234254` — guard `RequireGerencial` + montaje de `/admin` dentro de los guards.
 - T2 — S7: ✅ `b234254` — `ThemeProvider` en el subtree admin.
-- T3 — S3: ✅ commit de este slice — home con métricas y listas reales.
+- T3 — S3: ✅ `f198bb9` — home con métricas y listas reales.
 - T4 — S4: pendiente — user-profile real.
 - T5 — S5: pendiente — tables real.
 - T6 — S6: pendiente — marcar demo y aislar escrituras falsas.
