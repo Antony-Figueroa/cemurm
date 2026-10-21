@@ -5,6 +5,10 @@ CEMURM sin recortar su esquema, estructura ni visual. Branch:
 `feat/tw4-stack-foundation-pr3-admin`. Base: `feat/tw4-stack-foundation-pr2-typecheck`
 (F1). Merge: decisión humana. Runner: `pnpm && pnpm test`.
 
+**Estado (2026-10-20):** T1–T7 completos y gates verdes. Rama pusheada al fork.
+El PR a `main` queda pendiente de que mergeen #383 y F1, porque este branch se
+apoya en F1.
+
 ## Specs
 
 - **S1** (template completo): las 25 vistas y todas las rutas del template quedan
@@ -49,7 +53,7 @@ CEMURM sin recortar su esquema, estructura ni visual. Branch:
 - T4 — S4: ✅ `ed64a3b` — perfil real (identidad + organizaciones), sin escrituras falsas.
 - T5 — S5: ✅ `da00f4a` — tables reales (canciones + setlists).
 - T6 — S6: ✅ `1623e7f` — demos explícitas, sin red ni escrituras falsas.
-- T7 — S8: pendiente — docs + gates + evidencia.
+- T7 — S8: ✅ este commit — docs + gates + evidencia.
 
 ## Log
 
@@ -126,3 +130,16 @@ CEMURM sin recortar su esquema, estructura ni visual. Branch:
   Gates: typecheck 0, lint 0, test 427/427; sidebar con 17 links internos, 0
   fuera de `/admin`; logout demo verificado a `/admin/auth/auth2/login` sin
   errores de consola.
+- L8 (2026-10-20): T7 cierra la fase con los gates completos sobre `a57c029`
+  (T6 + docs). `pnpm typecheck` 0; `pnpm lint` 0; `pnpm test` 427/427 en 21
+  archivos; `pnpm test:gherkin` 44/44 en 5 archivos; `pnpm build` 0 con el
+  warning preexistente de chunks >500 kB (iconify 917 kB);
+  `scripts/check-visual-contract.sh` 12 reglas con 0 failing (los warnings son
+  report-only y preexistentes); `scripts/check-test-integrity.sh` 0 sobre 26
+  archivos. No se tocó `src/features/stage/**`, `projection/**`, `landing/**`
+  ni ninguna ruta del músico.
+  Límites declarados: el home sigue owner-scoped (S3); el sheet del avatar
+  conserva la identidad demo del template; el sidebar mantiene los enlaces
+  externos del template a demos no importadas (ecommerce, kanban, charts,
+  theme pages), que no son rutas locales. Entrega: rama pusheada al fork; PR a
+  `main` después de #383 y F1.
