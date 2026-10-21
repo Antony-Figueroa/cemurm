@@ -6,6 +6,8 @@ import {
   RequireAuth,
   RequireGuardianConsent,
 } from './providers/AuthGuards.jsx'
+import { RequireGerencial } from './providers/RequireGerencial.jsx'
+import AdminThemeBoundary from './providers/AdminThemeBoundary.jsx'
 import { AuthProvider } from './providers/useAuth.jsx'
 // L5 — every route element below is React.lazy. Section 7.1 makes this a
 // PREREQUISITE for the landing, not an optimisation: before it, the whole app was
@@ -80,12 +82,32 @@ const Landing = lazy(() => import('../features/landing/pages/Landing.jsx'))
 import { Router as AdminRoutes } from '../routes/Router'
 
 const router = createBrowserRouter([
-  // Admin template (shadcn-dashboard). Deliberately FIRST so its subtree is
-  // unambiguous, and OUTSIDE AppLayout so the template's own sidebar/header
-  // are the only chrome on an admin route.
+  // Admin template (shadcn-dashboard) — the full imported subtree, gated.
+  // It stays OUTSIDE AppLayout so the template's own sidebar/header are the
+  // only chrome, but it now sits inside the same RequireAuth +
+  // RequireGuardianConsent pair as the member app, plus RequireGerencial:
+  // system_admin or an active org_owner/org_admin/branch_admin membership.
+  // The template's own auth screens remain mounted as demo screens behind
+  // this gate; they are not a second login path.
   {
-    path: 'admin',
-    children: AdminRoutes,
+    element: defer(<RequireAuth />),
+    children: [
+      {
+        element: defer(<RequireGuardianConsent />),
+        children: [
+          {
+            element: <RequireGerencial />,
+            children: [
+              {
+                path: 'admin',
+                element: <AdminThemeBoundary />,
+                children: AdminRoutes,
+              },
+            ],
+          },
+        ],
+      },
+    ],
   },
   {
     element: <AppLayout />,
