@@ -46,7 +46,7 @@ CEMURM sin recortar su esquema, estructura ni visual. Branch:
 - T1 — S2: ✅ `b234254` — guard `RequireGerencial` + montaje de `/admin` dentro de los guards.
 - T2 — S7: ✅ `b234254` — `ThemeProvider` en el subtree admin.
 - T3 — S3: ✅ `f198bb9` — home con métricas y listas reales.
-- T4 — S4: pendiente — user-profile real.
+- T4 — S4: ✅ commit de este slice — perfil real (identidad + organizaciones), sin escrituras falsas.
 - T5 — S5: pendiente — tables real.
 - T6 — S6: pendiente — marcar demo y aislar escrituras falsas.
 - T7 — S8: pendiente — docs + gates + evidencia.
@@ -80,3 +80,12 @@ CEMURM sin recortar su esquema, estructura ni visual. Branch:
   period" / "1 setlist created"; tabla de eventos con las 2 filas reales e IDs
   únicos; 0 errores de consola. Gates: `pnpm typecheck` 0, `pnpm lint` 0,
   `pnpm test` 425/425.
+- L5 (2026-10-20): T4 reemplaza el formulario falso del template (estado local,
+  "Save Changes" sin persistencia) por un perfil real. `useAdminProfile` lee
+  `profiles.getProfile` y `orgRepertoire.getMyOrganizations`; el header muestra
+  nombre, @username, rol y organización reales, y las tarjetas "Personal
+  Information" / "Organizations" listan las membresías con rol, sede, estado y
+  fecha de ingreso. Se elimina el modal de edición y la dirección inventada.
+  `profiles.js` ahora expone `avatarUrl` (columna que el select ya traía).
+  Verificado con demo@: Demo User, @demo, Owner · Demo Academy, membresía
+  Active; 0 errores de consola. Gates: typecheck 0, lint 0, test 425/425.
