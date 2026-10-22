@@ -49,6 +49,10 @@ and work-unit commit.
 | T3 | S3, S4 | inline | done | bfa78e7 | Real profile sheet (Demo User / demo@cemurm.app), controlled close, Profile and Member app links, sign-out to `/auth`; fake notifications gone; search covers the local menu and parent paths. |
 | T4 | S2, S5 | inline | done | bfa78e7 | Inset panel `m-2 lg:m-3`, rounded border, `p-4 lg:p-6`, material header; dark `secondary-elevated` #cbd5e1; light palette measured 5.2:1+ (text 17.06, secondary 7.24, amber 6.78). |
 | T5 | S1-S6 | inline | done | bfa78e7 | Both themes, scope check, gates, screenshots and mobile shell verified. See L5. |
+| T6 | S1, S2, S5 | inline | done | aca0cc8 | Shared Card surface/radius/ring restored on the dashboard cards; seamless Lyra grid replaced with `grid grid-cols-12 gap-4`; chart axis/grid moved to declared cem tokens. |
+| T7 | S3, S4 | inline | done | aca0cc8 | Sun uses `text-cem-amber`, Moon uses `text-cem-secondary-elevated` (no raw orange), `StyleAwareWrapper`/`StyleDivider` and the fake sort icons removed, CEMURM labels kept. |
+| T8 | S1, S5 | inline | done | aca0cc8 | `preserveStartEnd` + `minTickGap={32}` yields 8 desktop / 4 mobile labels with no overlap; cards stack; the Events table uses native `overflow-x-auto` with no page overflow. |
+| T9 | S1-S6 | inline | done | aca0cc8 | Gates green, both themes and mobile measured with Playwright, screenshots captured. See L7. |
 
 ## Log
 
@@ -117,3 +121,67 @@ L5 — 2026-10-20 — verification.
   `shell-mobile-sidebar.png`, `shell-profile-page-light-2.png`,
   `member-after-admin-2.png`, `auth-after-signout.png`.
 - Shell work-unit commit: `bfa78e7`; this docs commit records it.
+
+L6 — 2026-10-21 — dashboard audit before the dashboard write. The dashboard content
+is already CEMURM-adapted (phase 3, `f198bb9`), so this section changes presentation,
+not data or routes. Four presentation defects were found:
+
+- `DashboardCard` flattens the shared `Card` to `rounded-none bg-cem-base
+  shadow-none ring-0`; combined with the seamless Lyra grid (`p-px gap-px
+  bg-cem-hover`) it removes the radius, surface and ring the shell now uses.
+- `StyleAwareWrapper` declares `defaultClassName` but never reads it, so the
+  dashboard's intended `grid-cols-12 gap-4` is dead code and the cards have no
+  gap. `StyleDivider` only exists to draw the seam lines of that unused style.
+- The chart axis/grid use undeclared `--muted-foreground` / `--border`, so they
+  do not follow the light palette. The x-axis also forces 7–8 category labels
+  through a fixed `labelEvery`, which is what overlaps at 390px.
+- Template leftovers: the greeting uses `<Sun color="orange">` (raw colour), the
+  events table renders `ArrowDownUp` icons for a sort that does not exist, and the
+  summary cells use `bg-cem-base` inside the card.
+
+Decision: restore the shared Card surface/radius/ring, use the gap grid and drop
+the no-op wrappers from the dashboard view, use the declared cem tokens for the
+chart, let Recharts choose ticks with `preserveStartEnd` + `minTickGap`, and remove
+the false affordances. The member-app links (`/songs`, `/setlists`, `/gigs`,
+`/bandmates`, `/rehearsals`, `/organizations`) stay: they are the real destinations
+for those assets; the admin template has no equivalent screens. The cancelled chip
+uses `text-cem-text` on its rose tint because the dark rose on `cem.surface` is a
+pre-existing 3.98:1 pair (gate 05b); the negative delta keeps the destructive token
+and the known 05b warning.
+
+L7 — 2026-10-22 — dashboard verification and closing of T6–T9.
+
+- Gates: `pnpm typecheck` PASS; `pnpm lint` PASS (0 warnings); `pnpm test` PASS
+  (427/427); `pnpm test:gherkin` PASS (44/44); `pnpm build` PASS (index 451.21 kB,
+  the pre-existing >500 kB iconify chunk warning only); visual gate PASS (12 rules,
+  0 failing; 05a still cannot score the 8 light `var()` overrides, 05b reports the
+  12 pre-existing dark pairs, r1/r2 are report-only).
+- Playwright Chromium, 1440x1000 and 390x844, both themes: light is `html.light`
+  with body `rgb(248,250,252)` and text `rgb(15,23,42)`; dark is body
+  `rgb(15,23,42)` and text `rgb(248,250,252)`. 7 cards, white / `rgb(30,41,59)` on
+  `#0f172a`, radius 12px, ring present, grid gap 16px, page overflow 0.
+- Chart: 610px desktop / 300px mobile; 8 / 4 x-axis labels with
+  `xLabelOverlaps: []`; axis fill `rgb(51,65,85)` light and `rgb(203,213,225)`
+  dark; grid line follows `--color-cem-hover`. The greeting icon is the evening
+  Moon on `text-cem-secondary-elevated` (`rgb(51,65,85)` / `rgb(203,213,225)`);
+  the morning Sun path is the only amber accent. 0 decorative sort icons.
+- Select and tooltip: select light `rgb(241,245,249)` / `rgb(15,23,42)`, dark
+  `rgb(51,65,85)` / `rgb(248,250,252)`; 3 options; tooltip light
+  `rgb(248,250,252)` / `rgb(15,23,42)`, dark `rgb(15,23,42)` /
+  `rgb(248,250,252)`. No console or page errors.
+- Events card: the template `SimpleBar` wrapper rendered a 258px content area
+  around a 129px table, leaving ~130px of empty scroll surface below two rows.
+  Removing it (the inner native `overflow-x-auto` already handles mobile width)
+  leaves a 245px card with a 174px table and no empty scroll area; the table still
+  scrolls horizontally at 390px with no page overflow.
+- Screenshots: `/tmp/opencode/dashboard-light.png`, `dashboard-dark.png`,
+  `dashboard-mobile-light.png`, `dashboard-mobile-dark.png`,
+  `dashboard-light-select.png`, `dashboard-dark-select.png`,
+  `dashboard-light-tooltip.png`, `dashboard-dark-tooltip.png`.
+- Source work-unit commit: `aca0cc8`; this docs commit records it. `simplebar-react`
+  stays in `package.json` (template dependency) but no longer has an importer.
+
+L8 — 2026-10-22 — section closed. Dashboard presentation is CEMURM-aligned in both
+themes and the next section in the S7 order is blog: remove the template's demo
+posts/author/categories, map the screen to CEMURM content, and apply the same
+light/dark and spacing checks before its own work-unit commit.
