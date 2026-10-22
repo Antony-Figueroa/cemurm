@@ -16,7 +16,7 @@ function AssetCard({ title, href, value, icon: Icon }: AssetItem) {
   return (
     <Link
       to={href}
-      className='flex flex-col justify-between p-6 bg-cem-base transition-colors hover:bg-cem-hover/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cem-amber'
+      className='flex flex-col justify-between p-6 bg-cem-surface transition-colors hover:bg-cem-hover/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cem-amber'
     >
       <div className='border border-cem-hover rounded-md p-2 w-fit'>
         <Icon width={16} height={16} />

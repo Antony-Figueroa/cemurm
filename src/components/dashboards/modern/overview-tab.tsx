@@ -46,9 +46,9 @@ export default function OverviewTab({
 
   const getGreetingIcon = () => {
     if (greeting === 'Good Morning' || greeting === 'Good Afternoon') {
-      return <Sun size={25} color="orange" />;
+      return <Sun size={25} className="text-cem-amber" />;
     } else {
-      return <Moon size={25} />;
+      return <Moon size={25} className="text-cem-secondary-elevated" />;
     }
   };
 
@@ -56,7 +56,7 @@ export default function OverviewTab({
     <>
       <div className="flex items-center flex-wrap lg:flex-nowrap lg:gap-0 gap-4 justify-between">
         <div className='flex flex-col items-start'>
-          <h2 className="text-xl flex item-center gap-2">
+          <h2 className="text-xl flex items-center gap-2">
             {greeting}, {name} <span className="flex items-center">{getGreetingIcon()}</span>
           </h2>
           <p className='text-sm font-normal text-cem-secondary-elevated'>Your repertoire at a glance</p>
@@ -64,7 +64,7 @@ export default function OverviewTab({
         <div className="flex items-center lg:flex-nowrap flex-wrap gap-2">
           <Button
             variant="outline"
-            className={"p-2.5 h-auto outline rounded-lg cursor-pointer"}
+            className={"p-2.5 h-auto rounded-lg cursor-pointer"}
             onClick={onRefresh}
             disabled={loading}
             aria-label="Refresh dashboard"

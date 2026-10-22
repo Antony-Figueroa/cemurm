@@ -94,14 +94,6 @@ export default function TotalSales({ chartData, stats }: TotalSalesProps) {
     4,
     ...chartData.map((point) => Math.max(point.songs, point.setlists)),
   );
-  const labelEvery = Math.max(1, Math.ceil(chartData.length / 7));
-  const lastIndex = chartData.length - 1;
-  const includeLast = lastIndex % labelEvery >= Math.ceil(labelEvery / 2);
-  const visibleLabels = new Set(
-    chartData
-      .filter((_, index) => index % labelEvery === 0 || (index === lastIndex && includeLast))
-      .map((point) => point.date),
-  );
 
   return (
     <DashboardCard className="flex flex-col gap-0!">
@@ -127,7 +119,7 @@ export default function TotalSales({ chartData, stats }: TotalSalesProps) {
               ) : (
                 <>
                   <span
-                    className={`text-sm font-medium ${stats.songDelta >= 0 ? 'text-chart-2' : 'text-destructive'}`}
+                    className={`text-sm font-medium ${stats.songDelta >= 0 ? 'text-success' : 'text-destructive'}`}
                   >
                     {deltaLabel(stats.songDelta)}
                   </span>
@@ -152,7 +144,7 @@ export default function TotalSales({ chartData, stats }: TotalSalesProps) {
           >
             <CartesianGrid
               vertical={false}
-              stroke="var(--border)"
+              stroke="var(--color-cem-hover)"
               strokeDasharray="4 4"
             />
             <XAxis
@@ -160,22 +152,22 @@ export default function TotalSales({ chartData, stats }: TotalSalesProps) {
               tickLine={false}
               axisLine={false}
               tickMargin={10}
-              interval={0}
-              tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
-              tickFormatter={(v) => (visibleLabels.has(v) ? v : "")}
+              interval="preserveStartEnd"
+              minTickGap={32}
+              tick={{ fontSize: 12, fill: "var(--color-cem-secondary-elevated)" }}
             />
             <YAxis
               tickLine={false}
               axisLine={false}
               tickMargin={4}
               allowDecimals={false}
-              tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+              tick={{ fontSize: 12, fill: "var(--color-cem-secondary-elevated)" }}
               domain={[0, maxValue]}
               tickCount={5}
             />
             <ChartTooltip
               cursor={{
-                stroke: "var(--border)",
+                stroke: "var(--color-cem-hover)",
                 strokeWidth: 1,
                 strokeDasharray: "4 4",
               }}

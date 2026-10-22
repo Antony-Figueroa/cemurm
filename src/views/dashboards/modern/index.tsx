@@ -8,8 +8,6 @@ import TotalSales from "@/components/dashboards/modern/total-sales";
 import UpdateBanner from "@/components/dashboards/modern/update-banner"
 import TotalAssets, { type AssetItem } from "@/components/dashboards/modern/totals-assets";
 import ProjectsOrders from "src/components/dashboards/modern/projects-orders";
-import StyleAwareWrapper from "src/components/shared/StyleAwareWrapper";
-import StyleDivider from "src/components/shared/StyleDivider";
 import {
   useAdminOverview,
   type Period,
@@ -38,17 +36,13 @@ const ModernDashboard = () => {
           loading={overview.loading}
         />
       </div>
-      <StyleAwareWrapper
-        lyraClassName="grid grid-cols-12 p-px gap-px bg-cem-hover"
-        defaultClassName="grid grid-cols-12 gap-4"
-      >
+      <div className="grid grid-cols-12 gap-4">
         <div className="col-span-12">
           <UpdateBanner
             upcomingCount={overview.upcoming.length}
             nextEvent={overview.upcoming[0] ?? null}
           />
         </div>
-        <StyleDivider wrapperClassName="col-span-12" />
         <div className="lg:col-span-7 col-span-12">
           <TotalSales
             chartData={overview.chart[period]}
@@ -58,7 +52,6 @@ const ModernDashboard = () => {
         <div className="lg:col-span-5 col-span-12">
           <TotalAssets assets={assets} />
         </div>
-        <StyleDivider wrapperClassName="col-span-12" />
         <div className="lg:col-span-4 col-span-12">
           <TotalOrders
             value={overview.counts.rehearsals}
@@ -71,11 +64,10 @@ const ModernDashboard = () => {
         <div className="lg:col-span-4 col-span-12">
           <AdvertisementCost value={overview.counts.organizations} badge="active" />
         </div>
-        <StyleDivider wrapperClassName="col-span-12" />
         <div className="col-span-12">
           <ProjectsOrders events={overview.events} />
         </div>
-      </StyleAwareWrapper>
+      </div>
     </>
   );
 };

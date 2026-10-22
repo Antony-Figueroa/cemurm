@@ -30,9 +30,11 @@ export default function UpdateBanner({
       <CardContent className="flex items-center flex-wrap justify-between">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-chart-1 animate-ping absolute inline-flex" />
-            <span className="h-2 w-2 rounded-full bg-chart-1 absolute inline-flex" />
-            <p className="text-sm font-medium  ps-4">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-chart-1 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-chart-1" />
+            </span>
+            <p className="text-sm font-medium">
               {upcomingCount > 0 ? 'Upcoming' : 'Agenda'}
             </p>
             <span className="w-1 h-1 rounded-full bg-cem-hover" />
