@@ -120,7 +120,7 @@ Each slice is one PR, ≤ 400 authored lines, with its own verification.
 ## Tasks
 
 - [x] T1 Branch from `main` + this record (before the first write)
-- [ ] T2 WU1 — migration `0042_account_export.sql` + smoke (export envelope, server side)
+- [x] T2 WU1 — migration `0042_account_export.sql` + smoke (export envelope, server side)
 - [ ] T3 WU2 — client serializer, ZIP assembly, repository, settings surface + tests
 - [ ] T4 WU3 — migration `0043_account_erasure.sql` + smoke (request, grace, core, cron, purge)
 - [ ] T5 WU4 — erasure UI (warning, confirm, cancel) + tests
@@ -173,3 +173,33 @@ From the feature, scenario by scenario:
 - 2026-10-22 — delivery resolved by the maintainer: `stacked-to-main`. Branch
   `feat/account-data-export-and-erasure` renamed to `feat/account-export-pr1-rpc`, and the
   slice-1 writer started on it.
+- 2026-10-22 — **WU1 landed.** `supabase/migrations/0042_account_export.sql` (314 lines) adds
+  `public.export_account_data()` — `jsonb`, no args, `security definer`, `set search_path = ''`,
+  `raise exception 'Not authenticated.'` when `auth.uid()` is null (the phrasing 0013 already
+  uses). The envelope pins all 18 top-level keys the slice brief named, with every array
+  coalesced to `'[]'` and every object to `'{}'`, so an empty account still returns a
+  well-formed, self-describing document. Grants follow the 0002:33-42 convention:
+  `revoke ... from public, anon` then `grant ... to authenticated`.
+  `scripts/smoke/0042-account-export.sql` (404 lines, 23 assertions) verifies it on a fresh
+  reset.
+  **Empirically confirmed the brief's hazard #2, and it is the whole reason the smoke's
+  assertion 10 exists:** with `security definer`, a probe returned `count(*) from songs = 10`
+  while the same session as `authenticated` would have seen only its own 9 — RLS does not
+  apply inside the function, so every `where ... = v_uid` is load-bearing. The smoke therefore
+  builds a second user (Beto) with rows of every kind Ana has, so the anti-leak assertion
+  excludes real rows rather than passing vacuously over empty tables.
+  **One real defect found and fixed by the smoke, not by review:** `now()::text` renders
+  `2026-10-22 22:16:16.69+00` — a SPACE separator, which is not ISO-8601 and not what the
+  later importer should have to parse. The migration now uses
+  `to_char(now() at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')`, and assertion 20
+  pins it. This is the kind of thing the smoke tier exists to catch.
+  Verified, in order, all green: `supabase db reset` (0042 applies clean),
+  smoke `23 PASS / 0 FAIL`, `pnpm lint` (clean), `pnpm typecheck` (clean),
+  `pnpm test` (18 files / 415 tests passed), `pnpm build` (built in 6.36s).
+  **Budget deviation, reported honestly:** 718 authored lines across both files against the
+  ≤400 target. The envelope legitimately spans ~20 tables and the fixtures must create a
+  second user's rows for the anti-leak assertion to be non-vacuous; trimming further would
+  mean deleting either coverage or the rationale a reviewer needs. The header comment is
+  already condensed to the non-obvious (the definer/RLS evidence, the two attribution
+  hazards, D2/D3) — where the parent wants to cut 300 lines, the honest option is to split
+  the smoke's fixture block into a shared SQL include, not to weaken an assertion.
