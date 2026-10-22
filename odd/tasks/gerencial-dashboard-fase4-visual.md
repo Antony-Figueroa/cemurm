@@ -57,6 +57,9 @@ and work-unit commit.
 | T11 | S3 | inline | done | 5d503d7 | The detail renders each post's `body`/`quote` instead of the MTA filler; `shadcn-admin` alt text is gone; read time is computed; categories/tags/filter use the demo taxonomy. |
 | T12 | S1, S2 | inline | done | 5d503d7 | Featured card has static 8/4 columns, radius/ring and a theme-aware `bg-cem-base/70` scrim with `cem.text`; category badges are neutral, status dots semantic, both themes and mobile checked. |
 | T13 | S1-S6 | inline | done | 5d503d7 | Gates green; Playwright both themes and mobile over listing/detail/manage/create/edit; screenshots captured. See L10. |
+| T14 | S3, S5 | inline | done | 3cd3049 | View wrappers removed, page gap 16, breadcrumb/notice/title now Notes. See L13. |
+| T15 | S1, S2, S3 | inline | done | 3cd3049 | SWR/sessionStorage/console and the MSW notes mock removed; neutral cards with amber selection; delete bubbling and sheet close fixed; neutral empty state; dialog action order; shared search text contrast. See L13. |
+| T16 | S1-S6 | inline | done | 3cd3049 | Gates green; Playwright both themes and mobile over list/content/search/add/delete/sheet; screenshots captured. See L13. |
 
 ## Log
 
@@ -264,3 +267,86 @@ L11 — 2026-10-22 — blog closed. The next section in the S7 order is notes: t
 notes demo has no CEMURM domain yet, so the section keeps explicit demo content
 but must drop the dead wrappers, adapt the remaining template copy, and pass the
 same light/dark and mobile checks before its own work-unit commit.
+
+L12 — 2026-10-22 — notes audit before the first write.
+
+- The view still uses the no-op `StyleAwareWrapper`/`StyleDivider`, says the notes
+  are "template content", and titles the breadcrumb "Notes app".
+- `src/components/apps/notes/index.tsx` carries the template's SWR reset:
+  `mutate("/api/notes")`, a `sessionStorage` beforeunload flag, `console.log("page
+  refreshed")` and `useLocation`. The endpoint never existed, so all of it is dead.
+  The header still says "Edit Note"; the fixed `h-[calc(100vh-300px)]` and the
+  mobile sheet stay.
+- The note "colors" are template leftovers and one is an actual bug. `demoNotes`
+  uses `chart-1`..`chart-4`; the list maps `chart-4`, `chart-2`, `chart-3` but
+  falls back for `chart-1`. The two pickers build `bg-${color}` by interpolation,
+  which Tailwind cannot see, so the swatches have no guaranteed background. Every
+  note title is amber; the selected item is only a 95% scale.
+- `notes-list.tsx` keeps a second `activeNoteId` state that duplicates the context
+  `selectedNoteId`. The delete button has no `stopPropagation`, so deleting a note
+  also selects the id that was just removed and leaves the content panel empty.
+  The search-empty state is a destructive red `Alert`.
+- `note-content.tsx` is a title textarea plus the color picker; after the picker it
+  has a literal `<br />`, a template `id="outlined-multiline-static"` and a bare
+  "Select a Note". `add-notes.tsx` has the same color picker, disables Save only on
+  an untrimmed non-empty string and renders Close as `destructive`.
+- `notes-context` keeps SWR-shaped `loading`/`error` and a `color` argument on
+  every mutation, while the implementations are synchronous React state. The type
+  is `notesType` with an optional `color`.
+- The mobile sheet never closes when a note is selected, and the sidebar list has
+  no scroll container, so added notes can be clipped. The notes demo content is
+  CEMURM (load-in, setlist, Marta, monitor mix) and stays; the note color feature
+  is dropped in favour of neutral cards with an amber selected state, which also
+  restores the one-accent rule. No CEMURM notes domain exists, so the demo notice
+  stays and the section remains explicit demo content.
+
+L13 — 2026-10-22 — notes verification and closing of T14–T16.
+
+- Gates after the last source edit: `pnpm typecheck` PASS; `pnpm lint` PASS
+  (0 warnings); `pnpm test` PASS (427/427); `pnpm test:gherkin` PASS (44/44);
+  `pnpm build` PASS; visual gate PASS (12 rules, 0 failing; the same 05a/05b
+  and r1/r2 warnings as the dashboard and blog).
+- Playwright Chromium, 1440x1000 and 390x844, both themes. Light `html.light`
+  with body `rgb(248,250,252)` / text `rgb(15,23,42)`; dark `rgb(15,23,42)` /
+  `rgb(248,250,252)`; 0 page overflow on every check; desktop page 1026px,
+  mobile 1010px; no console or page errors.
+- Notes app: four demo notes; the first is selected on load. The selected card
+  has an amber 40% border and amber 5% fill; unselected cards use `cem.surface`
+  with a `cem.hover` border; the selected title is amber. `#note-title` matches
+  the selected note and has `min-h-[180px]`, so it opens as a writing area
+  instead of the 64px `field-sizing-content` default.
+- Interactions: clicking the second note updates the textarea and selection.
+  Search "monitor" filters to one note and the typed text measures
+  `rgb(15,23,42)` in light; "zzz" shows the neutral "No notes match your
+  search."; clearing restores four notes. Add Note exposes Cancel as an outline
+  button, Save Note as the default button disabled on empty, and the ghost
+  Close, with no colour picker. Saving "Soundcheck at 5:30; bring the spare DI."
+  gives five notes and selects the new one; deleting it returns four notes and
+  reselects the first — the previous bubbling bug would have left the content
+  empty. Reopening and cancelling the dialog adds nothing.
+- Mobile: the desktop sidebar is hidden; the Menu button opens the 320px sheet;
+  selecting the second note closes the sheet and updates the textarea; the add
+  dialog fits at 390px with 0 page overflow; the 120px minimum keeps its
+  textarea usable.
+- Shared input: `animatedinput-placeholder` used `text-cem-base` in light and
+  `dark:text-cem-text`, so typed search text rendered in the page colour and was
+  invisible on light. It now uses `text-cem-text`. Verified on the notes search
+  and on the blog manage search: "setlist" filters to one row and the input text
+  measures `rgb(15,23,42)` (`/tmp/opencode/blog-manage-search-light.png`).
+- Template leftovers gone: no "template content", "Change Note Color", "Edit
+  Note" or "Notes app" copy; no colour picker; no chart/`bg-${}` note colours; no
+  dead `sessionStorage`, `mutate` or `console.log`. The unused MSW notes mock
+  `src/api/notes/notedata.ts` is deleted and removed from the mock-handler list.
+- Screenshots: `/tmp/opencode/notes-{light,dark}.png`,
+  `notes-mobile-{light,dark}.png`, `notes-mobile-sheet-light.png`,
+  `notes-mobile-selected-light.png`, `notes-add-{light,dark}.png`,
+  `notes-mobile-add-light.png`, `notes-search-light.png`,
+  `notes-empty-light.png`, `notes-added-light.png`,
+  `blog-manage-search-light.png`.
+- Source work-unit commit: `3cd3049`; this docs commit records it. Risk: none —
+  the shared search input change is a contrast fix checked on both consumers, and
+  the section changes no API, stored data or persisted format.
+
+L14 — 2026-10-22 — notes closed. The next section in the S7 order is tickets:
+audit its status labels, demo content and filters, then apply the light/dark,
+spacing and contrast pass before its own work-unit commit.
