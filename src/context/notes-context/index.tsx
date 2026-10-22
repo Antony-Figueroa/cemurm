@@ -1,36 +1,29 @@
 // Demo notes store.
 //
-// The template shipped this context with SWR calls to /api/notes/* endpoints
-// that only existed in an MSW worker nobody starts, so the page always loaded
-// empty. The demo now keeps the template's fixed content in React state: no
-// network calls, no Supabase writes, and every change is lost on reload. The
-// notes screen renders a demo notice that says exactly that.
+// The notes screen has no CEMURM domain yet, so the demo keeps its content in
+// React state: no network calls, no Supabase writes, and every change is lost on
+// reload. The notes screen renders a demo notice that says exactly that.
 import { createContext, useState } from 'react';
 import React from 'react';
 import { demoNotes } from '@/demo/content';
 import { notesType } from 'src/types/apps/notes';
 
-// Define context type
 interface NotesContextType {
   notes: notesType[];
-  loading: boolean;
-  error: Error | null;
   selectedNoteId: number;
   selectNote: (id: number) => void;
-  addNote: (newNote: notesType) => Promise<void>;
-  updateNote: (id: number, title: string, color: string) => Promise<void>;
-  deleteNote: (id: number) => Promise<void>;
+  addNote: (newNote: notesType) => void;
+  updateNote: (id: number, title: string) => void;
+  deleteNote: (id: number) => void;
 }
 
 const initialContext: NotesContextType = {
   notes: demoNotes,
-  loading: false,
-  error: null,
   selectedNoteId: demoNotes[0]?.id ?? 1,
   selectNote: () => {},
-  addNote: async () => {},
-  updateNote: async () => {},
-  deleteNote: async () => {},
+  addNote: () => {},
+  updateNote: () => {},
+  deleteNote: () => {},
 };
 
 export const NotesContext = createContext<NotesContextType>(initialContext);
@@ -45,7 +38,7 @@ export const NotesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setSelectedNoteId(id);
   };
 
-  const addNote = async (newNote: notesType) => {
+  const addNote = (newNote: notesType) => {
     const nextId = notes.reduce((max, note) => Math.max(max, note.id), 0) + 1;
     const created: notesType = {
       ...newNote,
@@ -57,15 +50,13 @@ export const NotesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setSelectedNoteId(nextId);
   };
 
-  const updateNote = async (id: number, title: string, color: string) => {
+  const updateNote = (id: number, title: string) => {
     setNotes((current) =>
-      current.map((note) =>
-        note.id === id ? { ...note, title, color } : note,
-      ),
+      current.map((note) => (note.id === id ? { ...note, title } : note)),
     );
   };
 
-  const deleteNote = async (id: number) => {
+  const deleteNote = (id: number) => {
     const remaining = notes.filter((note) => note.id !== id);
     setNotes(remaining);
     if (selectedNoteId === id) {
@@ -77,8 +68,6 @@ export const NotesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <NotesContext.Provider
       value={{
         notes,
-        loading: false,
-        error: null,
         selectedNoteId,
         selectNote,
         addNote,

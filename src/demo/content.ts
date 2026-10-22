@@ -190,28 +190,24 @@ export const demoBlogPosts: BlogPostType[] = [
 export const demoNotes: notesType[] = [
   {
     id: 1,
-    color: 'chart-1',
     title: 'Call the venue about the load-in time. They said 4 pm, but the doors open at 6.',
     datef: '2026-10-19T10:30:00Z',
     deleted: false,
   },
   {
     id: 2,
-    color: 'chart-2',
     title: 'Setlist idea: open with the slow one, then go straight into the new song.',
     datef: '2026-10-18T21:05:00Z',
     deleted: false,
   },
   {
     id: 3,
-    color: 'chart-3',
     title: 'Ask Marta if she can cover the second guitar on the 24th.',
     datef: '2026-10-17T12:40:00Z',
     deleted: false,
   },
   {
     id: 4,
-    color: 'chart-4',
     title: 'The monitor mix needs more voice and less kick on the small stage.',
     datef: '2026-10-15T19:15:00Z',
     deleted: false,
