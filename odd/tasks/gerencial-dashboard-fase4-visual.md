@@ -53,6 +53,10 @@ and work-unit commit.
 | T7 | S3, S4 | inline | done | aca0cc8 | Sun uses `text-cem-amber`, Moon uses `text-cem-secondary-elevated` (no raw orange), `StyleAwareWrapper`/`StyleDivider` and the fake sort icons removed, CEMURM labels kept. |
 | T8 | S1, S5 | inline | done | aca0cc8 | `preserveStartEnd` + `minTickGap={32}` yields 8 desktop / 4 mobile labels with no overlap; cards stack; the Events table uses native `overflow-x-auto` with no page overflow. |
 | T9 | S1-S6 | inline | done | aca0cc8 | Gates green, both themes and mobile measured with Playwright, screenshots captured. See L7. |
+| T10 | S5 | inline | done | 5d503d7 | All five blog views dropped the no-op `StyleAwareWrapper`/`StyleDivider`, use the page gap and a 24px inner grid, and the dead "Add selected category" button is gone. |
+| T11 | S3 | inline | done | 5d503d7 | The detail renders each post's `body`/`quote` instead of the MTA filler; `shadcn-admin` alt text is gone; read time is computed; categories/tags/filter use the demo taxonomy. |
+| T12 | S1, S2 | inline | done | 5d503d7 | Featured card has static 8/4 columns, radius/ring and a theme-aware `bg-cem-base/70` scrim with `cem.text`; category badges are neutral, status dots semantic, both themes and mobile checked. |
+| T13 | S1-S6 | inline | done | 5d503d7 | Gates green; Playwright both themes and mobile over listing/detail/manage/create/edit; screenshots captured. See L10. |
 
 ## Log
 
@@ -185,3 +189,78 @@ L8 — 2026-10-22 — section closed. Dashboard presentation is CEMURM-aligned i
 themes and the next section in the S7 order is blog: remove the template's demo
 posts/author/categories, map the screen to CEMURM content, and apply the same
 light/dark and spacing checks before its own work-unit commit.
+
+L9 — 2026-10-22 — blog audit before the blog write. The demo posts are already
+CEMURM editorial content (phase 3), but the surrounding template is not:
+
+- The detail page ignores `post.content` and renders hardcoded template filler:
+  "Title of the paragraph", the MTA web-directory paragraphs, "Gigure out…",
+  duplicate unordered/ordered lists and "Life is short, Smile while you still
+  have teeth!". That is the largest visible template leftover left in the section.
+- Both the card and the detail cover use `alt="shadcn-admin"`; every card also
+  says "2 min Read" regardless of its text.
+- The manage table maps Design / Lifestyle / Gadget / Social / Health, while the
+  demo posts are Music / Practice / Live / Theory / Gear. Every category falls
+  through to the neutral badge and the filter offers five categories that match
+  nothing. The same template taxonomy (Technology, Lifestyle, Travel, Food,
+  Business, social; Trending, Tips, News, Guide, Popular) drives the create/edit
+  category and tag pickers.
+- All five views use the same dead `StyleAwareWrapper`/`StyleDivider` pair as the
+  dashboard; the create/edit forms nest three more wrappers and use a 30px gap
+  that is not on the spacing scale.
+- The featured card builds `lg:col-span-${…}` at runtime, which Tailwind cannot
+  emit, so the main post does not claim its 8 columns; it also has no radius or
+  ring, and its `text-cem-text` title is dark-on-dark-photo in light mode.
+- Smaller defects: the tag dropdown uses the undefined `bg-hover`, the "Add
+  selected category" button has no handler, the delete confirm marks "Yes,
+  Delete" amber and "Cancel" destructive, and the `published` header is
+  lowercase.
+
+Decision: keep the CEMURM demo posts and the local-state model, extend each post
+with an explicit `body`/`quote`, render that instead of the filler, compute the
+read time, replace the template taxonomy with the demo taxonomy (shared from
+`src/demo/content.ts`), and use the same page gap and card surface as the
+dashboard. Category badges stay neutral to honor the one-accent rule; status
+dots use the semantic success/warning/destructive tokens.
+
+L10 — 2026-10-22 — blog verification and closing of T10–T13.
+
+- Gates after the last source edit: `pnpm typecheck` PASS; `pnpm lint` PASS
+  (0 warnings); `pnpm test` PASS (427/427); `pnpm test:gherkin` PASS (44/44);
+  `pnpm build` PASS; visual gate PASS (12 rules, 0 failing; the same 05a/05b
+  warnings as the dashboard).
+- The first featured-card pass used `text-white` / `text-white/90` over the
+  photo. Visual rule 01b caught all four (ceiling 0), and `pnpm test` failed with
+  it. The fix is a theme-aware `bg-cem-base/70` scrim with `text-cem-text` for
+  the title and `text-cem-secondary-elevated` for the metadata: 17.9:1 / 7.5:1
+  in light, mirrored in dark, with no raw palette utility. The gate is green.
+- Playwright Chromium, 1440x1000 and 390x844, both themes. Light `html.light`
+  with body `rgb(248,250,252)` / text `rgb(15,23,42)`; dark `rgb(15,23,42)` /
+  `rgb(248,250,252)`; cards `rgb(255,255,255)` on light and `rgb(30,41,59)` on
+  dark; radius 12px; 0 page overflow on every route.
+- Listing: featured column `span 8 / span 8` and regular `span 4 / span 4` at
+  1440, both `span 12 / span 12` at 390; no `shadcn-admin` alt; every read time
+  is the computed `1 min read`; page 1721px desktop / 3167px mobile.
+- Detail: no `MTA`, `Gigure`, `Smile while` or `Title of the paragraph`; the
+  first body paragraph and the quote are present; 1 min read; 1905px desktop /
+  2321px mobile; no console errors.
+- Manage: no template categories, `Published` header present, the table shows
+  Music / Practice / Live / Theory / Gear, and the filter offers exactly those
+  five. The delete dialog exposes `Yes, Delete` as destructive and `Cancel` as
+  outline. The table keeps its native `overflow-x-auto`; at 390px it scrolls
+  without page overflow, and the page is 1034px.
+- Create/edit: six cards (breadcrumb plus five form cards), 0 overflow, no
+  template taxonomy, demo notice present; 1142px / 1026px desktop, 1950px create
+  mobile. The Tiptap editor's visible "Output" raw-HTML block — a template
+  developer artifact — was removed, leaving the toolbar and the editable body.
+- Screenshots: `/tmp/opencode/blog-listing-{light,dark}.png`,
+  `blog-detail-{light,dark}.png`, `blog-manage-{light,dark}.png`,
+  `blog-create-{light,dark}.png`, `blog-edit-{light,dark}.png`,
+  `blog-listing-mobile-{light,dark}.png`, `blog-detail-mobile-{light,dark}.png`,
+  `blog-manage-mobile-light.png`, `blog-create-mobile-light.png`.
+- Source work-unit commit: `5d503d7`; this docs commit records it.
+
+L11 — 2026-10-22 — blog closed. The next section in the S7 order is notes: the
+notes demo has no CEMURM domain yet, so the section keeps explicit demo content
+but must drop the dead wrappers, adapt the remaining template copy, and pass the
+same light/dark and mobile checks before its own work-unit commit.
