@@ -13,6 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BlogPostType } from "src/types/apps/blog";
+import { blogReadTime } from "./read-time";
 
 interface Btype {
   post: BlogPostType;
@@ -35,7 +36,7 @@ const BlogCard = ({ post }: Btype) => {
               <div className="overflow-hidden! h-[240px]">
                 <img
                   src={coverImg || ""}
-                  alt="shadcn-admin"
+                  alt=""
                   className="w-full h-full object-cover object-center transition-transform duration-200 group-hover:scale-[1.09] overflow-hidden!"
                 />
               </div>
@@ -43,7 +44,7 @@ const BlogCard = ({ post }: Btype) => {
 
                 className="absolute bottom-8 end-6 bg-cem-hover text-cem-secondary-elevated"
               >
-                2 min Read
+                {blogReadTime(post)}
               </Badge>
             </div>
           </Link>

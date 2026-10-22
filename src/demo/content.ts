@@ -25,12 +25,34 @@ import type { TicketType } from '@/types/apps/ticket'
 const ana = { id: 'author-ana', avatar: userImg1, name: 'Ana Torres' }
 const diego = { id: 'author-diego', avatar: userImg2, name: 'Diego Ruiz' }
 
+export const demoBlogCategories = [
+  'Music',
+  'Practice',
+  'Live',
+  'Theory',
+  'Gear',
+]
+
+export const demoBlogTags = [
+  'Setlist',
+  'Rehearsal',
+  'Stage',
+  'Practice',
+  'Arrangement',
+]
+
 export const demoBlogPosts: BlogPostType[] = [
   {
     id: 1,
     title: 'The quiet craft of a setlist',
     content:
       'A setlist is not a playlist. It decides when the room breathes, when it sings and when it rests. These are the small rules we use before every show.',
+    body: [
+      'We open with the song the room already knows, then take one risk. The second song is the bridge: it tells the audience whether the night will be a concert or a background track.',
+      'The middle is where the setlist earns its keep. Two songs in the same key can feel like one long song, so we separate them with a change of texture, a different voice or a short story.',
+      'We close with the one we want them to hum on the way home. The encore is not a reward; it is the last sentence of the set.',
+    ],
+    quote: 'A setlist is a promise you make to the room.',
     coverImg: blogImg1,
     createdAt: new Date('2026-10-12T09:00:00Z'),
     view: 1240,
@@ -63,6 +85,12 @@ export const demoBlogPosts: BlogPostType[] = [
     title: 'Rehearsal notes that actually help',
     content:
       'A page of observations is worth more than a recording nobody opens. Write down the two bars that fell apart, not the whole song.',
+    body: [
+      'Write the timestamp, the song and the two bars that fell apart. Leave the rest out. A note that says "the bridge was loose" is a feeling; a note that says "bridge, second bar, bass came in late" is a fix.',
+      'At the next rehearsal, start with those two bars before the warm-up. If they are still loose, the problem is not memory; it is the arrangement.',
+      'Give one person the job of keeping the notes. When everyone writes, nobody reads.',
+    ],
+    quote: 'Write down the two bars that fell apart, not the whole song.',
     coverImg: blogImg2,
     createdAt: new Date('2026-10-08T18:30:00Z'),
     view: 860,
@@ -78,6 +106,12 @@ export const demoBlogPosts: BlogPostType[] = [
     title: 'Why your band needs a soundcheck checklist',
     content:
       'Every room is different and every cable is the same color. A five-line checklist saves the fifteen minutes you would spend guessing.',
+    body: [
+      'We check six things before we touch a fader: power, DI boxes, tuners, monitor sends, spare cables and the setlist taped to the floor. The list is short enough to finish and long enough to matter.',
+      'The room will change the plan. The checklist does not remove that; it gives you a known starting point so the surprises are musical, not electrical.',
+      'The last item is a photo of the stage. It is the fastest way to remember where everything went when the lights come up.',
+    ],
+    quote: 'The checklist is not for the gear; it is for the person setting it up.',
     coverImg: blogImg3,
     createdAt: new Date('2026-10-03T11:15:00Z'),
     view: 1530,
@@ -93,6 +127,12 @@ export const demoBlogPosts: BlogPostType[] = [
     title: 'Transposing on the fly without panic',
     content:
       'If the singer changes the key at the last second, you need a shape, not a chart. Practice the interval, then trust your ear.',
+    body: [
+      'A transposition is a distance, not a new song. Find the interval from the original key, move the shape, and keep the same function: the third, the fifth, the note that makes the chorus lift.',
+      'If the singer changes key at the last second, do not rebuild the chart. Play the root of the new key, listen for the singer, and join on the next phrase. The audience hears the phrase, not your preparation.',
+      'Practice the move in two keys you would never choose. The unfamiliar key is the one that teaches the shape.',
+    ],
+    quote: 'Practice the interval, then trust your ear.',
     coverImg: blogImg4,
     createdAt: new Date('2026-09-28T08:45:00Z'),
     view: 980,
@@ -108,6 +148,12 @@ export const demoBlogPosts: BlogPostType[] = [
     title: 'A small rig for small stages',
     content:
       'Two pedals, one amp and a tuner can carry a whole night. The best rig is the one you can set up in the dark.',
+    body: [
+      'The small rig is a decision about what you are willing to carry after the show. One amp, two pedals and a tuner cover most rooms; the third pedal is usually a habit, not a need.',
+      'Set it up in the dark once. If you can find the input, the power and the tuner without a light, the rig is ready for a stage with no time to spare.',
+      'Leave one cable longer than you think you need. The stage is always wider than the diagram.',
+    ],
+    quote: 'The best rig is the one you can set up in the dark.',
     coverImg: blogImg5,
     createdAt: new Date('2026-09-21T16:00:00Z'),
     view: 720,
@@ -123,6 +169,12 @@ export const demoBlogPosts: BlogPostType[] = [
     title: 'What we learned from thirty shows',
     content:
       'The songs that worked were not always the ones we liked most. The audience told us which ones to keep, one room at a time.',
+    body: [
+      'We tracked thirty shows and the pattern was uncomfortable: the songs we loved most were not always the ones the room kept. The songs that stayed were the ones with a clear beginning, one lift and a chorus that arrives before the third minute.',
+      'The setlist changed more than the arrangements. We moved the new song next to the one the audience already knew, and the new one stopped being a test.',
+      'The last lesson was about leaving. A short set that ends while the room is still with you is worth more than a long one that explains itself.',
+    ],
+    quote: 'The audience tells you which songs to keep.',
     coverImg: blogImg6,
     createdAt: new Date('2026-09-15T10:10:00Z'),
     view: 1810,
