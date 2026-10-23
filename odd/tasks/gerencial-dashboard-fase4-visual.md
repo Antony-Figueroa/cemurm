@@ -60,6 +60,10 @@ and work-unit commit.
 | T14 | S3, S5 | inline | done | 3cd3049 | View wrappers removed, page gap 16, breadcrumb/notice/title now Notes. See L13. |
 | T15 | S1, S2, S3 | inline | done | 3cd3049 | SWR/sessionStorage/console and the MSW notes mock removed; neutral cards with amber selection; delete bubbling and sheet close fixed; neutral empty state; dialog action order; shared search text contrast. See L13. |
 | T16 | S1-S6 | inline | done | 3cd3049 | Gates green; Playwright both themes and mobile over list/content/search/add/delete/sheet; screenshots captured. See L13. |
+| T17 | S3, S5 | inline | done | 9a4fdf8 | Tickets shell: view wrappers removed, page gap and CEMURM copy/breadcrumbs. See L16. |
+| T18 | S1, S2, S3 | inline | done | 9a4fdf8 | Dead SWR/sessionStorage reset and ticket MSW mock removed; neutral filter cards with amber active state; semantic Open/Pending/Closed badges; visible delete; toolbar/search stay mounted; neutral empty state; typed status/filter. See L16. |
+| T19 | S1, S2, S3 | inline | done | 9a4fdf8 | Shared CEMURM demo agents in list and form; labelled agent picker; description textarea; Save disabled until both fields; outline Cancel; bordered panel and meta line. See L16. |
+| T20 | S1-S6 | inline | done | 9a4fdf8 | Gates green; Playwright both themes and mobile over list/filter/search/empty/create/agent/delete; screenshots. See L16. |
 
 ## Log
 
@@ -350,3 +354,71 @@ L13 — 2026-10-22 — notes verification and closing of T14–T16.
 L14 — 2026-10-22 — notes closed. The next section in the S7 order is tickets:
 audit its status labels, demo content and filters, then apply the light/dark,
 spacing and contrast pass before its own work-unit commit.
+
+L15 — 2026-10-22 — tickets audit before the first write.
+
+- Both views still use the no-op `StyleAwareWrapper`/`StyleDivider`, title the
+  page "Tickets App" and say the tickets are "template content".
+- `ticket-filter` carries the same dead SWR reset as the notes page:
+  `mutate("/api/ticket")`, a `sessionStorage` beforeunload flag and
+  `useLocation`. The endpoint never existed. The four summary cards use
+  `chart-2`, `chart-4` and `destructive`, are clickable `div`s with no pressed or
+  active state, and never show which filter is applied.
+- `ticket-listing` hides the whole toolbar (Create Ticket + search) when
+  `visibleTickets` is empty, so a search with no matches unmounts the input and
+  strands the term; the empty state is a destructive `Alert`. The status badges
+  use chart-2/chart-4/destructive, so Closed reads as an error. The delete button
+  is `destructive` with a `bg-cem-base` override, which makes its white icon
+  invisible in light. The search matches only the title, and
+  `getVisibleTickets` throws on an unknown filter.
+- The type carries an unused `Label` field (warning/error/success) that no view
+  reads; `Status` and the filter are plain strings. The demo agents are
+  inconsistent: Ana uses user-2 and user-5, Diego user-3 and user-6, Marta
+  user-4 and user-1, while the create form still lists the template names
+  Liam/Steve/Jack/John. The dead MSW ticket mock still holds lorem rows and the
+  Chance dependency path.
+- `create-ticketform`: the description is a single-line `Input`, validation is a
+  browser `alert`, Cancel is destructive, the agent dropdown has no label, the
+  panel `border` has no colour, and the meta line reads "ID : ..." / "Date : ...".
+- Decision: keep the six CEMURM demo tickets and the in-memory model. Make the
+  filter cards neutral buttons with the active filter in amber; use semantic
+  Open/Pending/Closed badges (success/warning/neutral); keep the toolbar and
+  search mounted; delete the dead ticket mock; use the shared CEMURM demo agents
+  (Ana Torres, Diego Ruiz, Marta Gil) in the list and the create form; turn the
+  description into a textarea; disable Save until both fields are non-empty; and
+  make Cancel an outline button.
+
+L16 — 2026-10-22 — tickets work unit and verification.
+
+- Source `9a4fdf8` (T17–T20): views, filter, listing, create form, context,
+  type, demo content, and the deleted `src/api/ticket/ticket-data.ts` + handler
+  import. The demo keeps six in-memory tickets; the create form adds #7, and
+  delete returns to six.
+- Gates: `pnpm typecheck` PASS; `pnpm lint` 0 warnings; `pnpm test` 427/427;
+  `pnpm test:gherkin` 44/44; `pnpm build` PASS; visual gate 12 rules / 0 failing
+  (rule 02 still at its 240/240 ceiling; 05a/05b and report-only r1/r2 unchanged).
+- Playwright at 1440×1000, light and dark: six rows; counts 6/2/2/2; Pending
+  filter two rows; search "venue" two rows (title and description); "zzz" zero
+  rows with the search, Create Ticket and filter cards still mounted; delete
+  visible (`rgb(51,65,85)` light, `rgb(203,213,225)` dark); body `rgb(248,250,252)`
+  / `rgb(15,23,42)` light and `rgb(15,23,42)` / `rgb(248,250,252)` dark.
+- Create flow: Save disabled before both fields, enabled after; agent menu shows
+  Ana Torres / Diego Ruiz / Marta Gil; save adds #7 with the picked agent and the
+  Open count; delete returns to six; Cancel returns without adding.
+- Mobile 390×844, light and dark: no horizontal page overflow; four stacked
+  filter cards; create textarea and disabled Save; agent picker, add (7 rows) and
+  delete (6 rows); Pending filter and "zzz" empty. No console or page errors.
+- Evidence images: `/tmp/opencode/tickets-*.png`. The mobile list screenshots
+  are taken at the top of the page; the table rows sit below the fold and are
+  animated in by `useInView`, so they render blank in that image while the DOM
+  reports all six rows and the mobile add/delete interactions succeed.
+- Decision: the shared `BreadcrumbComp` still ignores `items` (create reads
+  Home / Create Ticket) and the sidebar active check is still exact-match (the
+  Tickets item is not highlighted on the child create route). Both are closed
+  shell behavior used by every page; changing them here would alter the shell
+  and the other sections, so they stay untouched. Follow-up if the maintainer
+  wants child-route highlighting or a multi-level breadcrumb.
+
+L17 — 2026-10-22 — tickets closed. Next section in the S7 order: tables, then
+form, profile, icons and auth. Source `9a4fdf8`; this documentation commit
+records T17–T20.
