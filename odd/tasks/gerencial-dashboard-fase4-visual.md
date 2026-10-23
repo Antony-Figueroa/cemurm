@@ -68,6 +68,10 @@ and work-unit commit.
 | T22 | S1, S2, S3 | inline | done | fff5fb3 | Table cards: inner double frame removed; wrappers simplified to one overflow-x-auto (mobile clipping fixed); border-ld/hover:bg-lightprimary replaced with cem tokens; shared TableRow border token; semantic Ready/Draft/Retired badges. See L18. |
 | T23 | S1, S2, S3 | inline | done | fff5fb3 | DataTable: search copy/aria, songs.csv download/aria, page-size id/options, placeholder contrast, neutral retired status; checkbox table labels. See L18. |
 | T24 | S1-S6 | inline | done | fff5fb3 | Gates green; DOM checks at 390 and 1440 in both themes; screenshots blocked by the MCP timeout. See L18. |
+| T25 | S3, S5 | inline | done | eeec93e | Form page: no-op StyleAwareWrapper/StyleDivider removed, 16 px page gap, Home points at `/admin`, title Form, `FormPage` name. See L20. |
+| T26 | S1, S2, S3 | inline | done | eeec93e | Eight showcase sections became Card surfaces with 16 px gaps; p-px/gap-px/bg-cem-hover seams, bg-cem-base sections and card-title headings gone. See L20. |
+| T27 | S1, S2, S3 | inline | done | eeec93e | Template URL replaced with `https://cemurm.app`; `text-info` -> `text-chart-2`; copy button border token; date trigger flattened to one button and shared hover/focus. See L20. |
+| T28 | S1-S6 | inline | done | eeec93e | A11y: Select id, unique checkbox/radio ids, five labelled switches, input-group/file aria labels. Gates green; DOM at 390/1440 both themes, no overflow, no console errors. See L20. |
 
 ## Log
 
@@ -477,3 +481,47 @@ L18 — 2026-10-22 — tables work unit and verification.
 
 L19 — 2026-10-22 — tables closed. Next in the S7 order: form, then profile,
 icons and auth. Source `fff5fb3`; this documentation commit records T21–T24.
+
+L20 — 2026-10-23 — form work unit and verification.
+
+- Source `eeec93e` (T25–T28): `src/views/pages/form/index.tsx` and
+  `src/components/form/index.tsx`. The page dropped the no-op
+  `StyleAwareWrapper`/`StyleDivider`, is a 16 px flex column, points the
+  breadcrumb Home at `/admin`, and is named `FormPage` instead of the
+  copy-pasted `TablesPage`.
+- The eight showcase sections became `Card`/`CardHeader`/`CardTitle`/
+  `CardContent` surfaces with the page's 16 px gap, matching the tables
+  sections. The `p-px`/`gap-px`/`bg-cem-hover` seams, the `bg-cem-base`
+  sections and the `card-title` headings are gone. Light card #fff on body
+  #f8fafc; dark card #1e293b on body #0f172a; input borders #e2e8f0 and
+  #475569.
+- Template data removed: the website default and both URL placeholders no
+  longer say `tailwind-admin`; the copy demo starts at
+  `https://cemurm.app`. The undefined `text-info` (the palette has no
+  `--color-info`) is now `text-chart-2`, #075985 in light and #0ea5e9 in
+  dark. The copy button uses `border-cem-hover` and a single
+  `bg-cem-amber/10`; the date trigger lost `hover:bg-transparent` and
+  `focus:border-cem-amber`, so it follows the shared outline button hover and
+  focus ring.
+- A11y: `SelectTrigger` has the `countries` id its label points to; the
+  checkbox and radio groups use distinct `checkbox-*`/`radio-*` ids instead
+  of sharing `default`/`disabled`; all five switches have ids and labels,
+  including the stray unlabelled switch, now "Toggle me (alternate)"; the four
+  icon inputs and the file input have aria-labels. The datepicker no longer
+  nests a `Button` inside the `PopoverTrigger` button — the trigger renders
+  the `Button` through Base UI's `render` prop, so the DOM has one button.
+- Browser checks (Chrome DevTools MCP): 8 form cards plus the shell
+  breadcrumb card. Grid 675.5 px + 675.5 px at 1920, 547.5 px + 547.5 px at
+  1440, one 340 px column at 390; page overflow 0 at 390. Light card #fff,
+  body #f8fafc, input border #e2e8f0, Info #075985; dark card #1e293b, body
+  #0f172a, input border #475569, Info #0ea5e9. All labels resolve, no
+  duplicate ids, no nested buttons. Date popover opens (37 calendar buttons)
+  and closes; Copy changes to Copied and back to Copy after 1.5 s. Console:
+  two pre-existing warnings (apple-mobile-web-app-capable, font preload), no
+  errors. Leaving `/admin` clears the html theme class and the member app
+  returns to dark.
+- Risk: none — the change is page-local; no shared component, route or data
+  contract changed.
+
+L21 — 2026-10-23 — form closed. Next in the S7 order: profile, then icons and
+auth. Source `eeec93e`; this documentation commit records T25–T28.
