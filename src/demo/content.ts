@@ -15,15 +15,20 @@ import blogImg6 from '@/assets/images/blog/blog-img6.png'
 import userImg1 from '@/assets/images/profile/user-1.png'
 import userImg2 from '@/assets/images/profile/user-2.png'
 import userImg3 from '@/assets/images/profile/user-3.png'
-import userImg4 from '@/assets/images/profile/user-4.png'
-import userImg5 from '@/assets/images/profile/user-5.png'
-import userImg6 from '@/assets/images/profile/user-6.png'
 import type { BlogPostType } from '@/types/apps/blog'
 import type { notesType } from '@/types/apps/notes'
 import type { TicketType } from '@/types/apps/ticket'
 
 const ana = { id: 'author-ana', avatar: userImg1, name: 'Ana Torres' }
 const diego = { id: 'author-diego', avatar: userImg2, name: 'Diego Ruiz' }
+
+// Shared demo collaborators. Tickets and the create form read the same list so
+// an agent keeps one avatar everywhere.
+export const demoAgents = [
+  { id: 'agent-ana', name: ana.name, photo: userImg1 },
+  { id: 'agent-diego', name: diego.name, photo: userImg2 },
+  { id: 'agent-marta', name: 'Marta Gil', photo: userImg3 },
+]
 
 export const demoBlogCategories = [
   'Music',
@@ -221,9 +226,8 @@ export const demoTickets: TicketType[] = [
     ticketDescription:
       'The usual room is booked. Confirm the alternate room and tell the band before Friday.',
     Status: 'Open',
-    Label: 'warning',
-    thumb: userImg2,
-    AgentName: 'Ana',
+    thumb: demoAgents[0].photo,
+    AgentName: demoAgents[0].name,
     Date: new Date('2026-10-19T09:20:00Z'),
     deleted: false,
   },
@@ -233,9 +237,8 @@ export const demoTickets: TicketType[] = [
     ticketDescription:
       'One long XLR did not come back in the case. Check the venue lost and found.',
     Status: 'Pending',
-    Label: 'error',
-    thumb: userImg3,
-    AgentName: 'Diego',
+    thumb: demoAgents[1].photo,
+    AgentName: demoAgents[1].name,
     Date: new Date('2026-10-18T17:45:00Z'),
     deleted: false,
   },
@@ -245,9 +248,8 @@ export const demoTickets: TicketType[] = [
     ticketDescription:
       'The band approved the order. Share it with the collaborators and print two copies.',
     Status: 'Open',
-    Label: 'success',
-    thumb: userImg4,
-    AgentName: 'Marta',
+    thumb: demoAgents[2].photo,
+    AgentName: demoAgents[2].name,
     Date: new Date('2026-10-17T11:10:00Z'),
     deleted: false,
   },
@@ -257,9 +259,8 @@ export const demoTickets: TicketType[] = [
     ticketDescription:
       'The new keyboard position changes the monitor sends. Update the plot before the next gig.',
     Status: 'Closed',
-    Label: 'success',
-    thumb: userImg5,
-    AgentName: 'Ana',
+    thumb: demoAgents[0].photo,
+    AgentName: demoAgents[0].name,
     Date: new Date('2026-10-14T08:30:00Z'),
     deleted: false,
   },
@@ -269,9 +270,8 @@ export const demoTickets: TicketType[] = [
     ticketDescription:
       'Six names were sent. Ask for confirmation and keep the list in the gig notes.',
     Status: 'Closed',
-    Label: 'error',
-    thumb: userImg6,
-    AgentName: 'Diego',
+    thumb: demoAgents[1].photo,
+    AgentName: demoAgents[1].name,
     Date: new Date('2026-10-11T15:05:00Z'),
     deleted: false,
   },
@@ -281,9 +281,8 @@ export const demoTickets: TicketType[] = [
     ticketDescription:
       'The backup strap is not safe. Order a replacement before the weekend.',
     Status: 'Pending',
-    Label: 'warning',
-    thumb: userImg1,
-    AgentName: 'Marta',
+    thumb: demoAgents[2].photo,
+    AgentName: demoAgents[2].name,
     Date: new Date('2026-10-09T13:25:00Z'),
     deleted: false,
   },

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // Demo tickets store.
 //
 // The template's original context fetched /api/data/ticket/* from an MSW
@@ -9,19 +8,16 @@
 import { createContext, useState } from 'react';
 import React from 'react';
 import { demoTickets } from '@/demo/content';
-import { TicketType } from '../../types/apps/ticket';
+import type { TicketFilterType, TicketType } from '../../types/apps/ticket';
 
 export interface TicketContextType {
   tickets: TicketType[];
   deleteTicket: (id: number) => void;
   setTicketSearch: (searchTerm: string) => void;
-  searchTickets: (searchTerm: string) => void;
   ticketSearch: string;
-  filter: string;
-  error: null;
-  loading: boolean;
-  setFilter: (filter: string) => void;
-  addTicket: (ticket: any) => void;
+  filter: TicketFilterType;
+  setFilter: (filter: TicketFilterType) => void;
+  addTicket: (ticket: TicketType) => void;
 }
 
 export const TicketContext = createContext<TicketContextType>(
@@ -33,14 +29,10 @@ export const TicketProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [tickets, setTickets] = useState<TicketType[]>(demoTickets);
   const [ticketSearch, setTicketSearch] = useState<string>('');
-  const [filter, setFilter] = useState<string>('total_tickets');
+  const [filter, setFilter] = useState<TicketFilterType>('total_tickets');
 
   const deleteTicket = (id: number) => {
     setTickets((current) => current.filter((ticket) => ticket.Id !== id));
-  };
-
-  const searchTickets = (searchTerm: string) => {
-    setTicketSearch(searchTerm);
   };
 
   const addTicket = (newTicket: TicketType) => {
@@ -51,11 +43,8 @@ export const TicketProvider: React.FC<{ children: React.ReactNode }> = ({
     <TicketContext.Provider
       value={{
         tickets,
-        error: null,
-        loading: false,
         deleteTicket,
         setTicketSearch,
-        searchTickets,
         ticketSearch,
         filter,
         setFilter,
