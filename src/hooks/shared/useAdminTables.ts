@@ -44,7 +44,7 @@ interface AuthContextValue {
 
 const SONG_STATUS: Record<string, { label: string; className: string }> = {
   ready: { label: 'Ready', className: 'bg-success/10! text-success!' },
-  draft: { label: 'Draft', className: 'bg-chart-5/10! text-chart-5!' },
+  draft: { label: 'Draft', className: 'bg-cem-amber/10! text-cem-amber!' },
   retired: {
     label: 'Retired',
     className: 'bg-cem-hover! text-cem-secondary-elevated!',
@@ -54,7 +54,7 @@ const SONG_STATUS: Record<string, { label: string; className: string }> = {
 const SONG_STATUS_COLOR: Record<string, string> = {
   ready: 'chart-3',
   draft: 'chart-1',
-  retired: 'destructive',
+  retired: 'neutral',
 }
 
 const VISIBILITY: Record<string, { label: string; className: string }> = {
@@ -158,7 +158,7 @@ export function useAdminTables(): AdminTablesData {
       key: song.key?.trim() || '—',
       bpm: song.bpm ?? null,
       status: SONG_STATUS[song.status ?? '']?.label ?? song.status ?? 'Unknown',
-      statuscolor: SONG_STATUS_COLOR[song.status ?? ''] ?? 'chart-2',
+      statuscolor: SONG_STATUS_COLOR[song.status ?? ''] ?? 'neutral',
       href: `/songs/${song.id}`,
     })),
   }
