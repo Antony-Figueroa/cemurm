@@ -72,6 +72,9 @@ and work-unit commit.
 | T26 | S1, S2, S3 | inline | done | eeec93e | Eight showcase sections became Card surfaces with 16 px gaps; p-px/gap-px/bg-cem-hover seams, bg-cem-base sections and card-title headings gone. See L20. |
 | T27 | S1, S2, S3 | inline | done | eeec93e | Template URL replaced with `https://cemurm.app`; `text-info` -> `text-chart-2`; copy button border token; date trigger flattened to one button and shared hover/focus. See L20. |
 | T28 | S1-S6 | inline | done | eeec93e | A11y: Select id, unique checkbox/radio ids, five labelled switches, input-group/file aria labels. Gates green; DOM at 390/1440 both themes, no overflow, no console errors. See L20. |
+| T29 | S3, S5 | inline | done | 72e7ca2 | Profile page: no-op wrapper removed, 16 px page gap, breadcrumb Home `/admin`, title Profile, page returns `<UserProfile />`. See L22. |
+| T30 | S1, S2, S3 | inline | done | 72e7ca2 | Profile surfaces: banner and two section Cards; p-px/gap-px/bg-cem-hover seams, bg-cem-base sections and dead card-title gone; real memberships, initials fallback instead of the stock avatar, flat icon links. See L22. |
+| T31 | S1-S6 | inline | done | 72e7ca2 | Shared outline button border forced; gates green; DOM at 1920/390 both themes, no overflow, no console errors; theme class cleared outside `/admin`. See L22. |
 
 ## Log
 
@@ -525,3 +528,53 @@ L20 — 2026-10-23 — form work unit and verification.
 
 L21 — 2026-10-23 — form closed. Next in the S7 order: profile, then icons and
 auth. Source `eeec93e`; this documentation commit records T25–T28.
+
+L22 — 2026-10-23 — profile work unit and verification.
+
+- Source `72e7ca2` (T29–T31): `src/components/user-profile/index.tsx`,
+  `src/views/pages/user-profile/index.tsx`, `src/components/ui/button.tsx`.
+  The page component now returns `<UserProfile />`; the breadcrumb title is
+  Profile and Home points at `/admin`.
+- The outer `p-px bg-cem-hover gap-px` and the inner `gap-px bg-cem-hover`
+  seams are gone. The page is a 16 px flex column. The banner is a Card with
+  `p-4 sm:p-6`; Personal Information and Organizations are
+  `Card`/`CardHeader`/`CardTitle`/`CardContent`, so the two columns share the
+  tables/form card surface. The `bg-cem-base` sections are gone.
+- `card-title` had no CSS definition outside `.style-lyra`: the banner name
+  rendered 14 px/400 and the section headings 16 px/400. The banner name is
+  now an 18 px/600 `h5`; the section headings are CardTitle at 16 px/500.
+- The profile keeps the real `useAdminProfile` data: display name, username,
+  email, role, organization, member since and the organization memberships
+  with branch, role, join date and status. The template stock
+  `avtar.webp` import is gone; when `avatarUrl` is empty the page renders
+  initials (`DU` for Demo User) in `bg-cem-amber/10` with `text-cem-amber`.
+  The two icon links lost `shadow-md`, use `border-cem-hover` and
+  `text-cem-secondary-elevated` at 44 px, and keep the hover fill and focus
+  ring.
+- Shared outline button: `border-cem-hover!` and `dark:border-cem-hover!`.
+  The computed border was `rgba(0,0,0,0)` because the base
+  `border-transparent` won the cascade, so every admin outline button was
+  borderless. The profile CTA now renders #e2e8f0 in light and #475569 in
+  dark. The visual gate also caught rule 06 on the icon links
+  (`text-cem-secondary` on `hover:bg-cem-hover/40`);
+  `text-cem-secondary-elevated` is the fix.
+- Browser checks (Chrome DevTools MCP): 4 cards (breadcrumb, banner, two
+  sections) at 1920. Banner #fff light / #1e293b dark, 24 px desktop and
+  16 px at 390; body #f8fafc / #0f172a; section cards #fff / #1e293b; name
+  #0f172a / #f8fafc; initials #92400e / #f59e0b; icon links #475569 /
+  #94a3b8; active badge #075985 / #0ea5e9; CTA border #e2e8f0 / #475569.
+  Grid 675.5 px + 675.5 px at 1920, one 340 px column at 390; membership row
+  308 px; CTA 171x32 with its right edge at 349 inside the card; page
+  overflow 0 at 390 in both themes. Leaving `/admin` clears the html theme
+  class. Console: only the pre-existing apple-mobile-web-app-capable
+  warning; no errors.
+- Gates: typecheck 0, lint 0, test 427/427, gherkin 44/44, build OK, visual
+  12 rules / 0 failing. One full test run timed out at 5 s on
+  `src/test/visual-contract-theme.test.js` rule 04 under parallel load; the
+  isolated file passed 5/5 and the next full run passed 427/427.
+- Risk: item 3 — the shared outline button variant reaches the outline
+  buttons in the other admin sections. The change only forces the border
+  token the variant already declared; it does not change behavior.
+
+L23 — 2026-10-23 — profile closed. Next in the S7 order: icons, then auth.
+Source `72e7ca2`; this documentation commit records T29–T31.
