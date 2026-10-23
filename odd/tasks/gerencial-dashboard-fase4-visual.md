@@ -75,6 +75,9 @@ and work-unit commit.
 | T29 | S3, S5 | inline | done | 72e7ca2 | Profile page: no-op wrapper removed, 16 px page gap, breadcrumb Home `/admin`, title Profile, page returns `<UserProfile />`. See L22. |
 | T30 | S1, S2, S3 | inline | done | 72e7ca2 | Profile surfaces: banner and two section Cards; p-px/gap-px/bg-cem-hover seams, bg-cem-base sections and dead card-title gone; real memberships, initials fallback instead of the stock avatar, flat icon links. See L22. |
 | T31 | S1-S6 | inline | done | 72e7ca2 | Shared outline button border forced; gates green; DOM at 1920/390 both themes, no overflow, no console errors; theme class cleared outside `/admin`. See L22. |
+| T32 | S3, S5 | inline | done | 0ec6d17 | Icon page: no-op wrapper/divider removed, 16 px page gap, title Icon library, `IconLibraryPage`/`IconLibrary` names. See L24. |
+| T33 | S1, S2, S3 | inline | done | 0ec6d17 | Icon card: Card/Header/Description/Content; h6 -> h5; install package corrected to `@iconify/react`; iframe title/fallback/responsive frame; code block theme and border; CEMURM notice. See L24. |
+| T34 | S1-S6 | inline | done | 0ec6d17 | Gates green; DOM at 1920/390 both themes; code pre scrolls inside the card; no page overflow or console errors; theme class cleared. See L24. |
 
 ## Log
 
@@ -578,3 +581,48 @@ L22 — 2026-10-23 — profile work unit and verification.
 
 L23 — 2026-10-23 — profile closed. Next in the S7 order: icons, then auth.
 Source `72e7ca2`; this documentation commit records T29–T31.
+
+L24 — 2026-10-23 — icon library work unit and verification.
+
+- Source `0ec6d17` (T32–T34): `src/views/icons/iconify.tsx` and
+  `src/components/icons/iconify-icons.tsx`. The view dropped the no-op
+  `StyleAwareWrapper`/`StyleDivider`, is a 16 px flex column, is named
+  `IconLibraryPage`, and the breadcrumb/title is Icon library, matching the
+  sidebar.
+- The notice no longer says "Template reference". It now reads: "Icon library
+  reference — this gallery documents the Iconify Solar set available to
+  CEMURM interfaces. It is static documentation and does not change app data."
+- The single `p-6` card became `Card`/`CardHeader`/`CardTitle`/`CardDescription`/
+  `CardContent`: title Iconify Solar, description "Icons available to CEMURM
+  interfaces.", content gap 24. The three `h6` headings rendered 14 px/400;
+  they are `h5` at 14 px/500 in `text-cem-text`. Card title 16 px/500;
+  description #334155 light / #cbd5e1 dark.
+- The install snippet was wrong in two ways: it said "To use Tabler icons" and
+  installed `@iconify-icon/react`, while the usage imported `@iconify/react`
+  and the repo depends on `@iconify/react` ^6.0.2. It now installs
+  `npm i @iconify/react`. The usage block uses the `tsx` grammar.
+- Code blocks: `customStyle` sets margin 0, radius 8, a 1 px
+  `var(--color-cem-hover)` border, 13 px text and `overflow-x: auto`. Light
+  uses `docco` (#f8f8ff background, black text, #e2e8f0 border); dark uses
+  `vs2015` (#1e1e1e background, #dcdcdc text, #475569 border). The theme comes
+  from the admin `useTheme`, which defaults to dark.
+- The iframe title was "Inline Frame Example"; it is now "Iconify Solar icon
+  set", lazy-loaded, inside a bordered/rounded wrapper with a 420 px height at
+  390 and 650 px from `sm` up. A fallback link ("Open the Solar icon set in a
+  new tab") points at the same collection; it renders #92400e in light and
+  #f59e0b in dark.
+- Browser checks (Chrome DevTools MCP): 2 cards (breadcrumb plus the icon
+  card) at 1920. Card #fff light / #1e293b dark; body #f8fafc / #0f172a;
+  notice #f8fafc / #0f172a with #475569 / #94a3b8 text. At 390 the card is
+  340 px, the code pre is 308 px, the usage block scrolls internally
+  (`scrollWidth` 575) and the page overflow stays 0; the iframe is 306x418
+  inside the 420 px wrapper; the fallback link is 240 px wide; page height
+  1369 px. Leaving `/admin` clears the html theme class. Console: the
+  pre-existing apple-mobile-web-app-capable warning; no errors.
+- Gates: typecheck 0, lint 0, test 427/427, gherkin 44/44, build OK, visual
+  12 rules / 0 failing.
+- Risk: none — the change is page-local; no shared component, route or data
+  contract changed.
+
+L25 — 2026-10-23 — icons closed. Last section in the S7 order: auth. Source
+`0ec6d17`; this documentation commit records T32–T34.
