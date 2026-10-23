@@ -78,6 +78,10 @@ and work-unit commit.
 | T32 | S3, S5 | inline | done | 0ec6d17 | Icon page: no-op wrapper/divider removed, 16 px page gap, title Icon library, `IconLibraryPage`/`IconLibrary` names. See L24. |
 | T33 | S1, S2, S3 | inline | done | 0ec6d17 | Icon card: Card/Header/Description/Content; h6 -> h5; install package corrected to `@iconify/react`; iframe title/fallback/responsive frame; code block theme and border; CEMURM notice. See L24. |
 | T34 | S1-S6 | inline | done | 0ec6d17 | Gates green; DOM at 1920/390 both themes; code pre scrolls inside the card; no page overflow or console errors; theme class cleared. See L24. |
+| T35 | S1, S3, S5 | inline | done | 132a212 | Auth demos: standalone `min-h-screen` + `px-4 py-8`; consistent `w-full max-w-md p-6 shadow-lg` card; CEMURM logo; social buttons gone; register/forgot/two-steps no longer `h-screen overflow-hidden`. |
+| T36 | S1, S2, S3 | inline | done | 132a212 | Copy/links/a11y: "New to CEMURM?", `you@yourband.com`, "Create account", `/admin/auth/...` links, no nested button/anchor, two-step demo email + OTP aria + Resend button, forms prevent default; dead authforms deleted. |
+| T37 | S1, S2, S3 | inline | done | 132a212 | CEMURM 404 (amber 404, "Page not found", Back to dashboard) and maintenance (CemurmMark, "Maintenance mode", Back to admin); BlankLayout notice excludes 404/maintenance. |
+| T38 | S1-S6 | inline | done | 132a212 | Gates green; DOM at 1920/390 both themes; links/theme cleanup/overflow verified; screenshots not captured (DOM-only evidence). |
 
 ## Log
 
@@ -626,3 +630,70 @@ L24 — 2026-10-23 — icon library work unit and verification.
 
 L25 — 2026-10-23 — icons closed. Last section in the S7 order: auth. Source
 `0ec6d17`; this documentation commit records T32–T34.
+
+L26 — 2026-10-23 — auth demo section work unit and verification.
+
+- Source `132a212` (T35–T38): `src/views/auth/auth2/*`, `src/views/auth/error`,
+  `src/views/auth/maintenance`, `src/layouts/blank/BlankLayout.tsx`, and the
+  deletion of the five unused `src/views/auth/authforms/*` files. The four auth
+  demos are standalone pages rendered by `BlankLayout` under
+  `/admin/auth/auth2/*`; the demo notice sits above them.
+- Layout: login already used `min-h-screen`, but register, forgot and two-steps
+  used `h-screen overflow-hidden`, which clipped the card on short viewports and
+  put a second full-screen band below the notice. All four now use
+  `flex min-h-screen ... px-4 py-8` and the same `w-full max-w-md p-6
+  shadow-lg` Card. At 390 the notice band is 110 px, the page 954 px, and the
+  card fits: login 358x388, register 358x394, forgot 358x330, two-steps
+  358x308. Desktop cards are 448 px.
+- Template info removed: "New to ShadcnDashboard ?" -> "New to CEMURM?";
+  `example@shadcndashboard.com` -> `you@yourband.com`; the register submit said
+  "Sign in" -> "Create account"; the two-step mobile `******1234` ->
+  `demo@cemurm.app`; "Opps!!!" and "Maintenance Mode!!!" replaced. The dead
+  `auth-login` ("Welcome to ShadcnDashboard"), `auth-register`,
+  `auth-forgotpassword`, `auth-twosteps` and `social-buttons` files were
+  deleted (473 lines); no imports remained.
+- Links: login/register/forgot used absolute `/auth/...`, outside the admin
+  subtree. They now point at `/admin/auth/...`; the logo goes to `/admin`. The
+  forgot "Back to Login" was a `Button` wrapping a `Link` (nested
+  button/anchor); it is now a `Link` with `buttonVariants({ variant:
+  'outline' })`. The 404 and maintenance "Go Back to Home" `Button`+`Link`
+  pairs are gone; their links are `Back to dashboard` / `Back to admin` at
+  `/admin`. The two-step "Resend" linked to `/`; it is now an inert demo
+  button. The two-step OTP has `id="otp"` and `aria-label="Verification
+  code"`; the login remember label no longer carries `leading-0`.
+- Social buttons: CEMURM auth is Supabase email/password, so the Google/GitHub
+  buttons were false affordances. They were removed from login and register and
+  `social-buttons.tsx` was deleted. The demo notice still says the form does
+  not sign in and the real CEMURM login is at `/auth`.
+- Theme and CEMURM 404/maintenance: light page #e2e8f0, card #fff, text
+  #0f172a, labels #334155, amber #92400e; dark page #475569, card #1e293b,
+  text #f8fafc, labels #cbd5e1, amber #f59e0b. The 404 uses a 72 px amber
+  `404` (#92400e light / #f59e0b dark), a #0f172a/#f8fafc h1 and a
+  `Back to dashboard` button. Maintenance uses the 40 px `CemurmMark`, a
+  #fff/#1e293b page, "Maintenance mode" and `Back to admin`. The template
+  `404.svg` (550x198 rendered at 500x500, squashed) and `maintenance.svg`
+  (black lines invisible in dark) were removed from the pages; the unused
+  assets remain on disk. `BlankLayout` excludes `/admin/auth/404` and
+  `/admin/auth/maintenance` from the demo notice; the notice appears only on
+  the four auth demos.
+- Browser checks (Chrome DevTools MCP): 1920 and 390, both themes. All links
+  stay under `/admin/auth/...`; zero nested `a button` / `button a`; page
+  overflow 0 at 390 in both themes; page height 954 px on the auth demos
+  (notice + 844) and 844 px on 404/maintenance. Clicking login "Sign in"
+  (type=button), two-step "Verify Now" and "Resend" does not navigate; the
+  register/login/forgot links navigate client-side under `/admin/auth/...`.
+  Leaving `/admin` clears the html theme class; returning sets `dark`. Console:
+  the pre-existing apple-mobile-web-app-capable warning only; no errors.
+- Gates: typecheck 0, lint 0, test 427/427, gherkin 44/44, build OK, visual
+  12 rules / 0 failing. Screenshots were not captured for this section; the
+  evidence is DOM-only (the profile/icons screenshots were blocked by the MCP
+  timeout).
+- Risk: none — admin template views only; the deleted authforms had no
+  imports; no shared component, route or data contract changed.
+
+L27 — 2026-10-23 — fase 4 closed. Shell, dashboard, blog, notes, tickets,
+tables, form, profile, icons and auth are done (T1–T38). The branch
+`feat/tw4-stack-foundation-pr3-admin` is stacked on #383, which remains
+OPEN / REVIEW_REQUIRED / MERGEABLE; the admin PR waits on its merge. The branch
+is pushed to `fork`; no admin PR is open yet. Merge is human. Remaining work is
+external: merge #383, then open the admin PR. No code work remains in phase 4.
