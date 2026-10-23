@@ -64,6 +64,10 @@ and work-unit commit.
 | T18 | S1, S2, S3 | inline | done | 9a4fdf8 | Dead SWR/sessionStorage reset and ticket MSW mock removed; neutral filter cards with amber active state; semantic Open/Pending/Closed badges; visible delete; toolbar/search stay mounted; neutral empty state; typed status/filter. See L16. |
 | T19 | S1, S2, S3 | inline | done | 9a4fdf8 | Shared CEMURM demo agents in list and form; labelled agent picker; description textarea; Save disabled until both fields; outline Cancel; bordered panel and meta line. See L16. |
 | T20 | S1-S6 | inline | done | 9a4fdf8 | Gates green; Playwright both themes and mobile over list/filter/search/empty/create/agent/delete; screenshots. See L16. |
+| T21 | S3, S5 | inline | done | fff5fb3 | Tables page: no-op StyleAwareWrapper/StyleDivider removed; 16 px page gap; twelve-column grid with five full-width cards. See L18. |
+| T22 | S1, S2, S3 | inline | done | fff5fb3 | Table cards: inner double frame removed; wrappers simplified to one overflow-x-auto (mobile clipping fixed); border-ld/hover:bg-lightprimary replaced with cem tokens; shared TableRow border token; semantic Ready/Draft/Retired badges. See L18. |
+| T23 | S1, S2, S3 | inline | done | fff5fb3 | DataTable: search copy/aria, songs.csv download/aria, page-size id/options, placeholder contrast, neutral retired status; checkbox table labels. See L18. |
+| T24 | S1-S6 | inline | done | fff5fb3 | Gates green; DOM checks at 390 and 1440 in both themes; screenshots blocked by the MCP timeout. See L18. |
 
 ## Log
 
@@ -422,3 +426,54 @@ L16 — 2026-10-22 — tickets work unit and verification.
 L17 — 2026-10-22 — tickets closed. Next section in the S7 order: tables, then
 form, profile, icons and auth. Source `9a4fdf8`; this documentation commit
 records T17–T20.
+
+L18 — 2026-10-22 — tables work unit and verification.
+
+- Source `fff5fb3` (T21–T24): the page, the five table cards, the
+  `useAdminTables` hook and the shared `TableRow`. The page no longer uses the
+  no-op `StyleAwareWrapper`/`StyleDivider`; it is a 16 px gap plus a
+  twelve-column grid with five full-width cards. The inner double frame
+  (`border rounded-md border-ld`) is gone; the four hand-rolled tables now use
+  one `overflow-x-auto` wrapper, the same shape as the DataTable.
+- T22: `border-ld` and `hover:bg-lightprimary` were undefined in the CEMURM
+  palette, so they rendered `currentColor` and no hover. They are replaced
+  with `border-cem-hover`/`hover:bg-cem-hover`. The shared `TableRow` now
+  carries `border-cem-hover`, so row separators are #e2e8f0 in light and
+  #475569 in dark instead of a pure white/black `currentColor` line. The
+  BasicTable row keeps its local token; the single-row table has no bottom
+  border by the table's last-child rule.
+- T23: DataTable search copy is `Search songs...` with an aria-label, the
+  download is `songs.csv` with an aria-label, the page-size trigger has the
+  `pageSize` id, the size options always include 5 for small libraries, the
+  placeholder uses `text-cem-secondary`, and the checkbox-table rows carry
+  `Select <song>` labels. Song badges are semantic: Ready success, Draft
+  amber, Retired neutral. The old retired `destructive` and Draft `chart-5`
+  are gone, and unknown statuses are neutral too.
+- Mobile defect found and fixed: the Setlists, Hover, Striped and Checkbox
+  tables were 508–557 px wide inside a 340 px card and the wrapper expanded
+  instead of scrolling, so the Actions column was clipped. The simplified
+  wrapper gives every table a 308 px scroll container and page overflow stays
+  0.
+- Browser checks (Chrome DevTools MCP, 390 and 1440): 6 cards (breadcrumb plus
+  five tables), rows 1/5/9/9/9, DataTable nine songs at five per page. Light:
+  body #f8fafc, card #fff, row border #e2e8f0. Dark: body #0f172a, card
+  #1e293b, row border #475569. Search `Way` -> 1 row, `zzz` -> `No results
+  found.`, clear -> 5 rows, Page 1 of 2, Next -> 4 rows and Page 2 of 2,
+  checkbox aria-checked true. No page overflow at 390 or 1873. Sixteen console
+  entries and no error or page error; the apple-mobile-web-app-capable
+  deprecation warning is pre-existing. Leaving `/admin` clears the html theme
+  class and the member app returns to dark.
+- Screenshots: the Chrome DevTools MCP `take_screenshot` timed out on this
+  page (full-page and viewport), so there are no `tables-*.png` captures. The
+  Playwright browser cache was already empty by then. The DOM values above
+  are the evidence; re-capture when a browser cache is available.
+- Decision: the `Hover Table` / `Striped-Row Table` / `Checkbox Table` card
+  titles stay; they name the interaction each card demonstrates and the rows
+  are real CEMURM songs, so they are not template data. The page keeps no demo
+  notice because it reads real owner-scoped rows.
+- Risk: item 3 (the shared `TableRow` border token reaches the tables in the
+  other admin sections); the token is the existing `cem-hover`, and the change
+  is required by the phase 4 contrast pass.
+
+L19 — 2026-10-22 — tables closed. Next in the S7 order: form, then profile,
+icons and auth. Source `fff5fb3`; this documentation commit records T21–T24.
