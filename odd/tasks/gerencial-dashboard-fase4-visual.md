@@ -722,3 +722,14 @@ and leaving to `/` clears it. The gate flows (signed out → `/auth`, active
 `org_owner` → `/dashboard`, `org_member` and no-membership → `/`) were verified
 on the parent at `27ef71e`; the child inherits the same router and guard. The
 branch is pushed to `fork`; PR #395 is open against `main`, stacked on #383.
+
+L29 — 2026-10-24 — parent review follow-ups merged. Merge `98bb163` brings
+`5680295` into the admin branch: 163 unreferenced assets (36.52 MB) and the
+three dead `src/api` files are gone, the msw demo layer is gone, and
+`framer-motion`/`lodash` are replaced (`motion/react`; local id counters and
+native comparators). The six `blog-img1..6.png` images stay because
+`src/demo/content.ts` imports them. One modify/delete conflict on
+`src/api/mocks/handlers/mock-handlers.ts` (dead file) was resolved by accepting
+the parent's deletion. Gates on `98bb163`: test 427/427 (21 files), typecheck 0,
+lint 0, gherkin 44/44, build OK, visual 12/0. Pushed to `fork`; PR #395 remains
+stacked on #383.
