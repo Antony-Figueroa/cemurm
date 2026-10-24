@@ -721,4 +721,4 @@ to `/dashboard`; `/dashboard` renders the shell with every sidebar link under
 and leaving to `/` clears it. The gate flows (signed out → `/auth`, active
 `org_owner` → `/dashboard`, `org_member` and no-membership → `/`) were verified
 on the parent at `27ef71e`; the child inherits the same router and guard. The
-branch is pushed to `fork`; the admin PR still waits on #383.
+branch is pushed to `fork`; PR #395 is open against `main`, stacked on #383.
