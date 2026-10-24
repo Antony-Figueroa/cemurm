@@ -68,24 +68,47 @@ const Storage = lazy(() => import('../features/settings/pages/Storage.jsx'))
 const Settings = lazy(() => import('../features/settings/pages/Settings.jsx'))
 const NotFound = lazy(() => import('../features/shell/pages/NotFound.jsx'))
 const Landing = lazy(() => import('../features/landing/pages/Landing.jsx'))
-// Admin template subtree (U3/S3, odd/tasks/gerencial-template-import.md).
-// Mounted at "admin" as a sibling of the app's own route subtrees: it carries
-// its own layout chrome (FullLayout), so it must NOT nest inside AppLayout.
-// It sits outside RequireAuth/RequireGuardianConsent — this is the imported
-// template, not a CEMURM feature; gating it is a deliberate later change.
-// LAZY: every admin page element inside the table is already deferred by the
-// template's own Loadable(lazy()) factory (src/routes/Router.tsx), so the
+// Dashboard template subtree (U3/S3, odd/tasks/gerencial-template-import.md).
+// Mounted at "dashboard" as a sibling of the app's own route subtrees: it
+// carries its own layout chrome (FullLayout), so it must NOT nest inside
+// AppLayout. It is gated by RequireAuth + RequireGuardianConsent +
+// RequireOrgOwner (active org_owner only), so it is no longer a public
+// template surface. The theme boundary is part of the subtree.
+// LAZY: every dashboard page element inside the table is already deferred by
+// the template's own Loadable(lazy()) factory (src/routes/Router.tsx), so the
 // route table below imports only the table and the chunk factories, never
-// the admin views themselves.
+// the dashboard views themselves.
 import { Router as AdminRoutes } from '../routes/Router'
+import { RequireOrgOwner } from './providers/RequireOrgOwner.jsx'
+import AdminThemeBoundary from './providers/AdminThemeBoundary.jsx'
 
 const router = createBrowserRouter([
-  // Admin template (shadcn-dashboard). Deliberately FIRST so its subtree is
-  // unambiguous, and OUTSIDE AppLayout so the template's own sidebar/header
-  // are the only chrome on an admin route.
+  // Dashboard template (shadcn-dashboard). Deliberately FIRST so its subtree
+  // is unambiguous, and OUTSIDE AppLayout so the template's own
+  // sidebar/header are the only chrome on a dashboard route. The guards are
+  // top-level siblings of AppLayout too, so the dashboard does not inherit
+  // the member nav; RequireAuth sends a signed-out visitor to /auth,
+  // RequireGuardianConsent keeps the Hito 4 minor gate, and RequireOrgOwner
+  // admits only an active org_owner.
   {
-    path: 'admin',
-    children: AdminRoutes,
+    element: defer(<RequireAuth />),
+    children: [
+      {
+        element: defer(<RequireGuardianConsent />),
+        children: [
+          {
+            element: <RequireOrgOwner />,
+            children: [
+              {
+                path: 'dashboard',
+                element: <AdminThemeBoundary />,
+                children: AdminRoutes,
+              },
+            ],
+          },
+        ],
+      },
+    ],
   },
   {
     element: <AppLayout />,
