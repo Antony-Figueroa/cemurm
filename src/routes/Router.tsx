@@ -13,10 +13,12 @@ import Loadable from '../layouts/full/shared/loadable/Loadable';
 // MECHANICAL RELATIVE-IZATION, verbatim otherwise: the table was authored
 // for a browser router whose root paths were absolute ("/", "/apps/blog
 // /post", ...). Absolute paths in nested children escape their parent prefix
-// in react-router v7, so every leading "/" is stripped and each absolute
-// Navigate target ("/auth/404") becomes its relative twin ("auth/404"). Both
-// resolved to the same pages: the demo screens now live under /dashboard/...
-// (e.g. /dashboard → dashboard, /dashboard/auth/404 → error screen).
+// in react-router v7, so every leading "/" is stripped. The 404 redirect is
+// the exception: a relative target inside the catch-all resolves against the
+// current path, so an unknown path would append "auth/404" forever. It stays
+// absolute ("/dashboard/auth/404"). The demo screens now live under
+// /dashboard/... (e.g. /dashboard → dashboard, /dashboard/auth/404 → error
+// screen).
 /* ***Layouts**** */
 const FullLayout = Loadable(lazy(() => import('../layouts/full/FullLayout')));
 const BlankLayout = Loadable(lazy(() => import('../layouts/blank/BlankLayout')));
@@ -97,7 +99,7 @@ const Router = [
       { path: 'icons/iconify', element: <SolarIcon /> },
 
     
-      { path: '*', element: <Navigate to="auth/404" /> },
+      { path: '*', element: <Navigate to="/dashboard/auth/404" /> },
     ],
   },
   {
