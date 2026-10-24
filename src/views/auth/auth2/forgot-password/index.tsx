@@ -40,7 +40,7 @@ const BoxedForgotpwd = () => {
         </form>
 
         <Link
-          to='/admin/auth/auth2/login'
+          to='/dashboard/auth/auth2/login'
           className={buttonVariants({ variant: 'outline', className: 'w-full' })}
         >
           Back to Login

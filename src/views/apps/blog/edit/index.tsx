@@ -9,7 +9,7 @@ import Status from "@/components/apps/blog/blogedit/blog-status";
 import DemoNotice from "src/components/shared/DemoNotice";
 
 const BCrumb = [
-  { to: "/admin", title: "Home" },
+  { to: "/dashboard", title: "Home" },
   { title: "Blog Edit" },
 ];
 

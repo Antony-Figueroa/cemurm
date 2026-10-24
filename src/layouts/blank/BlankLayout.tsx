@@ -4,13 +4,13 @@ import DemoNotice from 'src/components/shared/DemoNotice'
 
 const BlankLayout = () => {
   const { pathname } = useLocation()
-  // The template's auth screens live under /admin/auth/* and are visual demos:
+  // The template's auth screens live under /dashboard/auth/* and are visual demos:
   // they do not call Supabase Auth. The 404 and maintenance pages share this
   // layout but are real template pages, so they are excluded from the notice.
   const isAuthDemo =
-    pathname.startsWith('/admin/auth/') &&
-    pathname !== '/admin/auth/404' &&
-    pathname !== '/admin/auth/maintenance'
+    pathname.startsWith('/dashboard/auth/') &&
+    pathname !== '/dashboard/auth/404' &&
+    pathname !== '/dashboard/auth/maintenance'
 
   return (
     <ScrollToTop>

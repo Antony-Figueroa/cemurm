@@ -14,7 +14,7 @@ const Error = () => {
         <p className='mt-2 text-sm text-cem-secondary'>
           The page you are looking for does not exist or has moved.
         </p>
-        <Link to='/admin' className={buttonVariants({ className: 'mt-6' })}>
+        <Link to='/dashboard' className={buttonVariants({ className: 'mt-6' })}>
           Back to dashboard
         </Link>
       </div>

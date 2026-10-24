@@ -58,7 +58,7 @@ const BoxedLogin = () => {
                 </Label>
               </div>
               <Link
-                to='/admin/auth/auth2/forgot-password'
+                to='/dashboard/auth/auth2/forgot-password'
                 className='text-sm font-medium transition-all hover:underline underline-offset-4'
               >
                 Forgot Password?
@@ -73,7 +73,7 @@ const BoxedLogin = () => {
         <div className='flex items-center justify-center gap-2 text-sm font-medium'>
           <p className='text-cem-secondary-elevated'>New to CEMURM?</p>
           <Link
-            to='/admin/auth/auth2/register'
+            to='/dashboard/auth/auth2/register'
             className='text-sm font-medium text-cem-amber hover:underline'
           >
             Create an account

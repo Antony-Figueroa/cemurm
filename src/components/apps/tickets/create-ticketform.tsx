@@ -59,7 +59,7 @@ const CreateTicketForm = () => {
 
     addTicket(newTicket);
     resetForm();
-    router("/admin/apps/tickets");
+    router("/dashboard/apps/tickets");
   };
 
   const resetForm = () => {
@@ -158,7 +158,7 @@ const CreateTicketForm = () => {
             <div className="flex gap-3">
               <Button
                 variant="outline"
-                onClick={() => router("/admin/apps/tickets")}
+                onClick={() => router("/dashboard/apps/tickets")}
               >
                 Cancel
               </Button>

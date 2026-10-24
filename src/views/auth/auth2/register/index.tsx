@@ -71,7 +71,7 @@ const BoxedRegister = () => {
             Already have an Account?
           </p>
           <Link
-            to='/admin/auth/auth2/login'
+            to='/dashboard/auth/auth2/login'
             className='text-sm font-medium text-cem-amber hover:underline'
           >
             Sign in

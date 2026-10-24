@@ -178,7 +178,7 @@ const ManageBlogTable = () => {
         const { id } = row.original;
 
         const handleEdit = () => {
-          navigate("/admin/apps/blog/edit");
+          navigate("/dashboard/apps/blog/edit");
         };
 
         const handleRowDelete = () => {

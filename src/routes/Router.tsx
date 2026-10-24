@@ -22,7 +22,7 @@ const FullLayout = Loadable(lazy(() => import('../layouts/full/FullLayout')));
 const BlankLayout = Loadable(lazy(() => import('../layouts/blank/BlankLayout')));
 
 // The demo ticket store is mounted once around the admin layout so a ticket
-// created on /admin/apps/tickets/create exists when the list route renders
+// created on /dashboard/apps/tickets/create exists when the list route renders
 // (the template relied on a global SWR cache for that; local state needs a
 // shared provider).
 import { TicketProvider } from '../context/ticket-context';

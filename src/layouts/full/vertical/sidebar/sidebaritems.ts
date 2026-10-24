@@ -55,13 +55,13 @@ import {
 
 /**
  * The imported template shipped a marketing sidebar: 98 of its links pointed
- * at shadcndashboard.dev demos and only the local routes under /admin were
+ * at shadcndashboard.dev demos and only the local routes under /dashboard were
  * real. This keeps every local screen reachable and removes the external
  * marketing tree, so the shell describes the app that exists instead of the
  * template's catalogue.
  *
  * URLs stay in the template's root-relative form; NavCollapse prefixes them
- * with /admin through toAdminPath().
+ * with /dashboard through toAdminPath().
  */
 const SidebarContent: MenuItem[] = [
   {

@@ -4,7 +4,7 @@ import ManageBlogTable from "@/components/apps/blog/blogtable/manage-blogtable";
 import DemoNotice from "src/components/shared/DemoNotice";
 
 const BCrumb = [
-  { to: "/admin", title: "Home" },
+  { to: "/dashboard", title: "Home" },
   { title: "Manage Blog" },
 ];
 

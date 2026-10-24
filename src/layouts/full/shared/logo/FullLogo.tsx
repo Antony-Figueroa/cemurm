@@ -29,7 +29,7 @@ export function CemurmMark({ className = "" }: { className?: string }) {
 const FullLogo = () => {
   return (
     <Link
-      to="/admin"
+      to="/dashboard"
       aria-label="CEMURM admin"
       className="flex min-w-0 items-center gap-2"
     >

@@ -28,7 +28,7 @@ const STATUS_STYLES: Record<string, string> = {
 }
 
 const BCrumb = [
-  { to: '/admin', title: 'Home' },
+  { to: '/dashboard', title: 'Home' },
   { title: 'Profile' },
 ]
 

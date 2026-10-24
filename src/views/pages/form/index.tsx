@@ -2,7 +2,7 @@ import BreadcrumbComp from 'src/layouts/full/shared/breadcrumb/BreadcrumbComp';
 import FormCompo from 'src/components/form';
 
 const BCrumb = [
-  { to: '/admin', title: 'Home' },
+  { to: '/dashboard', title: 'Home' },
   { title: 'Form' },
 ];
 

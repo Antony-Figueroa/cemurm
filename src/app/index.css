@@ -185,7 +185,7 @@
  * in the @theme block.
  *
  * The class is scoped to the admin lifecycle by AdminThemeBoundary.jsx: it is
- * removed when /admin unmounts, so the member app and the stage never inherit
+ * removed when /dashboard unmounts, so the member app and the stage never inherit
  * it. The stage namespace is deliberately absent: `cem.stage.*` is the
  * projector palette and must stay black regardless of the admin theme.
  * =========================================================================== */

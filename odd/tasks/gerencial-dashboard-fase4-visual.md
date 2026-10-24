@@ -24,7 +24,7 @@ and the signed-in manager.
 S4 — Navigation. The sidebar keeps every local admin route (dashboard, tables, form,
 profile, notes, blog, tickets, icons, auth demos) and drops the external
 shadcndashboard demo links that are not routes. Search searches that same local menu
-and navigates under `/admin`.
+and navigates under `/dashboard`.
 
 Assumption: the shadcndashboard.dev links are template marketing/demo links, not app
 routes. Removing them does not remove a screen; every local route stays reachable.
@@ -34,7 +34,7 @@ spacing scale; the content surface has intentional radius/border; no double fram
 the shell holds at 1440px and on mobile.
 
 S6 — Scope guard. No changes to `src/features/stage/**`, `projection/**`,
-`landing/**` or their routes. The member app remains dark after leaving `/admin`.
+`landing/**` or their routes. The member app remains dark after leaving `/dashboard`.
 
 S7 — Section sequence: shell (this unit), then dashboard, blog, notes, tickets,
 tables / form / profile / icons / auth. Each section closes with its own verification
@@ -697,3 +697,28 @@ tables, form, profile, icons and auth are done (T1–T38). The branch
 OPEN / REVIEW_REQUIRED / MERGEABLE; the admin PR waits on its merge. The branch
 is pushed to `fork`; no admin PR is open yet. Merge is human. Remaining work is
 external: merge #383, then open the admin PR. No code work remains in phase 4.
+
+L28 — 2026-10-24 — gate + rename after the parent merge. User request, verbatim:
+"si, /admin (donde esta el dashboard va dentro de la autenticacion, solo bajo
+condiciones de logue (y la condicion especial que debe ser owner de la
+organizacion) se puede acceder, y me gustaria que cambiaras el /admin por
+/dashboard". Scope decision: "Solo org_owner activo". Merge `f612277` brings
+`27ef71e` into the admin branch: the router and `AdminThemeBoundary` are the
+parent's, the child's `RequireGerencial`/`gerencial`/`gerencial.test.js` are
+deleted, and `RequireOrgOwner`/`orgOwner` are the only gate. `ADMIN_BASE` is
+`/dashboard`; every hardcoded template route (`BlankLayout`, auth2, error,
+maintenance, logo, breadcrumb, sidebar, apps, components, comments) follows it.
+The `src/` tree has no live `/admin` route left; the only remaining `/admin`
+strings are the `admin-path` file imports, one "owners/admins" prose line, and
+the historical ODD quotes (fase 3 L1, parent L7, phase 4 log entries). Gates:
+test 427/427 (21 files), typecheck 0, lint 0, build OK, gherkin 44/44, visual
+12/0. Browser (Chrome DevTools MCP, 127.0.0.1:5173): `/dashboard/auth/auth2/login`
+renders the demo auth screen with links `/dashboard`, `/dashboard/auth/auth2/
+forgot-password` and `/dashboard/auth/auth2/register`; `/dashboard/auth/404` and
+`/dashboard/auth/maintenance` render the CEMURM pages with `Back to dashboard`
+to `/dashboard`; `/dashboard` renders the shell with every sidebar link under
+`/dashboard/...`; `html.dark` is the default, the header toggle sets `html.light`,
+and leaving to `/` clears it. The gate flows (signed out → `/auth`, active
+`org_owner` → `/dashboard`, `org_member` and no-membership → `/`) were verified
+on the parent at `27ef71e`; the child inherits the same router and guard. The
+branch is pushed to `fork`; the admin PR still waits on #383.

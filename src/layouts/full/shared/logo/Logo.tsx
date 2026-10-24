@@ -3,7 +3,7 @@ import { CemurmMark } from "./FullLogo";
 
 const Logo = () => {
   return (
-    <Link to="/admin" aria-label="CEMURM admin">
+    <Link to="/dashboard" aria-label="CEMURM admin">
       <CemurmMark />
     </Link>
   );

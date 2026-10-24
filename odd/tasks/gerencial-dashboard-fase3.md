@@ -12,16 +12,16 @@ apoya en F1.
 ## Specs
 
 - **S1** (template completo): las 25 vistas y todas las rutas del template quedan
-  montadas en `/admin` — dashboard, blog (5), notes, tickets (2), pages (3),
+  montadas en `/dashboard` — dashboard, blog (5), notes, tickets (2), pages (3),
   icons, auth (4 + error/maintenance). No se elimina ninguna. La verificación
   contra la fuente (`/home/antony/Descargas/shadcndashboard-main/src`) da 0
   archivos faltantes en la copia importada.
-- **S2** (acceso gerencial): `/admin` vive dentro de `RequireAuth` y
-  `RequireGuardianConsent`; además, `RequireGerencial` exige `system_admin` en
-  `public.user_roles` o una membresía activa en `org_memberships` con rol
-  `org_owner`, `org_admin` o `branch_admin`. Sin acceso → `/`. Fail-closed: una
-  lectura que falla no concede acceso.
-- **S3** (dashboard real): el home `/admin` deja de usar arrays hardcodeados y
+- **S2** (acceso gerencial): `/dashboard` vive dentro de `RequireAuth` y
+  `RequireGuardianConsent`; además, `RequireOrgOwner` exige una membresía activa
+  en `org_memberships` con rol `org_owner` (solo owner; `org_admin`,
+  `branch_admin`, `instructor` y `system_admin` no pasan). Sin acceso → `/`.
+  Fail-closed: una lectura que falla no concede acceso.
+- **S3** (dashboard real): el home `/dashboard` deja de usar arrays hardcodeados y
   lee conteos/listas de los repositorios existentes (`songs`, `setlists`, `gigs`,
   `venues`, `rehearsals`, `bandmates`, `orgRepertoire`, `profiles`). Se conserva
   la estructura de cards y grillas del template; sólo cambian labels y datos.
@@ -29,16 +29,16 @@ apoya en F1.
   `setlists.owner_id`, `gigs.owner_id`), así que el home muestra los números del
   gerente autenticado, no un rollup de toda la organización. Un rollup org-wide
   requiere queries RLS nuevas y queda fuera de esta fase.
-- **S4** (perfil real): `/admin/pages/user-profile` lee
+- **S4** (perfil real): `/dashboard/pages/user-profile` lee
   `profiles.getProfile` y `orgRepertoire.getMyOrganizations` en vez de datos
   demo.
-- **S5** (tablas reales): `/admin/pages/tables` lista canciones y setlists
+- **S5** (tablas reales): `/dashboard/pages/tables` lista canciones y setlists
   reales del usuario con las mismas primitivas de tabla del template.
 - **S6** (pantallas sin dominio): blog, notes, tickets, icons y el auth del
   template quedan como pantallas demo visuales. No fingen persistencia: no
   escriben en Supabase y muestran una marca de "demo" donde el template ya
   mostraba datos falsos. No se inventan tablas ni RPCs.
-- **S7** (tema): `ThemeProvider` se monta en el subtree `/admin` para que el
+- **S7** (tema): `ThemeProvider` se monta en el subtree `/dashboard` para que el
   toggle del template tenga efecto; `defaultTheme="dark"` porque la paleta cem
   es un ramp oscuro.
 - **S8** (músico intacto): `src/features/stage/**`, `projection/**`,
@@ -47,7 +47,7 @@ apoya en F1.
 
 ## Tasks
 
-- T1 — S2: ✅ `b234254` — guard `RequireGerencial` + montaje de `/admin` dentro de los guards.
+- T1 — S2: ✅ `b234254` — guard `RequireGerencial` + montaje del subtree dentro de los guards; superseded por `RequireOrgOwner` y el mount `/dashboard` en `f612277` (merge del padre).
 - T2 — S7: ✅ `b234254` — `ThemeProvider` en el subtree admin.
 - T3 — S3: ✅ `f198bb9` — home con métricas y listas reales.
 - T4 — S4: ✅ `ed64a3b` — perfil real (identidad + organizaciones), sin escrituras falsas.

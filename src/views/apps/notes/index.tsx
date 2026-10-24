@@ -3,7 +3,7 @@ import BreadcrumbComp from "src/layouts/full/shared/breadcrumb/BreadcrumbComp";
 import DemoNotice from "src/components/shared/DemoNotice";
 
 const BCrumb = [
-  { to: "/admin", title: "Home" },
+  { to: "/dashboard", title: "Home" },
   { title: "Notes" },
 ];
 

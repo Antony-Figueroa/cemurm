@@ -13,7 +13,7 @@ const Maintenance = () => {
         <p className='mt-2 text-sm text-cem-secondary'>
           CEMURM is under maintenance. Check back soon.
         </p>
-        <Link to='/admin' className={buttonVariants({ className: 'mt-6' })}>
+        <Link to='/dashboard' className={buttonVariants({ className: 'mt-6' })}>
           Back to admin
         </Link>
       </div>

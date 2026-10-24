@@ -7,7 +7,7 @@ import DataTable from 'src/components/tables/data-table/DataTable';
 import { useAdminTables } from '@/hooks/shared/useAdminTables';
 
 const BCrumb = [
-  { to: '/admin', title: 'Home' },
+  { to: '/dashboard', title: 'Home' },
   { title: 'Tables' },
 ];
 

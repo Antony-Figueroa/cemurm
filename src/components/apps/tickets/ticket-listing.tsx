@@ -73,7 +73,7 @@ const TicketListing = () => {
     <div className="my-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
         <Button
-          onClick={() => router("/admin/apps/tickets/create")}
+          onClick={() => router("/dashboard/apps/tickets/create")}
           className="whitespace-nowrap"
         >
           Create Ticket
