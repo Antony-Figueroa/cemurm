@@ -7,7 +7,8 @@ import React, { useEffect, useContext } from "react";
 
 import { Circle, Eye, MessageSquare, Quote } from "lucide-react";
 import { format } from "date-fns";
-import { uniqueId } from "lodash";
+let demoIdCounter = 0;
+const uniqueId = (prefix = "") => `${prefix}${++demoIdCounter}`;
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocation } from "react-router-dom";
 import {

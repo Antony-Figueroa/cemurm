@@ -34,7 +34,8 @@ export interface MenuItem {
   isPro?: boolean;
 }
 
-import { uniqueId } from "lodash";
+let navIdCounter = 0;
+const uniqueId = () => `${++navIdCounter}`;
 
 import {
   BookOpen,

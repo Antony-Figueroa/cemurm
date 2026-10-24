@@ -1,12 +1,21 @@
 
 import { useContext } from "react";
-import { orderBy } from "lodash";
 
 import { BlogContext } from "../../../context/blog-context";
 import BlogFeaturedCard from "./blog-featuredcard";
 
 import BlogCard from "./blog-card";
 import { BlogPostType } from "src/types/apps/blog";
+
+const sortByDate = (items: BlogPostType[], direction: "asc" | "desc") => {
+  const factor = direction === "asc" ? 1 : -1;
+  return [...items].sort(
+    (a, b) => factor * ((a.createdAt?.getTime() ?? 0) - (b.createdAt?.getTime() ?? 0)),
+  );
+};
+
+const sortByViews = (items: BlogPostType[]) =>
+  [...items].sort((a, b) => (b.view ?? 0) - (a.view ?? 0));
 
 const BlogListing = () => {
   const { posts, sortBy } = useContext(BlogContext);
@@ -16,11 +25,11 @@ const BlogListing = () => {
     let filteredPosts = [...posts];
 
     if (sortBy === "newest") {
-      filteredPosts = orderBy(filteredPosts, ["createdAt"], ["desc"]);
+      filteredPosts = sortByDate(filteredPosts, "desc");
     } else if (sortBy === "oldest") {
-      filteredPosts = orderBy(filteredPosts, ["createdAt"], ["asc"]);
+      filteredPosts = sortByDate(filteredPosts, "asc");
     } else if (sortBy === "popular") {
-      filteredPosts = orderBy(filteredPosts, ["view"], ["desc"]);
+      filteredPosts = sortByViews(filteredPosts);
     }
 
     // Filter out featured posts
