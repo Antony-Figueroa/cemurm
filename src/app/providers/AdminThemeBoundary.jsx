@@ -1,12 +1,12 @@
-// Theme boundary for the imported gerencial template.
+// Theme boundary for the imported dashboard template.
 //
 // The template's header toggle calls useTheme(), which throws outside a
-// provider. The provider lives only in the /admin subtree. It does mutate
+// provider. The provider lives only in the /dashboard subtree. It does mutate
 // document.documentElement (the template toggle and the cem token layer both
 // read the class from there), so AdminThemeScope restores the previous html
-// classes on unmount: a manager who switches to light and then returns to the
-// member app does not carry the admin light palette into the member shell or
-// the stage.
+// classes on unmount: an owner who switches to light and then returns to the
+// member app does not carry the dashboard light palette into the member shell
+// or the stage.
 //
 // defaultTheme is dark: the cem palette is a dark ramp and dark is the admin
 // brand default. Light is a supported, explicit choice.

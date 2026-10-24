@@ -7,7 +7,7 @@ import Loadable from '../layouts/full/shared/loadable/Loadable';
 // U3/S3 (odd/tasks/gerencial-template-import.md): the original template file
 // created its own `createBrowserRouter(Router)` and exported the router. In
 // CEMURM the array is mounted under the existing app router (src/app/router
-// .jsx) as a subtree at path "admin", so the createBrowserRouter call is
+// .jsx) as a subtree at path "dashboard", so the createBrowserRouter call is
 // dropped here and the array is exported instead.
 //
 // MECHANICAL RELATIVE-IZATION, verbatim otherwise: the table was authored
@@ -15,8 +15,8 @@ import Loadable from '../layouts/full/shared/loadable/Loadable';
 // /post", ...). Absolute paths in nested children escape their parent prefix
 // in react-router v7, so every leading "/" is stripped and each absolute
 // Navigate target ("/auth/404") becomes its relative twin ("auth/404"). Both
-// resolved to the same pages: the demo screens now live under /admin/...
-// (e.g. /admin → dashboard, /admin/auth/404 → error screen).
+// resolved to the same pages: the demo screens now live under /dashboard/...
+// (e.g. /dashboard → dashboard, /dashboard/auth/404 → error screen).
 /* ***Layouts**** */
 const FullLayout = Loadable(lazy(() => import('../layouts/full/FullLayout')));
 const BlankLayout = Loadable(lazy(() => import('../layouts/blank/BlankLayout')));

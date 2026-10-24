@@ -15,8 +15,9 @@ Fuente: `/home/antony/Descargas/shadcndashboard-main`.
   y el CSS de la plantilla cargado junto a `@theme` de CEMURM. Los tokens de la plantilla
   (p. ej. `bg-card`, `text-muted-foreground`) se mapean como alias CSS en `@theme` apuntando
   a los valores `cem.*` equivalentes — mapeo mecánico, no rediseño.
-- **S3** (montaje no invasivo): las rutas de la plantilla se montan bajo `/admin` mediante
-  el router existente (`src/app/router.jsx`), lazy-loaded. Las rutas del músico
+- **S3** (montaje no invasivo): las rutas de la plantilla se montan bajo `/dashboard` mediante
+  el router existente (`src/app/router.jsx`), lazy-loaded, dentro de `RequireAuth` +
+  `RequireGuardianConsent` + `RequireOrgOwner` (solo `org_owner` activo). Las rutas del músico
   (`/stage`, `/projection`, `/landing`, `/songs`, etc.) quedan EXACTAMENTE como están.
 - **S4** (deps): si la plantilla exige dependencias runtime presentes (framer-motion/motion,
   embla, input-otp, react-day-picker, simplebar, sonner ya está, etc.) se instalan vía pnpm —
@@ -31,7 +32,7 @@ Fuente: `/home/antony/Descargas/shadcndashboard-main`.
 
 - U1 — S1: copiar árbol de la plantilla a src/ (respetando nombres de archivo propios).
 - U2 — S2: wiring css/alias/imports mínimos.
-- U3 — S3: montar rutas bajo /admin en src/app/router.jsx (lazy).
+- U3 — S3: montar rutas bajo /dashboard en src/app/router.jsx (lazy), con el gate owner-only.
 - U4 — S4: instalar deps runtime que la plantilla exija.
 - U5 — S5/S6: suite completa de gates + colisiones nombradas (src/lib, src/assets...) resueltas sin sobrescribir archivos del repo.
 
@@ -70,6 +71,7 @@ Fuente: `/home/antony/Descargas/shadcndashboard-main`.
     - **04 (enforcing): 35 **nuevas claves de color** en index.css — las del bloque alias mecánico de L3 (`background`, `foreground`, `card`, `card.foreground`, ... `chart.1-5`, `sidebar.*`, `success/warning/error/page`). Estas claves NO son crecimiento de paleta: cada una es `var(--color-cem-*)`; pero el gate la declara "undeclared colour key" porque su allowlist pinned enumera solo `cem.*` (17 leves). Reducirla significa levantar el alias del @theme (rompe `bg-card/80` etc, los modificadores usados en la plantilla ~30 classes shadcn) o alterar el gate → ambas son decisiones del orquestador, no del import.
     - Reglas pasantes: 02 (240/240 — el alias no agregó una occur por la zona declare-excluida), 03 (0), 05a (0 — `cem.text` en todos los fondos; la new alias keys fuera del eje y los cem originales intactos), 05b (report 13, sin cambios de antes), 06 (0), 07 (0), 08 (PASS).
   - S6 note: la única manera de preservar tal cual el template CSS (matching shadcn dashboard) que conserva los modificadores de color (`bg-primary/80`, `ring-ring/50`, etc. ~30 formas) con las .css-same-classes es declarar las claves semánticas (prefijo `--color-`) en uno @theme (mismo rango que la paleta declarada del repo) y el «sanctioned home» del repo es la PALETA CEM: se le puede pedir al orquestador o bien **(a)** añadir esas 35 keys a la `CSS_COLOUR_KEY_ALLOWLIST` (revisión deliberada, las claves var()→cem.* no enseñan color literal) o **(b)** reescribir la plantilla sobre @utility (perdería modificadores: S6 instrucible). El import se entrega como (a) pendiente.
+- L7 (2026-10-24, U3/S3, review #383): pedido del usuario, verbatim: "si, /admin (donde esta el dashboard va dentro de la autenticacion, solo bajo condiciones de logue (y la condicion especial que debe ser owner de la organizacion) se puede acceder, y me gustaria que cambiaras el /admin por /dashboard". Decisión de alcance: "Solo org_owner activo" — `org_admin`, `branch_admin`, `instructor` y `system_admin` NO pasan. Implementación: `src/app/providers/orgOwner.js` (predicado puro `status === 'active' && role === 'org_owner'`), `orgOwner.test.js`, `RequireOrgOwner.jsx` (fail-closed, `Navigate to="/"`), `AdminThemeBoundary.jsx` (dark default, restaura las clases html al desmontar), y `src/app/router.jsx` monta el subtree como sibling top-level de `AppLayout` (para no heredar el chrome del músico) bajo `RequireAuth` → `RequireGuardianConsent` → `RequireOrgOwner` → `path: 'dashboard'`. El mount pasó de `admin` a `dashboard`; los links internos de la plantilla son relativos, así que no requieren reescritura en el padre. La rama admin (fase 4) hereda este gate al mergear y renombra su `ADMIN_BASE` a `/dashboard`.
 
 ## Log — pendiente
 
