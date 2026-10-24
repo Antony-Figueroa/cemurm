@@ -733,3 +733,12 @@ native comparators). The six `blog-img1..6.png` images stay because
 the parent's deletion. Gates on `98bb163`: test 427/427 (21 files), typecheck 0,
 lint 0, gherkin 44/44, build OK, visual 12/0. Pushed to `fork`; PR #395 remains
 stacked on #383.
+
+L30 — 2026-10-24 — dashboard 404 catch-all fixed. Merge `a15e3fd` brings
+`db27cf0`: the template's catch-all used a relative `Navigate` target, so an
+unknown path such as `/dashboard/apps/blog` appended `auth/404` to itself
+forever. It now points at `/dashboard/auth/404`. Browser check on the merged
+slice: `/dashboard/apps/blog` ends at `/dashboard/auth/404` with "Page not
+found", no repeated segments, no broken images, no asset 404s. Gates on
+`a15e3fd`: test 427/427, typecheck 0, lint 0, gherkin 44/44, build OK,
+visual 12/0.
