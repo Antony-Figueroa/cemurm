@@ -1,6 +1,6 @@
 
 
-import { motion, useInView, Variants } from 'framer-motion';
+import { motion, useInView, type Variants } from 'motion/react';
 import { useRef } from 'react';
 import type { ReactNode } from 'react';
 
