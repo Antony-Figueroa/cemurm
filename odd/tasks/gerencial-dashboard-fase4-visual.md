@@ -752,3 +752,11 @@ dashboard catch-all but would loop if reached, so it is now absolute
 (`/dashboard/auth/404`). Removed the remaining whitespace in `Router.tsx`,
 `Light-Dark.tsx` and `Tiptap.css`; `git diff --check origin/main HEAD` is clean.
 Gates: test 427/427, gherkin 44/44, typecheck 0, lint 0, build OK, visual 12/0.
+
+L32 — 2026-10-25 — rebase onto `main` after the parent landed. #383 was
+merged as #398 (same SHA `0b3e6d8`, re-homed to the base repository because
+fork PRs cannot produce the required CodeQL check). Merged `origin/main`
+(`55f3bd5`) into this slice (`4e709dd`); no conflicts. The PR now diffs against
+`main`: 109 files, +5233/−4875, instead of the 278 files the API showed while
+the parent was still open. Gates on the merged tree: test 427/427, gherkin
+44/44, typecheck 0, lint 0, build OK, visual 12/0; `git diff --check` clean.
