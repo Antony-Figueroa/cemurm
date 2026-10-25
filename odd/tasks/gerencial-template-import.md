@@ -80,6 +80,7 @@ Fuente: `/home/antony/Descargas/shadcndashboard-main`.
   - **Ítem 7 — delta de bundle** (`main` `8f01f57` vs rama `6e487a6`): `dist/assets` 1.255.823 B → 7.478.381 B (+5,9 MiB en disco); JS/CSS raw 1.258,68 kB → 4.241,48 kB (+2.982,80 kB); gzip 386,85 kB → 1.279,67 kB (+892,82 kB). Chunk nuevo más grande: `iconify` 917,03 kB (299,46 kB gzip), aceptado por S1. El warning >500 kB es preexistente.
   - **Ítems 8/9 — follow-ups**: issue #396 (paths `@/*`/`src/*` + 171 TS/TSX fuera de `include`) y #397 (deuda TS 6.0.3 / ESLint 8 → flat config).
   - **Gates en `6e487a6`**: `pnpm test` 425/425, `pnpm test:gherkin` 44/44, `pnpm typecheck` 0, `pnpm lint` 0, `pnpm build` OK, `bash scripts/check-visual-contract.sh` 12 reglas / 0 fallos.
+- L9 (2026-10-24, revisión propia): #383 queda montado en `/dashboard`, pero los links de la plantilla no se reescriben en esta rama: `NavCollapse` usa `to={item.url}` con `/apps/...`/`/pages/...`, y `Search`, `Profile`, las páginas auth y `NavUser` también apuntan fuera del mount. La reescritura vive en #395 (`toAdminPath`, 33 archivos); el fix de los links externos `Help Center`/`Documentation` de `NavUser` (`<a>` en vez de `<Link>`) también. Se declara en "Known gaps" del body de #383; mergear #395 inmediatamente después. Evidencia estática: 5 links sin reescribir en el padre, 0 internos en el hijo (solo quedaban los 2 externos, corregidos). `git diff --check`: padre 24 avisos de whitespace (template vendorizado), hijo 0 tras limpiar `Router.tsx`, `Light-Dark.tsx` y `Tiptap.css`. No es un gate de CI.
 
 ## Log — pendiente
 
