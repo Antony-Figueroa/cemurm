@@ -742,3 +742,13 @@ slice: `/dashboard/apps/blog` ends at `/dashboard/auth/404` with "Page not
 found", no repeated segments, no broken images, no asset 404s. Gates on
 `a15e3fd`: test 427/427, typecheck 0, lint 0, gherkin 44/44, build OK,
 visual 12/0.
+
+L31 — 2026-10-24 — review fix: external sidebar links and route fallback. The
+template's `NavUser` passed external `Help Center`/`Documentation` URLs to
+React Router `<Link>`, which resolved them under `/dashboard`; they now render
+as `<a target="_blank" rel="noopener noreferrer">`. The second `*` catch-all
+under `BlankLayout` stayed relative (`auth/404`); it is unreachable behind the
+dashboard catch-all but would loop if reached, so it is now absolute
+(`/dashboard/auth/404`). Removed the remaining whitespace in `Router.tsx`,
+`Light-Dark.tsx` and `Tiptap.css`; `git diff --check origin/main HEAD` is clean.
+Gates: test 427/427, gherkin 44/44, typecheck 0, lint 0, build OK, visual 12/0.

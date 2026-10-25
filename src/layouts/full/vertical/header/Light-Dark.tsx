@@ -76,5 +76,3 @@ const LightDark = () => {
 };
 
 export default LightDark;
-
-
